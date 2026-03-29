@@ -1,5 +1,6 @@
-import { LoaderCircle, Lock, Mail, User } from 'lucide-react';
+import { LoaderCircle, Lock, Mail, User, Eye, EyeOff } from 'lucide-react';
 import type { ChangeEvent, FormEvent } from 'react';
+import { useState } from 'react';
 import type { RegistrationFieldErrors, SaasRegistrationData } from '../types';
 
 interface Props {
@@ -25,9 +26,11 @@ export function AdminInfoStep({
   isSubmitting,
   errors,
 }: Props) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   return (
-    <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
-      {errors.form && (
+    <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">{errors.form && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {errors.form}
         </div>
@@ -112,14 +115,27 @@ export function AdminInfoStep({
             <input
               id="password"
               name="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               required
               value={formData.password}
               onChange={onChange}
-              className={`${inputClass(Boolean(errors.password))} pl-10`}
+              className={`${inputClass(Boolean(errors.password))} pl-10 pr-10`}
               placeholder="••••••••"
               aria-invalid={Boolean(errors.password)}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-gray-600 transition-colors"
+              aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+              tabIndex={-1}
+            >
+              {showPassword ? (
+                <EyeOff className="h-5 w-5 text-gray-400" />
+              ) : (
+                <Eye className="h-5 w-5 text-gray-400" />
+              )}
+            </button>
           </div>
           {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
         </div>
@@ -135,14 +151,27 @@ export function AdminInfoStep({
             <input
               id="confirmPassword"
               name="confirmPassword"
-              type="password"
+              type={showConfirmPassword ? 'text' : 'password'}
               required
               value={formData.confirmPassword}
               onChange={onChange}
-              className={`${inputClass(Boolean(errors.confirmPassword))} pl-10`}
+              className={`${inputClass(Boolean(errors.confirmPassword))} pl-10 pr-10`}
               placeholder="••••••••"
               aria-invalid={Boolean(errors.confirmPassword)}
             />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-gray-600 transition-colors"
+              aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+              tabIndex={-1}
+            >
+              {showConfirmPassword ? (
+                <EyeOff className="h-5 w-5 text-gray-400" />
+              ) : (
+                <Eye className="h-5 w-5 text-gray-400" />
+              )}
+            </button>
           </div>
           {errors.confirmPassword && <p className="mt-1 text-xs text-red-600">{errors.confirmPassword}</p>}
         </div>
