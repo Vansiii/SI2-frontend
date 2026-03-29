@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { AuthLayout } from '../../../layouts/AuthLayout';
 import { RegistrationProgressBar } from '../components/RegistrationProgressBar';
 import { CompanyInfoStep } from '../components/CompanyInfoStep';
@@ -117,7 +118,6 @@ export function SaasRegistrationPage() {
         return (
           <SuccessStep
             formData={formData}
-            onFinish={() => window.location.reload()}
             message={successMessage}
           />
         );
@@ -138,9 +138,9 @@ export function SaasRegistrationPage() {
       {step < 3 && (
         <p className="mt-6 text-center text-sm text-gray-500">
           ¿Ya tienes una cuenta?{' '}
-          <a href="#" className="font-medium text-blue-600 hover:text-blue-500 transition-colors">
+          <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500 transition-colors">
             Inicia sesión aquí
-          </a>
+          </Link>
         </p>
       )}
     </AuthLayout>
