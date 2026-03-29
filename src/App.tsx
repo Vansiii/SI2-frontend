@@ -44,26 +44,46 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Rutas de Roles */}
+          <Route
+            path="/roles"
+            element={
+              <ProtectedRoute>
+                <RoleListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/roles/create"
+            element={
+              <ProtectedRoute>
+                <RoleFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/roles/:id/edit"
+            element={
+              <ProtectedRoute>
+                <RoleFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/roles/:id/permissions"
+            element={
+              <ProtectedRoute>
+                <RolePermissionsPage />
+              </ProtectedRoute>
+            }
+          />
           
           {/* Redirigir la raíz al login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
     </AuthProvider>
-    <Router>
-      <Routes>
-        <Route path="/register" element={<SaasRegistrationPage />} />
-        
-        {/* Rutas de Roles */}
-        <Route path="/roles" element={<RoleListPage />} />
-        <Route path="/roles/create" element={<RoleFormPage />} />
-        <Route path="/roles/:id/edit" element={<RoleFormPage />} />
-        <Route path="/roles/:id/permissions" element={<RolePermissionsPage />} />
-        
-        {/* Redirigir la raíz al registro temporalmente por el Sprint 1 */}
-        <Route path="/" element={<Navigate to="/roles" replace />} />
-      </Routes>
-    </Router>
   );
 }
 
