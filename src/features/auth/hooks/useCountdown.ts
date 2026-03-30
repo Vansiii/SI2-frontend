@@ -1,50 +1,44 @@
 import { useState, useEffect } from 'react';
 
-/**
- * Hook para countdown timer
- * @param initialSeconds - Segundos iniciales del countdown
- * @param isPaused - Si es true, el timer se pausa
- * @returns { seconds, isExpired, restart, formatTime }
- */
-export function useCountdown(initialSeconds: number, isPaused: boolean = false) {
+export const useCountdown = (initialSeconds: number, shouldPause: boolean = false) => {
   const [seconds, setSeconds] = useState(initialSeconds);
-  const [isExpired, setIsExpired] = useState(false);
+  const [isExpired, setIsExpired] = useState(initialSeconds <= 0);
 
   useEffect(() => {
-    if (seconds <= 0) {
+    // Only set state if necessary (e.g. if initialSeconds changes)
+    if (initialSeconds !== seconds && initialSeconds > 0) {
+       setSeconds(initialSeconds);
+       setIsExpired(false);
+    }
+  }, [initialSeconds, seconds]);
+
+  useEffect(() => {
+    let interval: number;
+
+    if (seconds > 0 && !shouldPause) {
+      interval = window.setInterval(() => {
+        setSeconds((prev) => {
+          if (prev <= 1) {
+            setIsExpired(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else if (seconds <= 0) {
       setIsExpired(true);
-      return;
     }
 
-    // Si está pausado, no hacer nada
-    if (isPaused) {
-      return;
-    }
+    return () => {
+      if (interval) {
+        window.clearInterval(interval);
+      }
+    };
+  }, [seconds, shouldPause]);
 
-    const interval = setInterval(() => {
-      setSeconds((prev) => {
-        if (prev <= 1) {
-          setIsExpired(true);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [seconds, isPaused]);
-
-  const restart = (newSeconds?: number) => {
-    setSeconds(newSeconds || initialSeconds);
-    setIsExpired(false);
+  return {
+    seconds,
+    isExpired,
+    formatted: `0${Math.floor(seconds / 60)}:${(seconds % 60).toString().padStart(2, '0')}`,
   };
-
-  // Formatear tiempo como MM:SS
-  const formatTime = () => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  return { seconds, isExpired, restart, formatTime };
-}
+};

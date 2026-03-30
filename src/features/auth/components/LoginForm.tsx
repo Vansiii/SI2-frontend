@@ -90,7 +90,6 @@ export function LoginForm({ onSubmit, isLoading, error, onClearError }: LoginFor
 
   // Verificar si el mensaje principal ya incluye información de tiempo/intentos
   const messageIncludesAttempts = error?.error.toLowerCase().includes('intento');
-  const messageIncludesMinutes = error?.error.toLowerCase().includes('minuto');
 
   // Determinar si la cuenta está bloqueada
   const isBlocked = remainingSeconds !== null && remainingSeconds > 0;

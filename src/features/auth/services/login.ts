@@ -1,5 +1,5 @@
 import { apiClient } from '../../../utils/apiClient';
-import { LoginCredentials, LoginResponse } from '../../../types';
+import type { LoginCredentials, LoginResponse } from '../../../types';
 
 /**
  * Servicio de login

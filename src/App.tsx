@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { SaasRegistrationPage } from './features/auth/pages/SaasRegistrationPage';
@@ -14,6 +14,8 @@ import { ProfilePage } from './features/profile/pages/ProfilePage';
 import { RoleListPage } from './features/roles/pages/RoleListPage';
 import { RoleFormPage } from './features/roles/pages/RoleFormPage';
 import { RolePermissionsPage } from './features/roles/pages/RolePermissionsPage';
+
+import { LandingPage } from './features/home/pages/LandingPage';
 
 function App() {
   return (
@@ -79,8 +81,8 @@ function App() {
             }
           />
           
-          {/* Redirigir la raíz al login */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          {/* Redirigir la raíz al landing page */}
+          <Route path="/" element={<LandingPage />} />
         </Routes>
       </Router>
     </AuthProvider>

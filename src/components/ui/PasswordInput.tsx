@@ -1,4 +1,5 @@
-import { InputHTMLAttributes, ReactNode, forwardRef, useState } from 'react';
+import { forwardRef, useState } from 'react';
+import type { InputHTMLAttributes, ReactNode } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
 interface PasswordInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {

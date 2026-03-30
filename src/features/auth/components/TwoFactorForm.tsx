@@ -32,7 +32,7 @@ export function TwoFactorForm({
   const [attemptsExhausted, setAttemptsExhausted] = useState(false);
   
   // Pausar el timer cuando se agotan los intentos
-  const { isExpired, formatTime } = useCountdown(expiresIn, attemptsExhausted);
+  const { isExpired, formatted: formatTime } = useCountdown(expiresIn, attemptsExhausted);
   
   // Detectar cuando se agotan los intentos y mantener el estado
   useEffect(() => {
@@ -125,7 +125,7 @@ export function TwoFactorForm({
       {!isExpired && (
         <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
           <Clock className="h-4 w-4" />
-          <span>Tiempo restante: {formatTime()}</span>
+          <span>Tiempo restante: {formatTime}</span>
         </div>
       )}
 
