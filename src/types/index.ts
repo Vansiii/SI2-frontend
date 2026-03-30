@@ -14,6 +14,72 @@ export interface User {
   created_at?: string;
 }
 
+export interface UserProfile {
+  user_type: 'saas_admin' | 'tenant_user';
+  phone: string;
+  position: string;
+  department: string;
+  timezone: string;
+  language: string;
+}
+
+export interface UserWithDetails extends User {
+  is_active: boolean;
+  date_joined: string;
+  profile: UserProfile;
+  institution: Institution | null;
+  roles: RoleInfo[];
+}
+
+export interface RoleInfo {
+  id: number;
+  name: string;
+  description: string;
+  institution?: string; // Nombre de la institución (solo para SaaS admins)
+}
+
+export interface Permission {
+  id: number;
+  name: string;
+  description: string;
+  code: string;
+  module?: string;
+  is_active: boolean;
+}
+
+export interface Role {
+  id: number;
+  name: string;
+  description: string;
+  is_active: boolean;
+  institution: number | null;
+  permissions: Permission[];
+}
+
+export interface CreateUserData {
+  email: string;
+  first_name: string;
+  last_name: string;
+  password: string;
+  role_ids: number[];
+  phone?: string;
+  position?: string;
+  department?: string;
+}
+
+export interface UpdateUserData {
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  position?: string;
+  department?: string;
+  is_active?: boolean;
+}
+
+export interface AssignRolesData {
+  role_ids: number[];
+}
+
 // ============================================
 // Institución Financiera
 // ============================================
@@ -40,6 +106,9 @@ export interface LoginResponse {
   user: User;
   institution: Institution;
   role: string;
+  user_type?: 'saas_admin' | 'tenant_user';
+  roles?: string[];
+  permissions?: string[];
   requires_2fa?: boolean;
   challenge_token?: string;
   method?: 'totp' | 'email';
@@ -65,6 +134,9 @@ export interface TwoFactorVerifyResponse {
   user: User;
   institution: Institution;
   role: string;
+  user_type?: 'saas_admin' | 'tenant_user';
+  roles?: string[];
+  permissions?: string[];
 }
 
 export interface TwoFactorErrorResponse {
@@ -135,12 +207,16 @@ export interface AuthContextType {
   user: User | null;
   institution: Institution | null;
   role: string | null;
+  userType: 'saas_admin' | 'tenant_user' | null;
+  roles: string[];
+  permissions: string[];
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<LoginResponse>;
   logout: () => Promise<void>;
   updateUser: (user: User) => void;
   updateSession: (user: User, institution: Institution, role: string) => void;
+  hasPermission: (permission: string) => boolean;
 }
 
 // ============================================

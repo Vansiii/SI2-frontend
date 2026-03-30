@@ -56,17 +56,16 @@ export function TwoFactorMethodModal({
     setError(null);
 
     try {
-      // Si cambia a TOTP, necesita generar QR
+      // Cambiar método (esto mantiene el 2FA habilitado)
+      await set2FAMethod(selectedMethod, password);
+      
+      // Si cambia a TOTP, generar nuevo QR para configurar la app
       if (selectedMethod === 'totp') {
-        // Primero verificar contraseña cambiando a TOTP
-        await set2FAMethod(selectedMethod, password);
-        // Luego generar QR con la misma contraseña
         const response = await enable2FA(password);
         setQrData(response);
         setStep('qr');
       } else {
-        // Si cambia a email, solo cambiar método
-        await set2FAMethod(selectedMethod, password);
+        // Si cambia a email, completar inmediatamente
         onComplete();
       }
     } catch (err: unknown) {

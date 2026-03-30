@@ -7,7 +7,7 @@ import { useCountdown } from '../hooks/useCountdown';
 import type { TwoFactorErrorResponse } from '../../../types';
 
 interface TwoFactorFormProps {
-  onSubmit: (code: string) => Promise<void>;
+  onSubmit: (code: string, isBackupCode?: boolean) => Promise<void>;
   onBack: () => void;
   onResend?: () => Promise<void>;
   isLoading: boolean;
@@ -30,6 +30,7 @@ export function TwoFactorForm({
   const [code, setCode] = useState('');
   const [isResending, setIsResending] = useState(false);
   const [attemptsExhausted, setAttemptsExhausted] = useState(false);
+  const [useBackupCode, setUseBackupCode] = useState(false);
   
   // Pausar el timer cuando se agotan los intentos
   const { isExpired, formatted: formatTime } = useCountdown(expiresIn, attemptsExhausted);
@@ -58,18 +59,35 @@ export function TwoFactorForm({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    if (code.length !== 6) {
+    const expectedLength = useBackupCode ? 8 : 6;
+    if (code.length !== expectedLength) {
       return;
     }
 
-    await onSubmit(code);
+    await onSubmit(code, useBackupCode);
   };
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, ''); // Solo números
-    if (value.length <= 6) {
-      setCode(value);
+    let value = e.target.value;
+    
+    if (useBackupCode) {
+      // Códigos de respaldo: alfanuméricos, 8 caracteres
+      value = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+      if (value.length <= 8) {
+        setCode(value);
+      }
+    } else {
+      // Códigos TOTP/Email: solo números, 6 dígitos
+      value = value.replace(/\D/g, '');
+      if (value.length <= 6) {
+        setCode(value);
+      }
     }
+  };
+
+  const toggleBackupCode = () => {
+    setUseBackupCode(!useBackupCode);
+    setCode(''); // Limpiar el código al cambiar de modo
   };
 
   const handleResend = async () => {
@@ -116,7 +134,9 @@ export function TwoFactorForm({
           </div>
         ) : (
           <p className="text-sm text-gray-600">
-            Ingresa el código de 6 dígitos generado por tu aplicación de autenticación
+            {useBackupCode 
+              ? 'Ingresa uno de tus códigos de respaldo de 8 caracteres'
+              : 'Ingresa el código de 6 dígitos generado por tu aplicación de autenticación'}
           </p>
         )}
       </div>
@@ -169,20 +189,37 @@ export function TwoFactorForm({
         <Input
           id="code"
           type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          label="Código de Verificación"
-          placeholder="123456"
+          inputMode={useBackupCode ? 'text' : 'numeric'}
+          pattern={useBackupCode ? '[A-Z0-9]*' : '[0-9]*'}
+          label={useBackupCode ? 'Código de Respaldo' : 'Código de Verificación'}
+          placeholder={useBackupCode ? 'ABC12345' : '123456'}
           value={code}
           onChange={handleCodeChange}
           disabled={isLoading || isDisabled}
           autoFocus
-          className="text-center text-2xl font-mono"
-          maxLength={6}
+          className="text-center text-2xl font-mono uppercase"
+          maxLength={useBackupCode ? 8 : 6}
         />
         <p className="mt-2 text-xs text-gray-500 text-center">
-          Ingresa los 6 dígitos sin espacios
+          {useBackupCode 
+            ? 'Ingresa los 8 caracteres sin espacios'
+            : 'Ingresa los 6 dígitos sin espacios'}
         </p>
+        
+        {/* Toggle para código de respaldo (solo para TOTP) */}
+        {method === 'totp' && !isDisabled && (
+          <div className="mt-3 text-center">
+            <button
+              type="button"
+              onClick={toggleBackupCode}
+              className="text-sm text-blue-600 hover:text-blue-500 underline"
+            >
+              {useBackupCode 
+                ? '← Usar código de autenticación'
+                : '¿No puedes acceder? Usa un código de respaldo'}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Botones */}
@@ -191,7 +228,7 @@ export function TwoFactorForm({
           type="submit"
           className="w-full"
           isLoading={isLoading}
-          disabled={isLoading || code.length !== 6 || isDisabled}
+          disabled={isLoading || code.length !== (useBackupCode ? 8 : 6) || isDisabled}
         >
           {isLoading ? 'Verificando...' : 'Verificar Código'}
         </Button>

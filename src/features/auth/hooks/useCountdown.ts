@@ -4,37 +4,32 @@ export const useCountdown = (initialSeconds: number, shouldPause: boolean = fals
   const [seconds, setSeconds] = useState(initialSeconds);
   const [isExpired, setIsExpired] = useState(initialSeconds <= 0);
 
+  // Actualizar seconds cuando initialSeconds cambia
   useEffect(() => {
-    // Only set state if necessary (e.g. if initialSeconds changes)
-    if (initialSeconds !== seconds && initialSeconds > 0) {
-       setSeconds(initialSeconds);
-       setIsExpired(false);
-    }
-  }, [initialSeconds, seconds]);
+    setSeconds(initialSeconds);
+    setIsExpired(initialSeconds <= 0);
+  }, [initialSeconds]);
 
+  // Efecto separado para el countdown que solo depende de shouldPause
   useEffect(() => {
-    let interval: number;
-
-    if (seconds > 0 && !shouldPause) {
-      interval = window.setInterval(() => {
-        setSeconds((prev) => {
-          if (prev <= 1) {
-            setIsExpired(true);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else if (seconds <= 0) {
-      setIsExpired(true);
+    if (shouldPause) {
+      return;
     }
+
+    const interval = window.setInterval(() => {
+      setSeconds((prev) => {
+        if (prev <= 1) {
+          setIsExpired(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
     return () => {
-      if (interval) {
-        window.clearInterval(interval);
-      }
+      window.clearInterval(interval);
     };
-  }, [seconds, shouldPause]);
+  }, [shouldPause]); // Solo depende de shouldPause, no de seconds
 
   return {
     seconds,

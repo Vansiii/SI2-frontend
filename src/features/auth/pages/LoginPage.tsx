@@ -26,12 +26,40 @@ export function LoginPage() {
     }
   }, [isAuthenticated, navigate]);
 
+  // Recuperar información de bloqueo al cargar la página
+  useEffect(() => {
+    const unlockTimeStr = localStorage.getItem('account_unlock_time');
+    const blockedEmail = localStorage.getItem('blocked_email');
+    
+    if (unlockTimeStr && blockedEmail) {
+      const unlockTime = parseInt(unlockTimeStr, 10);
+      const now = Date.now();
+      
+      if (unlockTime > now) {
+        // La cuenta todavía está bloqueada
+        const remainingMinutes = Math.ceil((unlockTime - now) / (60 * 1000));
+        setError({
+          error: `Cuenta bloqueada temporalmente por múltiples intentos fallidos. Intenta nuevamente en ${remainingMinutes} minuto(s).`,
+          minutes_remaining: remainingMinutes,
+        });
+      } else {
+        // El bloqueo ya expiró, limpiar localStorage
+        localStorage.removeItem('account_unlock_time');
+        localStorage.removeItem('blocked_email');
+      }
+    }
+  }, []);
+
   const handleSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await login(data);
+
+      // Login exitoso - limpiar información de bloqueo
+      localStorage.removeItem('account_unlock_time');
+      localStorage.removeItem('blocked_email');
 
       // Si requiere 2FA, guardar información y redirigir
       if (response.requires_2fa && response.challenge_token) {
@@ -67,20 +95,30 @@ export function LoginPage() {
         };
 
         // Extraer attempts_remaining si existe
-        const attemptsMatch = err.message.match(/(\d+)\s+intento/i);
+        const attemptsMatch = err.message.match(/(\d+)\s+intento\(?s?\)?/i);
         if (attemptsMatch) {
           errorResponse.attempts_remaining = parseInt(attemptsMatch[1], 10);
         }
 
         // Extraer minutes_remaining si existe
-        const minutesMatch = err.message.match(/(\d+)\s+minuto/i);
+        const minutesMatch = err.message.match(/(\d+)\s+minuto\(?s?\)?/i);
         if (minutesMatch) {
           errorResponse.minutes_remaining = parseInt(minutesMatch[1], 10);
         }
 
         // Si el mensaje contiene información de bloqueo
         if (err.message.toLowerCase().includes('bloqueada')) {
-          errorResponse.minutes_remaining = errorResponse.minutes_remaining || 5;
+          const minutesRemaining = errorResponse.minutes_remaining || 5;
+          errorResponse.minutes_remaining = minutesRemaining;
+          
+          // Guardar timestamp de desbloqueo en localStorage
+          const unlockTime = Date.now() + (minutesRemaining * 60 * 1000);
+          localStorage.setItem('account_unlock_time', unlockTime.toString());
+          localStorage.setItem('blocked_email', data.email);
+        } else {
+          // Si no está bloqueada, limpiar localStorage
+          localStorage.removeItem('account_unlock_time');
+          localStorage.removeItem('blocked_email');
         }
 
         setError(errorResponse);
