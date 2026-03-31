@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Lock } from 'lucide-react';
 import { Modal } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
@@ -75,7 +75,7 @@ export function TwoFactorDisableModal({
         )}
 
         <div>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-slate-600 mb-4">
             Para confirmar, ingresa tu contraseña actual:
           </p>
           <PasswordInput
@@ -114,3 +114,5 @@ export function TwoFactorDisableModal({
     </Modal>
   );
 }
+
+

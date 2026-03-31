@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+﻿import type { ReactNode } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 
@@ -11,7 +11,7 @@ interface MainLayoutProps {
  */
 export function MainLayout({ children }: MainLayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-slate-50 flex selection:bg-blue-100 selection:text-blue-900 font-sans">
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <Header />
@@ -22,3 +22,6 @@ export function MainLayout({ children }: MainLayoutProps) {
     </div>
   );
 }
+
+
+

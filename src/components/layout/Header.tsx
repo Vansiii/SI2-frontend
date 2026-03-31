@@ -1,7 +1,8 @@
-import { useAuth } from '../../features/auth/hooks/useAuth';
+﻿import { useAuth } from '../../features/auth/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, User, Menu, Loader2, ChevronDown } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import { LoadingState } from '../ui/LoadingState';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -63,26 +64,20 @@ export function Header({ onMenuClick }: HeaderProps) {
     <>
       {/* Loading overlay cuando está cerrando sesión */}
       {isLoggingOut && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl p-8 flex flex-col items-center gap-4 shadow-2xl">
-            <Loader2 className="h-16 w-16 text-blue-600 animate-spin" />
-            <p className="text-lg font-semibold text-gray-900">Cerrando sesión...</p>
-            <p className="text-sm text-gray-500">Por favor espera</p>
-          </div>
-        </div>
+        <LoadingState message="Cerrando sesión... Por favor espera" overlay={true} size="lg" />
       )}
 
-      <header className="bg-white border-b border-gray-200 px-4 py-3 shadow-sm">
+      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3 sticky top-0 z-40">
         <div className="flex items-center justify-between">
           {/* Logo/Institución */}
           <div className="flex items-center gap-4">
             {onMenuClick && (
               <button
                 onClick={onMenuClick}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
                 aria-label="Toggle menu"
               >
-                <Menu className="h-6 w-6 text-gray-700" />
+                <Menu className="h-6 w-6 text-slate-700" />
               </button>
             )}
             <div className="flex items-center gap-3">
@@ -91,7 +86,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   {institution?.name?.charAt(0) || 'S'}
                 </span>
               </div>
-              <span className="font-semibold text-gray-900 text-lg">
+              <span className="font-semibold text-slate-900 text-lg">
                 {institution?.name || 'Sistema'}
               </span>
             </div>
@@ -101,7 +96,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setShowDropdown(!showDropdown)}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-all duration-200 border border-transparent hover:border-slate-200"
               type="button"
             >
               <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-md">
@@ -110,15 +105,15 @@ export function Header({ onMenuClick }: HeaderProps) {
                 </span>
               </div>
               <div className="hidden md:block text-left">
-                <div className="text-sm font-medium text-gray-900">
+                <div className="text-sm font-medium text-slate-900">
                   {user?.first_name} {user?.last_name}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-slate-500">
                   {user?.email}
                 </div>
               </div>
               <ChevronDown
-                className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${
+                className={`h-4 w-4 text-slate-500 transition-transform duration-200 ${
                   showDropdown ? 'rotate-180' : ''
                 }`}
               />
@@ -126,9 +121,9 @@ export function Header({ onMenuClick }: HeaderProps) {
 
             {/* Dropdown */}
             {showDropdown && (
-              <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
+              <div className="absolute right-0 mt-2 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-slate-200 border border-slate-200 py-2 z-50">
                 {/* User info header */}
-                <div className="px-4 py-3 border-b border-gray-100">
+                <div className="px-4 py-3 border-b border-slate-100">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-md">
                       <span className="text-white font-semibold">
@@ -136,10 +131,10 @@ export function Header({ onMenuClick }: HeaderProps) {
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">
+                      <p className="text-sm font-semibold text-slate-900 truncate">
                         {user?.first_name} {user?.last_name}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">
+                      <p className="text-xs text-slate-500 truncate">
                         {user?.email}
                       </p>
                     </div>
@@ -150,17 +145,17 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <div className="py-1">
                   <button
                     onClick={handleProfile}
-                    className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors flex items-center gap-3 group"
+                    className="w-full px-4 py-2.5 text-left text-sm text-slate-700 hover:bg-blue-50 transition-colors flex items-center gap-3 group"
                     type="button"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
-                      <User className="h-4 w-4 text-gray-600 group-hover:text-blue-600" />
+                    <div className="w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
+                      <User className="h-4 w-4 text-slate-600 group-hover:text-blue-600" />
                     </div>
                     <span className="font-medium">Mi Perfil</span>
                   </button>
                 </div>
 
-                <div className="border-t border-gray-100 my-1" />
+                <div className="border-t border-slate-100 my-1" />
 
                 {/* Logout button */}
                 <div className="py-1">
@@ -183,3 +178,5 @@ export function Header({ onMenuClick }: HeaderProps) {
     </>
   );
 }
+
+

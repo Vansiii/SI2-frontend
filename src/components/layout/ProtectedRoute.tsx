@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+﻿import type { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../features/auth/hooks/useAuth';
 import { LoadingState } from '../ui/LoadingState';
@@ -31,3 +31,5 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // Si está autenticado, renderizar el contenido con layout
   return <MainLayout>{children}</MainLayout>;
 }
+
+

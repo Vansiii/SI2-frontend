@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, LogOut, ChevronDown, Loader2 } from 'lucide-react';
 import { useAuth } from '../../features/auth/hooks/useAuth';
+import { LoadingState } from '../ui/LoadingState';
 
 /**
  * Menú de usuario con dropdown
@@ -58,19 +59,14 @@ export function UserMenu() {
     <>
       {/* Overlay de carga al cerrar sesión - Fondo claro */}
       {isLoggingOut && (
-        <div className="fixed inset-0 bg-gray-50 flex items-center justify-center z-50 animate-in fade-in duration-200">
-          <div className="flex flex-col items-center gap-4 animate-in zoom-in-95 duration-300">
-            <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
-            <p className="text-base font-medium text-gray-900">Cerrando sesión...</p>
-          </div>
-        </div>
+        <LoadingState message="Cerrando sesión... Por favor espera" overlay={true} size="lg" />
       )}
 
       <div className="relative" ref={menuRef}>
         {/* Botón del menú */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-100 transition-colors"
           aria-expanded={isOpen}
           aria-haspopup="true"
           disabled={isLoggingOut}
@@ -82,14 +78,14 @@ export function UserMenu() {
 
           {/* Nombre del usuario (oculto en mobile) */}
           <div className="hidden md:block text-left">
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm font-medium text-slate-900">
               {user?.first_name} {user?.last_name}
             </p>
           </div>
 
           {/* Icono de dropdown */}
           <ChevronDown
-            className={`h-4 w-4 text-gray-500 transition-transform ${
+            className={`h-4 w-4 text-slate-500 transition-transform ${
               isOpen ? 'rotate-180' : ''
             }`}
           />
@@ -97,19 +93,19 @@ export function UserMenu() {
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
             {/* Información del usuario */}
-            <div className="px-4 py-3 border-b border-gray-200">
-              <p className="text-sm font-medium text-gray-900">
+            <div className="px-4 py-3 border-b border-slate-200">
+              <p className="text-sm font-medium text-slate-900">
                 {user?.first_name} {user?.last_name}
               </p>
-              <p className="text-xs text-gray-500 mt-1">{user?.email}</p>
+              <p className="text-xs text-slate-500 mt-1">{user?.email}</p>
             </div>
 
             {/* Opciones del menú */}
             <button
               onClick={handleProfile}
-              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 transition-colors"
             >
               <User className="h-4 w-4" />
               Ver Perfil
@@ -128,3 +124,5 @@ export function UserMenu() {
     </>
   );
 }
+
+

@@ -1,4 +1,4 @@
-import { Building2 } from 'lucide-react';
+﻿import { Building2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { UserMenu } from './UserMenu';
 import { useAuth } from '../../features/auth/hooks/useAuth';
@@ -24,7 +24,7 @@ export function AppBar() {
             </div>
             {institution && (
               <div className="hidden sm:block">
-                <h1 className="text-lg font-semibold text-gray-900">
+                <h1 className="text-lg font-semibold text-slate-900">
                   {institution.name}
                 </h1>
               </div>
@@ -38,3 +38,5 @@ export function AppBar() {
     </header>
   );
 }
+
+

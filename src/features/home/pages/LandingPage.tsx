@@ -77,7 +77,7 @@ export function LandingPage() {
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-balance z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-sm font-medium mb-8 animate-fade-in-up">
               <span className="flex h-2 w-2 rounded-full border border-blue-600 bg-blue-400 animate-pulse"></span>
-              Lanzamiento FinCore 2.0
+              FinCore
             </div>
             
             <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 mb-6 animate-fade-in-up delay-100">

@@ -4,8 +4,8 @@ import {
   Shield, 
   Building2, 
   Home,
-  Key,
-  FileText,
+  LayoutDashboard,
+  PieChart,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
@@ -72,7 +72,7 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
   const saasMenuItems: NavItem[] = [
     {
       to: '/saas/dashboard',
-      icon: <Building2 className="h-5 w-5" />,
+      icon: <LayoutDashboard className="h-5 w-5" />,
       label: 'Panel SaaS',
     },
     {
@@ -82,12 +82,12 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
     },
     {
       to: '/saas/permissions',
-      icon: <Key className="h-5 w-5" />,
+      icon: <Shield className="h-5 w-5" />,
       label: 'Permisos',
     },
     {
       to: '/saas/permissions/coverage',
-      icon: <FileText className="h-5 w-5" />,
+      icon: <PieChart className="h-5 w-5" />,
       label: 'Reporte Permisos',
     },
   ];
@@ -115,21 +115,21 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
       {/* Sidebar */}
       <aside
         className={`
-          relative bg-white border-r border-gray-200
+          relative bg-white/80 backdrop-blur-xl border-r border-slate-200
           transition-all duration-300 ease-in-out
-          ${isOpen ? 'w-64' : 'w-16'}
+          ${isOpen ? 'w-64' : 'w-20'}
         `}
       >
         {/* Botón toggle */}
         <button
           onClick={toggleSidebar}
-          className="absolute -right-3 top-6 z-50 p-1.5 rounded-full bg-white border border-gray-200 shadow-md hover:bg-gray-50 transition-colors"
+          className="absolute -right-3.5 top-8 z-50 p-1.5 rounded-full bg-white border border-slate-200 shadow-md hover:bg-slate-50 transition-colors"
           aria-label="Toggle sidebar"
         >
           {isOpen ? (
-            <ChevronLeft className="h-4 w-4 text-gray-600" />
+            <ChevronLeft className="h-4 w-4 text-slate-600" />
           ) : (
-            <ChevronRight className="h-4 w-4 text-gray-600" />
+            <ChevronRight className="h-4 w-4 text-slate-600" />
           )}
         </button>
 
@@ -138,7 +138,7 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
           {userType === 'saas_admin' && (
             <div className="mb-4">
               {isOpen && (
-                <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                <h3 className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
                   Administración SaaS
                 </h3>
               )}
@@ -149,10 +149,10 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
                     to={item.to}
                     title={!isOpen ? item.label : undefined}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                         isActive
-                          ? 'bg-blue-50 text-blue-700'
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? 'bg-blue-600 shadow-md shadow-blue-500/20 text-white'
+                          : 'text-slate-700 hover:bg-slate-100'
                       } ${!isOpen ? 'justify-center' : ''}`
                     }
                   >
@@ -168,7 +168,7 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
           {visibleItems.length > 0 && (
             <div className={userType === 'saas_admin' ? 'mt-6' : ''}>
               {isOpen && (
-                <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                <h3 className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
                   Gestión
                 </h3>
               )}
@@ -179,10 +179,10 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
                     to={item.to}
                     title={!isOpen ? item.label : undefined}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                         isActive
-                          ? 'bg-blue-50 text-blue-700'
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? 'bg-blue-600 shadow-md shadow-blue-500/20 text-white'
+                          : 'text-slate-700 hover:bg-slate-100'
                       } ${!isOpen ? 'justify-center' : ''}`
                     }
                   >

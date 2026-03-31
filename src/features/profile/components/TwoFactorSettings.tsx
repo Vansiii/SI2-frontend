@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Shield, Check, Smartphone, Mail } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { Alert } from '../../../components/ui/Alert';
@@ -93,7 +93,7 @@ export function TwoFactorSettings() {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white/80 backdrop-blur-md shadow-sm border border-slate-200 rounded-2xl p-6">
         <LoadingState />
       </div>
     );
@@ -101,7 +101,7 @@ export function TwoFactorSettings() {
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white/80 backdrop-blur-md shadow-sm border border-slate-200 rounded-2xl p-6">
         <Alert variant="error">
           <p>{error}</p>
         </Alert>
@@ -111,12 +111,12 @@ export function TwoFactorSettings() {
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2 flex items-center gap-2">
+      <div className="bg-white/80 backdrop-blur-md shadow-sm border border-slate-200 rounded-2xl p-6">
+        <h2 className="text-xl font-semibold text-slate-900 mb-2 flex items-center gap-2">
           <Shield className="h-5 w-5 text-blue-600" />
           Autenticación de Dos Factores (2FA)
         </h2>
-        <p className="text-sm text-gray-600 mb-6">
+        <p className="text-sm text-slate-600 mb-6">
           Agrega una capa adicional de seguridad a tu cuenta
         </p>
 
@@ -132,8 +132,8 @@ export function TwoFactorSettings() {
 
             {/* Método Actual */}
             <div>
-              <label className="text-sm font-medium text-gray-700">Método Actual</label>
-              <div className="mt-1 flex items-center gap-2 text-base text-gray-900">
+              <label className="text-sm font-medium text-slate-700">Método Actual</label>
+              <div className="mt-1 flex items-center gap-2 text-base text-slate-900">
                 {getMethodIcon(status.method)}
                 {getMethodLabel(status.method)}
               </div>
@@ -142,8 +142,8 @@ export function TwoFactorSettings() {
             {/* Fecha de Habilitación */}
             {status.enabled_at && (
               <div>
-                <label className="text-sm font-medium text-gray-700">Habilitado desde</label>
-                <p className="mt-1 text-base text-gray-900">
+                <label className="text-sm font-medium text-slate-700">Habilitado desde</label>
+                <p className="mt-1 text-base text-slate-900">
                   {formatDate(status.enabled_at)}
                 </p>
               </div>
@@ -152,10 +152,10 @@ export function TwoFactorSettings() {
             {/* Códigos de Respaldo (solo para TOTP) */}
             {(!status.method || status.method === 'totp') && (
               <div>
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-slate-700">
                   Códigos de respaldo restantes
                 </label>
-                <p className="mt-1 text-base text-gray-900">
+                <p className="mt-1 text-base text-slate-900">
                   {status.backup_codes_remaining} de 10
                 </p>
                 {status.backup_codes_remaining < 3 && (
@@ -188,12 +188,12 @@ export function TwoFactorSettings() {
           <div className="space-y-4">
             {/* Estado Deshabilitado */}
             <div className="flex items-center gap-2">
-              <div className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-medium">
+              <div className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-sm font-medium">
                 Deshabilitado
               </div>
             </div>
 
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-slate-600">
               La autenticación de dos factores no está habilitada. Te recomendamos activarla
               para proteger mejor tu cuenta.
             </p>
@@ -231,3 +231,5 @@ export function TwoFactorSettings() {
     </>
   );
 }
+
+

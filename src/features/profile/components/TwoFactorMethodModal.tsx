@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Lock, Smartphone, Mail } from 'lucide-react';
 import { Modal } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
@@ -122,7 +122,7 @@ export function TwoFactorMethodModal({
       <Modal isOpen onClose={onClose} title="Cambiar Método de 2FA">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <h3 className="text-sm font-medium text-gray-900 mb-3">
+            <h3 className="text-sm font-medium text-slate-900 mb-3">
               Selecciona el nuevo método:
             </h3>
 
@@ -135,23 +135,23 @@ export function TwoFactorMethodModal({
                 className={`w-full flex items-start gap-4 p-4 border-2 rounded-lg transition-colors ${
                   selectedMethod === 'totp'
                     ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-slate-200 hover:border-slate-300'
                 } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <div
                   className={`flex items-center justify-center h-10 w-10 rounded-full shrink-0 ${
-                    selectedMethod === 'totp' ? 'bg-blue-600' : 'bg-gray-100'
+                    selectedMethod === 'totp' ? 'bg-blue-600' : 'bg-slate-100'
                   }`}
                 >
                   <Smartphone
                     className={`h-5 w-5 ${
-                      selectedMethod === 'totp' ? 'text-white' : 'text-gray-600'
+                      selectedMethod === 'totp' ? 'text-white' : 'text-slate-600'
                     }`}
                   />
                 </div>
                 <div className="text-left flex-1">
-                  <p className="font-medium text-gray-900">App Autenticadora (TOTP)</p>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="font-medium text-slate-900">App Autenticadora (TOTP)</p>
+                  <p className="text-sm text-slate-600 mt-1">
                     Códigos generados por Google Authenticator o similar
                   </p>
                 </div>
@@ -165,23 +165,23 @@ export function TwoFactorMethodModal({
                 className={`w-full flex items-start gap-4 p-4 border-2 rounded-lg transition-colors ${
                   selectedMethod === 'email'
                     ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-slate-200 hover:border-slate-300'
                 } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <div
                   className={`flex items-center justify-center h-10 w-10 rounded-full shrink-0 ${
-                    selectedMethod === 'email' ? 'bg-blue-600' : 'bg-gray-100'
+                    selectedMethod === 'email' ? 'bg-blue-600' : 'bg-slate-100'
                   }`}
                 >
                   <Mail
                     className={`h-5 w-5 ${
-                      selectedMethod === 'email' ? 'text-white' : 'text-gray-600'
+                      selectedMethod === 'email' ? 'text-white' : 'text-slate-600'
                     }`}
                   />
                 </div>
                 <div className="text-left flex-1">
-                  <p className="font-medium text-gray-900">Código por Email</p>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="font-medium text-slate-900">Código por Email</p>
+                  <p className="text-sm text-slate-600 mt-1">
                     Códigos enviados a tu correo electrónico
                   </p>
                 </div>
@@ -196,7 +196,7 @@ export function TwoFactorMethodModal({
           )}
 
           <div>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-slate-600 mb-4">
               Para confirmar el cambio, ingresa tu contraseña:
             </p>
             <PasswordInput
@@ -257,26 +257,26 @@ export function TwoFactorMethodModal({
             <img 
               src={qrData.qr_code} 
               alt="QR Code" 
-              className="w-64 h-64 border-2 border-gray-200 rounded-lg"
+              className="w-64 h-64 border-2 border-slate-200 rounded-lg"
             />
           </div>
 
           {/* Secret Key */}
           <div>
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-slate-700">
               O ingresa esta clave manualmente:
             </label>
-            <div className="mt-1 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="mt-1 p-3 bg-slate-50 rounded-lg border border-slate-200">
               <code className="text-sm font-mono break-all">{qrData.secret}</code>
             </div>
           </div>
 
           {/* Backup Codes */}
           <div>
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-slate-700">
               Códigos de respaldo (guárdalos en un lugar seguro):
             </label>
-            <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200 max-h-40 overflow-y-auto">
+            <div className="mt-2 p-3 bg-slate-50 rounded-lg border border-slate-200 max-h-40 overflow-y-auto">
               <div className="grid grid-cols-2 gap-2">
                 {qrData.backup_codes.map((code, index) => (
                   <code key={index} className="text-sm font-mono">
@@ -326,7 +326,7 @@ export function TwoFactorMethodModal({
           )}
 
           <div>
-            <label htmlFor="verification-code" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="verification-code" className="block text-sm font-medium text-slate-700 mb-2">
               Código de verificación
             </label>
             <input
@@ -343,7 +343,7 @@ export function TwoFactorMethodModal({
               placeholder="123456"
               disabled={isLoading}
               autoFocus
-              className="w-full px-4 py-3 text-center text-2xl font-mono border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+              className="w-full px-4 py-3 text-center text-2xl font-mono border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-500"
             />
           </div>
 
@@ -377,3 +377,5 @@ export function TwoFactorMethodModal({
 
   return null;
 }
+
+

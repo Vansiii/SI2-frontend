@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Building2, Building, CheckCircle2, XCircle, Users, Shield, PieChart, Activity, ArrowRight, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { getTenantStats } from '../services/tenantsApi';
 import type { TenantStats } from '../types';
+import { LoadingState } from '../../../components/ui/LoadingState';
 
 export function SaaSDashboardPage() {
   const navigate = useNavigate();
@@ -11,15 +13,17 @@ export function SaaSDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Verificar que sea SaaS admin
-  if (userType !== 'saas_admin') {
-    navigate('/home');
-    return null;
-  }
+  useEffect(() => {
+    if (userType !== 'saas_admin') {
+      navigate('/home');
+    }
+  }, [userType, navigate]);
 
   useEffect(() => {
-    loadStats();
-  }, []);
+    if (userType === 'saas_admin') {
+      loadStats();
+    }
+  }, [userType]);
 
   const loadStats = async () => {
     try {
@@ -27,8 +31,12 @@ export function SaaSDashboardPage() {
       setError(null);
       const data = await getTenantStats();
       setStats(data);
-    } catch (err: any) {
-      setError(err.message || 'Error al cargar estadísticas');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Error al cargar estadísticas');
+      }
     } finally {
       setLoading(false);
     }
@@ -45,17 +53,13 @@ export function SaaSDashboardPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-gray-600">Cargando estadísticas...</div>
-      </div>
-    );
+    return <LoadingState message="Cargando estadísticas..." fullScreen={true} />;
   }
 
   if (error || !stats) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+      <div className="p-6 md:p-8 max-w-7xl mx-auto">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm mb-4">
           {error || 'Error al cargar estadísticas'}
         </div>
       </div>
@@ -63,142 +67,105 @@ export function SaaSDashboardPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Dashboard SaaS
-        </h1>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 flex items-center gap-3">
+            <div className="h-10 w-10 md:h-12 md:w-12 rounded-2xl bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+              <LayoutDashboard className="h-5 w-5 md:h-6 md:w-6" />
+            </div>
+            Dashboard SaaS
+          </h1>
+          <p className="text-slate-500 mt-1 text-sm md:text-base font-medium ml-1">
+            Resumen y métricas de todas las instituciones operando en el sistema.
+          </p>
+        </div>
         <button
           onClick={() => navigate('/saas/tenants')}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
+          className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl shadow-sm transition-all font-medium text-sm flex items-center justify-center gap-2 hover:shadow-[0_0_20px_rgba(37,99,235,0.3)]"
         >
+          <Building2 className="h-4 w-4" />
           Ver Instituciones
         </button>
       </div>
 
       {/* Estadísticas Principales */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white shadow-md rounded-lg p-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="bg-white/80 backdrop-blur-md shadow-sm border border-slate-200 rounded-2xl p-6 transition-all hover:shadow-md group">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
-                Total Instituciones
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                Totales
               </p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">
+              <p className="text-3xl font-bold text-slate-900">
                 {stats.total_institutions}
               </p>
             </div>
-            <div className="bg-blue-100 p-3 rounded-full">
-              <svg
-                className="w-8 h-8 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                />
-              </svg>
+            <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+               <Building className="h-6 w-6" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white shadow-md rounded-lg p-6">
+        <div className="bg-white/80 backdrop-blur-md shadow-sm border border-slate-200 rounded-2xl p-6 transition-all hover:shadow-md group">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
-                Instituciones Activas
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                Activas
               </p>
-              <p className="text-3xl font-bold text-green-600 mt-2">
+              <p className="text-3xl font-bold text-emerald-600">
                 {stats.active_institutions}
               </p>
             </div>
-            <div className="bg-green-100 p-3 rounded-full">
-              <svg
-                className="w-8 h-8 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+            <div className="h-12 w-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+              <CheckCircle2 className="h-6 w-6" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white shadow-md rounded-lg p-6">
+        <div className="bg-white/80 backdrop-blur-md shadow-sm border border-slate-200 rounded-2xl p-6 transition-all hover:shadow-md group">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
-                Instituciones Inactivas
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                Inactivas
               </p>
-              <p className="text-3xl font-bold text-red-600 mt-2">
+              <p className="text-3xl font-bold text-red-600">
                 {stats.inactive_institutions}
               </p>
             </div>
-            <div className="bg-red-100 p-3 rounded-full">
-              <svg
-                className="w-8 h-8 text-red-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+            <div className="h-12 w-12 rounded-xl bg-red-50 flex items-center justify-center text-red-600 group-hover:scale-110 transition-transform">
+              <XCircle className="h-6 w-6" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white shadow-md rounded-lg p-6">
+        <div className="bg-white/80 backdrop-blur-md shadow-sm border border-slate-200 rounded-2xl p-6 transition-all hover:shadow-md group">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
-                Total Usuarios
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                Usuarios
               </p>
-              <p className="text-3xl font-bold text-purple-600 mt-2">
+              <p className="text-3xl font-bold text-purple-600">
                 {stats.total_users}
               </p>
             </div>
-            <div className="bg-purple-100 p-3 rounded-full">
-              <svg
-                className="w-8 h-8 text-purple-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                />
-              </svg>
+            <div className="h-12 w-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
+              <Users className="h-6 w-6" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Distribución por Tipo */}
+      {/* Distribución por Tipo & Roles */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white shadow-md rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        {/* Por tipo */}
+        <div className="bg-white/80 backdrop-blur-md shadow-sm border border-slate-200 rounded-2xl p-6 flex flex-col">
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-6 flex items-center gap-2">
+            <PieChart className="h-4 w-4 text-slate-400" />
             Instituciones por Tipo
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-5 flex-1">
             {Object.entries(stats.institutions_by_type).map(([type, count]) => {
               const percentage =
                 stats.total_institutions > 0
@@ -207,17 +174,22 @@ export function SaaSDashboardPage() {
 
               return (
                 <div key={type}>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium text-gray-700">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-semibold text-slate-700">
                       {getInstitutionTypeLabel(type)}
                     </span>
-                    <span className="text-sm font-medium text-gray-900">
-                      {count} ({percentage.toFixed(1)}%)
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-slate-900">
+                        {count}
+                      </span>
+                      <span className="text-xs font-medium text-slate-400">
+                        ({percentage.toFixed(1)}%)
+                      </span>
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                     <div
-                      className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                      className="bg-purple-500 h-full rounded-full transition-all duration-1000 ease-out"
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
@@ -227,51 +199,53 @@ export function SaaSDashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white shadow-md rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Resumen de Roles
+        {/* Resumen de Roles */}
+        <div className="bg-white/80 backdrop-blur-md shadow-sm border border-slate-200 rounded-2xl p-6 flex flex-col">
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-6 flex items-center gap-2">
+            <Shield className="h-4 w-4 text-slate-400" />
+            Resumen de Roles Globales
           </h2>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-indigo-50 rounded-lg">
+            <div className="flex items-center justify-between p-5 bg-indigo-50/50 border border-indigo-100 rounded-xl">
               <div>
-                <p className="text-sm font-medium text-indigo-900">
-                  Total de Roles
+                <p className="text-xs font-bold text-indigo-500 uppercase tracking-wider">
+                  Total de Roles en Sistema
                 </p>
-                <p className="text-2xl font-bold text-indigo-600 mt-1">
+                <p className="text-3xl font-black text-indigo-700 mt-1">
                   {stats.total_roles}
                 </p>
               </div>
-              <svg
-                className="w-12 h-12 text-indigo-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
+              <div className="bg-indigo-100 p-3 rounded-full text-indigo-600">
+                <Shield className="h-8 w-8" />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">Promedio por Institución</p>
-                <p className="text-xl font-bold text-gray-900 mt-1">
-                  {stats.total_institutions > 0
-                    ? (stats.total_roles / stats.total_institutions).toFixed(1)
-                    : 0}
-                </p>
+              <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-4">
+                <div className="h-10 w-10 rounded-lg bg-slate-200/50 flex flex-col items-center justify-center text-slate-600">
+                  <Building2 className="h-5 w-5" />
+                </div>
+                <div>
+                   <p className="text-2xl font-bold text-slate-900">
+                    {stats.total_institutions > 0
+                      ? (stats.total_roles / stats.total_institutions).toFixed(1)
+                      : 0}
+                  </p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Promedio / Inst.</p>
+                </div>
               </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">Usuarios por Rol</p>
-                <p className="text-xl font-bold text-gray-900 mt-1">
-                  {stats.total_roles > 0
-                    ? (stats.total_users / stats.total_roles).toFixed(1)
-                    : 0}
-                </p>
+              <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-4">
+                <div className="h-10 w-10 rounded-lg bg-slate-200/50 flex flex-col items-center justify-center text-slate-600">
+                  <Users className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-slate-900">
+                    {stats.total_roles > 0
+                      ? (stats.total_users / stats.total_roles).toFixed(1)
+                      : 0}
+                  </p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Usuarios / Rol</p>
+                </div>
               </div>
             </div>
           </div>
@@ -279,71 +253,58 @@ export function SaaSDashboardPage() {
       </div>
 
       {/* Acciones Rápidas */}
-      <div className="mt-8 bg-white shadow-md rounded-lg p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Acciones Rápidas
+      <div className="bg-white/80 backdrop-blur-md shadow-sm border border-slate-200 rounded-2xl p-6">
+        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-5 flex items-center gap-2">
+          <Activity className="h-4 w-4 text-slate-400" />
+          Acciones Rápidas y Navegación
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button
             onClick={() => navigate('/saas/tenants')}
-            className="flex items-center justify-center gap-2 p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition-colors"
+            className="group flex flex-col items-start gap-4 p-5 border border-slate-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/50 transition-all text-left"
           >
-            <svg
-              className="w-6 h-6 text-purple-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-              />
-            </svg>
-            <span className="font-medium text-purple-900">
-              Gestionar Instituciones
-            </span>
+             <div className="bg-blue-100 p-2.5 rounded-lg text-blue-600 group-hover:bg-blue-200 transition-colors">
+                <Building2 className="h-6 w-6" />
+             </div>
+             <div className="w-full flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-slate-900">Instituciones</h3>
+                  <p className="text-xs text-slate-500 mt-1">Gestionar clientes y entidades</p>
+                </div>
+                <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-blue-500 transition-colors" />
+             </div>
           </button>
 
           <button
             onClick={() => navigate('/users')}
-            className="flex items-center justify-center gap-2 p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+            className="group flex flex-col items-start gap-4 p-5 border border-slate-200 rounded-xl hover:border-purple-300 hover:bg-purple-50/50 transition-all text-left"
           >
-            <svg
-              className="w-6 h-6 text-blue-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-              />
-            </svg>
-            <span className="font-medium text-blue-900">Ver Usuarios</span>
+              <div className="bg-purple-100 p-2.5 rounded-lg text-purple-600 group-hover:bg-purple-200 transition-colors">
+                <Users className="h-6 w-6" />
+             </div>
+             <div className="w-full flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-slate-900">Usuarios</h3>
+                  <p className="text-xs text-slate-500 mt-1">Ver todos los usuarios globales</p>
+                </div>
+                <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-purple-500 transition-colors" />
+             </div>
           </button>
 
           <button
             onClick={() => navigate('/roles')}
-            className="flex items-center justify-center gap-2 p-4 border-2 border-green-200 rounded-lg hover:bg-green-50 transition-colors"
+            className="group flex flex-col items-start gap-4 p-5 border border-slate-200 rounded-xl hover:border-emerald-300 hover:bg-emerald-50/50 transition-all text-left"
           >
-            <svg
-              className="w-6 h-6 text-green-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            <span className="font-medium text-green-900">Ver Roles</span>
+             <div className="bg-emerald-100 p-2.5 rounded-lg text-emerald-600 group-hover:bg-emerald-200 transition-colors">
+                <Shield className="h-6 w-6" />
+             </div>
+             <div className="w-full flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-slate-900">Roles</h3>
+                  <p className="text-xs text-slate-500 mt-1">Configurar permisos y accesos</p>
+                </div>
+                <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-emerald-500 transition-colors" />
+             </div>
           </button>
         </div>
       </div>

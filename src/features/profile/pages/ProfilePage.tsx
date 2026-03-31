@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { ProfilePanel } from '../components/ProfilePanel';
 import { LoadingState } from '../../../components/ui/LoadingState';
@@ -15,7 +15,7 @@ export function ProfilePage() {
   if (!user) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-600">No se pudo cargar la información del perfil.</p>
+        <p className="text-slate-600">No se pudo cargar la información del perfil.</p>
       </div>
     );
   }
@@ -25,7 +25,7 @@ export function ProfilePage() {
       {/* Botón Volver */}
       <button
         onClick={() => navigate('/home')}
-        className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors mb-6"
+        className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
         Volver al inicio
@@ -33,8 +33,8 @@ export function ProfilePage() {
 
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Mi Perfil</h1>
-        <p className="mt-2 text-sm text-gray-600">
+        <h1 className="text-3xl font-bold text-slate-900">Mi Perfil</h1>
+        <p className="mt-2 text-sm text-slate-600">
           Visualiza y gestiona tu información personal
         </p>
       </div>
@@ -44,3 +44,5 @@ export function ProfilePage() {
     </div>
   );
 }
+
+

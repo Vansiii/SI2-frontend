@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+﻿import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { LoaderCircle } from 'lucide-react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -21,7 +21,7 @@ export function Button({
 
   const variantClasses = {
     primary: 'border border-transparent text-white bg-blue-600 hover:bg-blue-700',
-    secondary: 'border border-gray-300 text-gray-700 bg-white hover:bg-gray-50',
+    secondary: 'border border-slate-300 text-slate-700 bg-white hover:bg-slate-50',
     danger: 'border border-transparent text-white bg-red-600 hover:bg-red-700',
     ghost: 'border border-transparent text-blue-600 bg-transparent hover:bg-blue-50',
   };
@@ -43,3 +43,6 @@ export function Button({
     </button>
   );
 }
+
+
+

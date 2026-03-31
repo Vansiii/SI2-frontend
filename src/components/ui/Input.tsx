@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+﻿import { forwardRef } from 'react';
 import type { InputHTMLAttributes, ReactNode } from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -13,20 +13,20 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const hasError = Boolean(error);
 
     const inputClass = `focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm rounded-lg py-3 outline-none border transition-colors ${
-      hasError ? 'border-red-400 bg-red-50' : 'border-gray-300'
+      hasError ? 'border-red-400 bg-red-50' : 'border-slate-300'
     } ${icon && iconPosition === 'left' ? 'pl-10' : ''} ${icon && iconPosition === 'right' ? 'pr-10' : ''} ${!icon ? 'px-3' : ''}`;
 
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={props.id} className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor={props.id} className="block text-sm font-medium text-slate-700 mb-1">
             {label}
           </label>
         )}
         <div className="relative">
           {icon && iconPosition === 'left' && (
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <div className="h-5 w-5 text-gray-400">{icon}</div>
+              <div className="h-5 w-5 text-slate-400">{icon}</div>
             </div>
           )}
           <input
@@ -38,7 +38,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           />
           {icon && iconPosition === 'right' && (
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <div className="h-5 w-5 text-gray-400">{icon}</div>
+              <div className="h-5 w-5 text-slate-400">{icon}</div>
             </div>
           )}
         </div>
@@ -53,3 +53,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 );
 
 Input.displayName = 'Input';
+
+
+

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   getAvailablePermissions,
@@ -6,13 +6,14 @@ import {
   assignRolePermissions,
 } from '../services/permissionsApi';
 import type { Permission } from '../types';
+import { LoadingState } from '../../../components/ui/LoadingState';
 
 export default function RolePermissionManagementPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const [availablePermissions, setAvailablePermissions] = useState<Permission[]>([]);
-  const [rolePermissions, setRolePermissions] = useState<Permission[]>([]);
+  const [, setRolePermissions] = useState<Permission[]>([]);
   const [roleName, setRoleName] = useState('');
   const [selectedPermissions, setSelectedPermissions] = useState<Set<number>>(
     new Set()
@@ -106,13 +107,13 @@ export default function RolePermissionManagementPage() {
   const modules = Array.from(new Set(availablePermissions.map((p) => p.module)));
   const filteredPermissions = getFilteredPermissions();
 
-  if (loading) return <div className="p-6">Cargando permisos...</div>;
+  if (loading) return <LoadingState message="Cargando..." fullScreen={true} />;
 
   return (
     <div className="p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Gestionar Permisos del Rol</h1>
-        <p className="mt-2 text-gray-600">Rol: {roleName}</p>
+        <p className="mt-2 text-slate-600">Rol: {roleName}</p>
       </div>
 
       {error && (
@@ -135,40 +136,40 @@ export default function RolePermissionManagementPage() {
           </select>
           <button
             onClick={handleSelectAll}
-            className="rounded border px-4 py-2 hover:bg-gray-50"
+            className="rounded border px-4 py-2 hover:bg-slate-50"
           >
             Seleccionar Todos
           </button>
           <button
             onClick={handleDeselectAll}
-            className="rounded border px-4 py-2 hover:bg-gray-50"
+            className="rounded border px-4 py-2 hover:bg-slate-50"
           >
             Deseleccionar Todos
           </button>
         </div>
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-slate-600">
           {selectedPermissions.size} de {availablePermissions.length} seleccionados
         </div>
       </div>
 
       <div className="mb-6 rounded-lg border bg-white shadow">
         <div className="max-h-96 overflow-y-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="sticky top-0 bg-gray-50">
+          <table className="min-w-full divide-y divide-slate-200">
+            <thead className="sticky top-0 bg-slate-50">
               <tr>
                 <th className="w-12 px-6 py-3"></th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   Código
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   Nombre
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   Módulo
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
+            <tbody className="divide-y divide-slate-200 bg-white">
               {filteredPermissions.map((permission) => (
                 <tr
                   key={permission.id}
@@ -181,16 +182,16 @@ export default function RolePermissionManagementPage() {
                       type="checkbox"
                       checked={selectedPermissions.has(permission.id)}
                       onChange={() => handleTogglePermission(permission.id)}
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600"
+                      className="h-4 w-4 rounded border-slate-300 text-blue-600"
                     />
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-900">
                     {permission.code}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm text-slate-900">
                     {permission.name}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-500">
                     {permission.module}
                   </td>
                 </tr>
@@ -204,13 +205,13 @@ export default function RolePermissionManagementPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="rounded bg-blue-600 px-6 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+          className="px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)] transition-all"
         >
           {saving ? 'Guardando...' : 'Guardar Cambios'}
         </button>
         <button
           onClick={() => navigate('/roles')}
-          className="rounded border px-6 py-2 hover:bg-gray-50"
+          className="rounded border px-6 py-2 hover:bg-slate-50"
         >
           Cancelar
         </button>
@@ -218,3 +219,7 @@ export default function RolePermissionManagementPage() {
     </div>
   );
 }
+
+
+
+
