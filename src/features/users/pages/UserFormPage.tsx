@@ -4,6 +4,7 @@ import { getUserById, createUser, updateUser } from '../services/usersApi';
 import { fetchRoles } from '../../roles/services/rolesApi';
 import type { CreateUserData, UpdateUserData, Role } from '../../../types';
 import { LoadingState } from '../../../components/ui/LoadingState';
+import { ApiErrorClass } from '../../../utils/errorHandler';
 import { ArrowLeft, Save, AlertCircle, CheckCircle2, Shield, User, Mail, Lock, Phone, Briefcase, Building2 } from 'lucide-react';
 
 export function UserFormPage() {
@@ -131,10 +132,15 @@ export function UserFormPage() {
 
       navigate('/users');
     } catch (err: unknown) {
-      if (err instanceof Error) {
+      if (err instanceof ApiErrorClass) {
+        if (Object.keys(err.fieldErrors || {}).length > 0) {
+          setFieldErrors(err.fieldErrors);
+          setError(null);
+        } else {
+          setError(err.message);
+        }
+      } else if (err instanceof Error) {
         setError(err.message);
-      } else if (typeof err === 'object' && err !== null && 'fieldErrors' in err) {
-         setFieldErrors((err as any).fieldErrors);
       } else {
         setError('Error al guardar usuario');
       }

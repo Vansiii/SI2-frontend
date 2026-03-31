@@ -105,24 +105,6 @@ class ApiClient {
       payload = { error: message };
     }
 
-    // Extraer mensaje de error
-    // Prioridad: error > message > detail > non_field_errors
-    let message = payload?.error || payload?.message || payload?.detail;
-    
-    // Si no hay mensaje, buscar en non_field_errors (errores de validación de DRF)
-    if (!message && payload?.non_field_errors) {
-      if (Array.isArray(payload.non_field_errors)) {
-        message = payload.non_field_errors[0];
-      } else {
-        message = payload.non_field_errors;
-      }
-    }
-    
-    // Si aún no hay mensaje, usar genérico
-    if (!message) {
-      message = 'Ha ocurrido un error';
-    }
-
     // Extraer errores de campo
     const fieldErrors: Record<string, string> = {};
     Object.entries(payload).forEach(([key, value]) => {
@@ -134,6 +116,25 @@ class ApiClient {
         }
       }
     });
+
+    // Extraer mensaje de error
+    // Prioridad: error > message > detail > non_field_errors > primer field error
+    let message = payload?.error || payload?.message || payload?.detail;
+
+    // Si no hay mensaje, buscar en non_field_errors (errores de validación de DRF)
+    if (!message && payload?.non_field_errors) {
+      if (Array.isArray(payload.non_field_errors)) {
+        message = payload.non_field_errors[0];
+      } else {
+        message = payload.non_field_errors;
+      }
+    }
+
+    // Si aún no hay mensaje, usar el primer error de campo disponible
+    if (!message) {
+      const firstFieldError = Object.values(fieldErrors)[0];
+      message = firstFieldError || 'Ha ocurrido un error';
+    }
 
     throw new ApiErrorClass(message, response.status, fieldErrors, payload?.code);
   }
