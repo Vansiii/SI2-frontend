@@ -432,5 +432,46 @@ describe('AuthContext', () => {
       expect(result.current.institution).toEqual(newInstitution)
       expect(result.current.role).toBe(newRole)
     })
+
+    it('debe actualizar metadata de auth para flujo 2FA', async () => {
+      vi.mocked(tokenManager.getAccessToken).mockReturnValue('mock-token')
+
+      const { result } = renderHook(() => {
+        const context = useContext(AuthContext)
+        if (!context) throw new Error('AuthContext not found')
+        return context
+      }, { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      const newUser = {
+        id: '3',
+        email: '2fa@example.com',
+        first_name: 'Two',
+        last_name: 'Factor',
+      }
+      const newInstitution = {
+        id: '3',
+        name: 'Secure Institution',
+        slug: 'secure-inst',
+        institution_type: 'banking' as const,
+      }
+
+      act(() => {
+        result.current.updateSession(newUser, newInstitution, 'admin', {
+          userType: 'tenant_user',
+          roles: ['Administrador'],
+          permissions: ['users.view', 'roles.view'],
+        })
+      })
+
+      expect(result.current.userType).toBe('tenant_user')
+      expect(result.current.roles).toEqual(['Administrador'])
+      expect(result.current.permissions).toEqual(['users.view', 'roles.view'])
+      expect(result.current.hasPermission('users.view')).toBe(true)
+      expect(result.current.hasPermission('roles.view')).toBe(true)
+    })
   })
 })

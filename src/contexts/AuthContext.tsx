@@ -4,6 +4,12 @@ import type { User, Institution, LoginCredentials, LoginResponse, AuthContextTyp
 import { getAccessToken, clearTokens, saveTokens } from '../utils/tokenManager';
 import { apiClient } from '../utils/apiClient';
 
+type SessionAuthMetadata = {
+  userType?: 'saas_admin' | 'tenant_user';
+  roles?: string[];
+  permissions?: string[];
+};
+
 // Crear el contexto
 export const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -80,6 +86,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setRole(userRole);
   };
 
+  const syncAuthMetadata = (authMetadata?: SessionAuthMetadata) => {
+    if (!authMetadata) {
+      return;
+    }
+
+    if (authMetadata.userType) {
+      setUserType(authMetadata.userType);
+      localStorage.setItem('userType', authMetadata.userType);
+    }
+
+    if (authMetadata.roles) {
+      setRoles(authMetadata.roles);
+      localStorage.setItem('roles', JSON.stringify(authMetadata.roles));
+    }
+
+    if (authMetadata.permissions) {
+      setPermissions(authMetadata.permissions);
+      localStorage.setItem('permissions', JSON.stringify(authMetadata.permissions));
+    }
+  };
+
   /**
    * Login del usuario
    */
@@ -100,14 +127,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const userTypeValue = response.user_type || 'tenant_user';
         const rolesValue = response.roles || [];
         const permissionsValue = response.permissions || [];
-        
-        setUserType(userTypeValue);
-        setRoles(rolesValue);
-        setPermissions(permissionsValue);
-        
-        localStorage.setItem('userType', userTypeValue);
-        localStorage.setItem('roles', JSON.stringify(rolesValue));
-        localStorage.setItem('permissions', JSON.stringify(permissionsValue));
+
+        syncAuthMetadata({
+          userType: userTypeValue,
+          roles: rolesValue,
+          permissions: permissionsValue,
+        });
       }
 
       return response;
@@ -157,8 +182,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   /**
    * Actualiza toda la sesión (usuario, institución y rol)
    */
-  const updateSession = (userData: User, institutionData: Institution, userRole: string) => {
+  const updateSession = (
+    userData: User,
+    institutionData: Institution,
+    userRole: string,
+    authMetadata?: SessionAuthMetadata
+  ) => {
     saveSession(userData, institutionData, userRole);
+    syncAuthMetadata(authMetadata);
   };
 
   /**

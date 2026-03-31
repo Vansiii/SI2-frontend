@@ -215,7 +215,16 @@ export interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<LoginResponse>;
   logout: () => Promise<void>;
   updateUser: (user: User) => void;
-  updateSession: (user: User, institution: Institution, role: string) => void;
+  updateSession: (
+    user: User,
+    institution: Institution,
+    role: string,
+    authMetadata?: {
+      userType?: 'saas_admin' | 'tenant_user';
+      roles?: string[];
+      permissions?: string[];
+    }
+  ) => void;
   hasPermission: (permission: string) => boolean;
 }
 

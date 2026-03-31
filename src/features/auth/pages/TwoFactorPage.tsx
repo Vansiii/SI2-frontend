@@ -88,13 +88,12 @@ export function TwoFactorPage() {
       // Guardar tokens
       saveTokens(response.access, response.refresh);
 
-      // Guardar datos de usuario en localStorage
-      localStorage.setItem('user', JSON.stringify(response.user));
-      localStorage.setItem('institution', JSON.stringify(response.institution));
-      localStorage.setItem('role', response.role);
-
       // Actualizar contexto con toda la sesión
-      updateSession(response.user, response.institution, response.role);
+      updateSession(response.user, response.institution, response.role, {
+        userType: response.user_type || 'tenant_user',
+        roles: response.roles || [],
+        permissions: response.permissions || [],
+      });
 
       // Limpiar sessionStorage
       sessionStorage.removeItem('challenge_token');
