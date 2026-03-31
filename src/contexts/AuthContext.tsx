@@ -15,6 +15,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [institution, setInstitution] = useState<Institution | null>(null);
   const [role, setRole] = useState<string | null>(null);
+  const [userType, setUserType] = useState<'saas_admin' | 'tenant_user' | null>(null);
+  const [roles, setRoles] = useState<string[]>([]);
+  const [permissions, setPermissions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Cargar datos de sesión al iniciar
@@ -33,6 +36,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const storedUser = localStorage.getItem('user');
         const storedInstitution = localStorage.getItem('institution');
         const storedRole = localStorage.getItem('role');
+        const storedUserType = localStorage.getItem('userType');
+        const storedRoles = localStorage.getItem('roles');
+        const storedPermissions = localStorage.getItem('permissions');
 
         if (storedUser) {
           setUser(JSON.parse(storedUser));
@@ -42,6 +48,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
         if (storedRole) {
           setRole(storedRole);
+        }
+        if (storedUserType) {
+          setUserType(storedUserType as 'saas_admin' | 'tenant_user');
+        }
+        if (storedRoles) {
+          setRoles(JSON.parse(storedRoles));
+        }
+        if (storedPermissions) {
+          setPermissions(JSON.parse(storedPermissions));
         }
       }
     } catch (error) {
@@ -80,6 +95,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (!response.requires_2fa) {
         saveTokens(response.access, response.refresh);
         saveSession(response.user, response.institution, response.role);
+        
+        // Guardar permisos y tipo de usuario
+        const userTypeValue = response.user_type || 'tenant_user';
+        const rolesValue = response.roles || [];
+        const permissionsValue = response.permissions || [];
+        
+        setUserType(userTypeValue);
+        setRoles(rolesValue);
+        setPermissions(permissionsValue);
+        
+        localStorage.setItem('userType', userTypeValue);
+        localStorage.setItem('roles', JSON.stringify(rolesValue));
+        localStorage.setItem('permissions', JSON.stringify(permissionsValue));
       }
 
       return response;
@@ -107,6 +135,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(null);
       setInstitution(null);
       setRole(null);
+      setUserType(null);
+      setRoles([]);
+      setPermissions([]);
+      
+      // Limpiar localStorage
+      localStorage.removeItem('userType');
+      localStorage.removeItem('roles');
+      localStorage.removeItem('permissions');
     }
   };
 
@@ -125,16 +161,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
     saveSession(userData, institutionData, userRole);
   };
 
+  /**
+   * Verifica si el usuario tiene un permiso específico
+   */
+  const hasPermission = (permission: string): boolean => {
+    // Superadmin SaaS tiene todos los permisos
+    if (userType === 'saas_admin') {
+      return true;
+    }
+    
+    // Verificar si el permiso está en la lista
+    return permissions.includes(permission) || permissions.includes('*');
+  };
+
   const value: AuthContextType = {
     user,
     institution,
     role,
+    userType,
+    roles,
+    permissions,
     isAuthenticated: !!user && !!getAccessToken(),
     isLoading,
     login,
     logout,
     updateUser,
     updateSession,
+    hasPermission,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

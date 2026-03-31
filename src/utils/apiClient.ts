@@ -94,17 +94,39 @@ class ApiClient {
     try {
       payload = await response.json();
     } catch {
-      // Si no se puede parsear JSON, usar mensaje genérico
-      payload = { error: response.statusText || 'Error del servidor' };
+      // Si no se puede parsear JSON, usar mensaje según el código de estado
+      const statusMessages: Record<number, string> = {
+        502: 'El servidor no está disponible. Verifica que el backend esté ejecutándose.',
+        503: 'El servicio no está disponible temporalmente. Intenta de nuevo más tarde.',
+        504: 'El servidor tardó demasiado en responder. Intenta de nuevo.',
+      };
+      
+      const message = statusMessages[response.status] || response.statusText || 'Error del servidor';
+      payload = { error: message };
     }
 
     // Extraer mensaje de error
-    const message = payload?.error || payload?.message || payload?.detail || 'Ha ocurrido un error';
+    // Prioridad: error > message > detail > non_field_errors
+    let message = payload?.error || payload?.message || payload?.detail;
+    
+    // Si no hay mensaje, buscar en non_field_errors (errores de validación de DRF)
+    if (!message && payload?.non_field_errors) {
+      if (Array.isArray(payload.non_field_errors)) {
+        message = payload.non_field_errors[0];
+      } else {
+        message = payload.non_field_errors;
+      }
+    }
+    
+    // Si aún no hay mensaje, usar genérico
+    if (!message) {
+      message = 'Ha ocurrido un error';
+    }
 
     // Extraer errores de campo
     const fieldErrors: Record<string, string> = {};
     Object.entries(payload).forEach(([key, value]) => {
-      if (key !== 'error' && key !== 'message' && key !== 'detail') {
+      if (key !== 'error' && key !== 'message' && key !== 'detail' && key !== 'non_field_errors') {
         if (typeof value === 'string') {
           fieldErrors[key] = value;
         } else if (Array.isArray(value)) {

@@ -1,4 +1,3 @@
-import { DashboardLayout } from '../../../layouts/DashboardLayout';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { Building2, User, Shield } from 'lucide-react';
 
@@ -10,7 +9,7 @@ export function HomePage() {
   const { user, institution, role } = useAuth();
 
   return (
-    <DashboardLayout>
+    <div className="container mx-auto px-4 py-8">
       {/* Mensaje de bienvenida */}
       <div className="mb-8">
         <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
@@ -112,6 +111,6 @@ export function HomePage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

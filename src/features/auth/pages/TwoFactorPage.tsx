@@ -68,13 +68,14 @@ export function TwoFactorPage() {
     challengeTokenRef.current = challengeToken;
   }, [challengeToken]);
 
-  const handleSubmit = async (code: string) => {
+  const handleSubmit = async (code: string, isBackupCode: boolean = false) => {
     // Usar ref para obtener el token más actualizado
     const currentToken = challengeTokenRef.current;
     console.log('[2FA Submit] Challenge token actual:', currentToken);
+    console.log('[2FA Submit] Is backup code:', isBackupCode);
     
     if (!currentToken) {
-      navigate('/login', { replace: true });
+      navigate('/login', { replace: true});
       return;
     }
 
@@ -82,7 +83,7 @@ export function TwoFactorPage() {
     setError(null);
 
     try {
-      const response = await verify2FA(currentToken, code, false);
+      const response = await verify2FA(currentToken, code, isBackupCode);
 
       // Guardar tokens
       saveTokens(response.access, response.refresh);
@@ -201,7 +202,6 @@ export function TwoFactorPage() {
   return (
     <AuthLayout title={title} subtitle={subtitle}>
       <TwoFactorForm
-        key={expiresIn} // Forzar re-render cuando cambia el tiempo
         onSubmit={handleSubmit}
         onBack={handleBack}
         onResend={method === 'email' ? handleResend : undefined}
