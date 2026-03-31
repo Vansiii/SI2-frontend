@@ -362,7 +362,7 @@ describe('AuthContext', () => {
   describe('updateUser', () => {
     it('debe actualizar los datos del usuario', async () => {
       const initialUser = {
-        id: 1,
+        id: '1',
         email: 'test@example.com',
         first_name: 'Test',
         last_name: 'User',
@@ -411,15 +411,16 @@ describe('AuthContext', () => {
       })
 
       const newUser = {
-        id: 2,
+        id: '2',
         email: 'new@example.com',
         first_name: 'New',
         last_name: 'User',
       }
       const newInstitution = {
-        id: 2,
+        id: '2',
         name: 'New Institution',
         slug: 'new-inst',
+        institution_type: 'banking' as const,
       }
       const newRole = 'manager'
 

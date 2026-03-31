@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Plus, Edit2, Trash2, Key, Users } from 'lucide-react';
+import { Shield, Plus, Edit2, Trash2, Key } from 'lucide-react';
 import { fetchRoles, deactivateRole } from '../services/rolesApi';
 import type { Role } from '../types';
 import { LoadingState } from '../../../components/ui/LoadingState';

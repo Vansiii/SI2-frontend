@@ -1,6 +1,6 @@
 ﻿import { useAuth } from '../../features/auth/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, User, Menu, Loader2, ChevronDown } from 'lucide-react';
+import { LogOut, User, Menu, ChevronDown } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { LoadingState } from '../ui/LoadingState';
 

@@ -1,9 +1,6 @@
-import { expect, afterEach, vi } from 'vitest'
+import { afterEach, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
-import * as matchers from '@testing-library/jest-dom/matchers'
-
-// Extend Vitest's expect with jest-dom matchers
-expect.extend(matchers)
+import '@testing-library/jest-dom/vitest'
 
 // Cleanup after each test
 afterEach(() => {
@@ -16,9 +13,9 @@ const localStorageMock = {
   setItem: vi.fn(),
   removeItem: vi.fn(),
   clear: vi.fn(),
-}
+};
 
-global.localStorage = localStorageMock as any
+(globalThis as any).localStorage = localStorageMock as any
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
