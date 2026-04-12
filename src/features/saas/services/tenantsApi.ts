@@ -26,7 +26,10 @@ export async function getTenants(params?: {
   }
   
   const url = `/saas/tenants/${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-  return apiClient.get<Institution[]>(url);
+  const response = await apiClient.get<{ results?: Institution[] } | Institution[]>(url);
+  
+  // Manejar respuesta paginada o array directo
+  return Array.isArray(response) ? response : (response.results || []);
 }
 
 /**

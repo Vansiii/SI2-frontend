@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
 import { Mail, Lock } from 'lucide-react';
 import { Input } from '../../../components/ui/Input';
 import { PasswordInput } from '../../../components/ui/PasswordInput';
 import { Button } from '../../../components/ui/Button';
 import { Alert } from '../../../components/ui/Alert';
-import { loginSchema } from '../schemas/loginSchema';
-import type { LoginFormData } from '../schemas/loginSchema';
 import type { LoginErrorResponse } from '../../../types';
+
+interface LoginFormData {
+  email: string;
+  password: string;
+}
 
 interface LoginFormProps {
   onSubmit: (data: LoginFormData) => Promise<void>;
@@ -24,9 +26,7 @@ export function LoginForm({ onSubmit, isLoading, error, onClearError }: LoginFor
     handleSubmit,
     formState: { errors },
     setValue,
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-  });
+  } = useForm<LoginFormData>();
 
   // Estado para el countdown timer
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);

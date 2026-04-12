@@ -226,8 +226,27 @@ export function TenantDetailPage() {
                 <Users className="h-5 w-5" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-slate-900">{tenant.stats.total_users}</div>
-                <div className="text-xs font-medium text-slate-500 uppercase">Total Usuarios</div>
+                <div className="text-2xl font-bold text-slate-900">
+                  {tenant.stats.total_users}
+                  {tenant.subscription && (
+                    <span className="text-sm font-normal text-slate-500"> / {tenant.subscription.max_users}</span>
+                  )}
+                </div>
+                <div className="text-xs font-medium text-slate-500 uppercase">
+                  {tenant.subscription ? 'Usuarios (Actual / Límite)' : 'Total Usuarios'}
+                </div>
+                {tenant.subscription && tenant.subscription.usage_percentage.users > 0 && (
+                  <div className="mt-1 w-full bg-slate-200 rounded-full h-1">
+                    <div
+                      className={`h-1 rounded-full transition-all ${
+                        tenant.subscription.usage_percentage.users >= 90 ? 'bg-red-500' :
+                        tenant.subscription.usage_percentage.users >= 75 ? 'bg-yellow-500' :
+                        'bg-green-500'
+                      }`}
+                      style={{ width: `${Math.min(tenant.subscription.usage_percentage.users, 100)}%` }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
             <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-center gap-4 transition-all hover:shadow-sm">
@@ -276,20 +295,63 @@ export function TenantDetailPage() {
               </div>
             </div>
           </div>
+          
+          {/* Subscription Info Banner */}
+          {tenant.subscription && (
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <div className="flex items-start gap-3">
+                <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-blue-900 mb-1">Plan de Suscripción: {tenant.subscription.plan_name}</h3>
+                  <p className="text-xs text-blue-700">
+                    Esta institución puede tener hasta <strong>{tenant.subscription.max_users} usuarios</strong>, 
+                    <strong> {tenant.subscription.max_branches} sucursales</strong>, 
+                    <strong> {tenant.subscription.max_products} productos</strong> y 
+                    <strong> {tenant.subscription.max_storage_gb} GB</strong> de almacenamiento.
+                    {!tenant.subscription.is_within_limits && (
+                      <span className="block mt-1 text-red-700 font-medium">
+                        ⚠️ La institución ha excedido los límites de su plan.
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Usuarios Recientes */}
+      {/* Todos los Usuarios */}
       <div className="bg-white/80 backdrop-blur-md shadow-sm border border-slate-200 rounded-2xl overflow-hidden">
         <div className="p-6 border-b border-slate-100 bg-white/50">
-          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-            <Users className="h-4 w-4 text-slate-400" />
-            Usuarios Incorporados Recientemente
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <Users className="h-4 w-4 text-slate-400" />
+              Usuarios de la Institución ({tenant.all_users.length})
+            </h2>
+            <div className="flex items-center gap-4 text-xs">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                <span className="text-slate-600">
+                  Activos: {tenant.all_users.filter(u => u.is_active).length}
+                </span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-slate-400"></span>
+                <span className="text-slate-600">
+                  Inactivos: {tenant.all_users.filter(u => !u.is_active).length}
+                </span>
+              </span>
+            </div>
+          </div>
         </div>
-        {tenant.recent_users.length === 0 ? (
+        {tenant.all_users.length === 0 ? (
           <div className="p-8 text-center text-slate-500 text-sm bg-slate-50/50">
-            No se han registrado usuarios nuevos recientemente en esta institución.
+            No hay usuarios registrados en esta institución.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -303,23 +365,53 @@ export function TenantDetailPage() {
                     Correo Electrónico
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Estado
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
                     Fecha de Registro
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-transparent divide-y divide-slate-100">
-                {tenant.recent_users.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
+                {tenant.all_users.map((user) => (
+                  <tr 
+                    key={user.id} 
+                    className={`hover:bg-slate-50/50 transition-colors ${
+                      !user.is_active ? 'opacity-60' : ''
+                    }`}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-medium text-xs mr-3">
+                        <div className={`h-8 w-8 rounded-full flex items-center justify-center font-medium text-xs mr-3 ${
+                          user.is_active 
+                            ? 'bg-slate-200 text-slate-600' 
+                            : 'bg-slate-100 text-slate-400'
+                        }`}>
                            {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
                         </div>
-                        <span className="text-sm font-medium text-slate-900">{user.full_name || 'Usuario'}</span>
+                        <span className={`text-sm font-medium ${
+                          user.is_active ? 'text-slate-900' : 'text-slate-500'
+                        }`}>
+                          {user.full_name || 'Usuario'}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                       {user.email}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
+                          user.is_active
+                            ? 'bg-green-50 text-green-700 border-green-200'
+                            : 'bg-slate-100 text-slate-600 border-slate-200'
+                        }`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                          user.is_active ? 'bg-green-500' : 'bg-slate-400'
+                        }`}></span>
+                        {user.is_active ? 'Activo' : 'Inactivo'}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                       {formatDate(user.joined_at)}

@@ -6,7 +6,11 @@ import { Alert } from '../../../components/ui/Alert';
 import { Button } from '../../../components/ui/Button';
 import { confirmPasswordReset } from '../services/passwordReset';
 import { ApiErrorClass } from '../../../utils/errorHandler';
-import type { PasswordResetConfirmFormData } from '../schemas/passwordResetSchema';
+
+interface PasswordResetConfirmFormData {
+  new_password: string;
+  confirm_password: string;
+}
 
 export function PasswordResetConfirmPage() {
   const navigate = useNavigate();

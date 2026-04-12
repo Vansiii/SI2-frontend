@@ -21,7 +21,7 @@ export function PermissionGuard({
   children,
   permission,
   fallback,
-  redirectTo = '/dashboard',
+  redirectTo = '/home',
 }: PermissionGuardProps) {
   const { hasPermission, isLoading } = useAuth();
 

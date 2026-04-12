@@ -3,7 +3,10 @@ import { AuthLayout } from '../../../layouts/AuthLayout';
 import { PasswordResetRequestForm } from '../components/PasswordResetRequestForm';
 import { requestPasswordReset } from '../services/passwordReset';
 import { ApiErrorClass } from '../../../utils/errorHandler';
-import type { PasswordResetRequestFormData } from '../schemas/passwordResetSchema';
+
+interface PasswordResetRequestFormData {
+  email: string;
+}
 
 export function PasswordResetRequestPage() {
   const [isLoading, setIsLoading] = useState(false);

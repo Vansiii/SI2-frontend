@@ -18,15 +18,14 @@ export function TenantListPage() {
     search: '',
   });
 
-  // Verificar que sea SaaS admin
-  if (userType !== 'saas_admin') {
-    navigate('/home');
-    return null;
-  }
-
   useEffect(() => {
+    // Verificar que sea SaaS admin
+    if (userType !== 'saas_admin') {
+      navigate('/home');
+      return;
+    }
     loadTenants();
-  }, [filters]);
+  }, [filters, userType, navigate]);
 
   const loadTenants = async () => {
     try {
@@ -53,6 +52,11 @@ export function TenantListPage() {
 
   if (loading) {
     return <LoadingState message="Cargando instituciones..." fullScreen={true} />;
+  }
+
+  // No renderizar si no es SaaS admin
+  if (userType !== 'saas_admin') {
+    return null;
   }
 
   return (

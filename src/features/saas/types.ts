@@ -21,6 +21,28 @@ export interface TenantDetail extends Institution {
     email: string;
     full_name: string;
   } | null;
+  subscription: {
+    id: number;
+    plan_name: string;
+    status: string;
+    start_date: string;
+    end_date: string | null;
+    current_users: number;
+    current_branches: number;
+    current_products: number;
+    current_storage_gb: number;
+    max_users: number;
+    max_branches: number;
+    max_products: number;
+    max_storage_gb: number;
+    usage_percentage: {
+      users: number;
+      branches: number;
+      products: number;
+      storage: number;
+    };
+    is_within_limits: boolean;
+  } | null;
   stats: {
     total_users: number;
     users_with_roles: number;
@@ -29,11 +51,12 @@ export interface TenantDetail extends Institution {
     active_roles: number;
     inactive_roles: number;
   };
-  recent_users: Array<{
+  all_users: Array<{
     id: number;
     email: string;
     full_name: string;
     joined_at: string;
+    is_active: boolean;
   }>;
 }
 
@@ -73,4 +96,66 @@ export interface PermissionCoverageReport {
   admin_roles_with_all_permissions: number;
   total_admin_roles: number;
   coverage_percentage: number;
+}
+
+// Tipos para Planes de Suscripción
+export interface SubscriptionPlan {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  price: string;
+  billing_cycle: 'MONTHLY' | 'QUARTERLY' | 'ANNUAL';
+  trial_days: number;
+  setup_fee: string;
+  
+  // Límites
+  max_users: number;
+  max_branches: number;
+  max_products: number;
+  max_loans_per_month: number;
+  max_storage_gb: number;
+  
+  // Features
+  has_ai_scoring: boolean;
+  has_workflows: boolean;
+  has_reporting: boolean;
+  has_mobile_app: boolean;
+  has_api_access: boolean;
+  has_white_label: boolean;
+  has_custom_integrations: boolean;
+  has_priority_support: boolean;
+  
+  is_active: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SubscriptionPlanFormData {
+  name: string;
+  slug: string;
+  description: string;
+  price: string;
+  billing_cycle: 'MONTHLY' | 'QUARTERLY' | 'ANNUAL';
+  trial_days: number;
+  setup_fee: string;
+  
+  max_users: number;
+  max_branches: number;
+  max_products: number;
+  max_loans_per_month: number;
+  max_storage_gb: number;
+  
+  has_ai_scoring: boolean;
+  has_workflows: boolean;
+  has_reporting: boolean;
+  has_mobile_app: boolean;
+  has_api_access: boolean;
+  has_white_label: boolean;
+  has_custom_integrations: boolean;
+  has_priority_support: boolean;
+  
+  is_active: boolean;
+  display_order: number;
 }
