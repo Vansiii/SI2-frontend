@@ -5,8 +5,12 @@ import { LoginForm } from '../components/LoginForm';
 import { useAuth } from '../hooks/useAuth';
 import { ApiErrorClass } from '../../../utils/errorHandler';
 import { Alert } from '../../../components/ui/Alert';
-import type { LoginFormData } from '../schemas/loginSchema';
 import type { LoginErrorResponse } from '../../../types';
+
+interface LoginFormData {
+  email: string;
+  password: string;
+}
 
 export function LoginPage() {
   const navigate = useNavigate();

@@ -94,6 +94,56 @@ const SaaSDashboardPage = lazy(() =>
 const PermissionListPage = lazy(() => import('./features/saas/pages/PermissionListPage'));
 const PermissionFormPage = lazy(() => import('./features/saas/pages/PermissionFormPage'));
 const PermissionCoveragePage = lazy(() => import('./features/saas/pages/PermissionCoveragePage'));
+const PlanListPage = lazy(() =>
+  import('./features/saas/pages/PlanListPage').then((module) => ({
+    default: module.PlanListPage,
+  }))
+);
+const PlanFormPage = lazy(() =>
+  import('./features/saas/pages/PlanFormPage').then((module) => ({
+    default: module.PlanFormPage,
+  }))
+);
+const PlanDetailPage = lazy(() =>
+  import('./features/saas/pages/PlanDetailPage').then((module) => ({
+    default: module.PlanDetailPage,
+  }))
+);
+
+// Importar Clients pages
+const ClientListPage = lazy(() =>
+  import('./features/clients/pages/ClientListPage').then((module) => ({
+    default: module.ClientListPage,
+  }))
+);
+const ClientFormPage = lazy(() =>
+  import('./features/clients/pages/ClientFormPage').then((module) => ({
+    default: module.ClientFormPage,
+  }))
+);
+
+// Importar Products pages
+const ProductListPage = lazy(() =>
+  import('./features/products/pages/ProductListPage').then((module) => ({
+    default: module.ProductListPage,
+  }))
+);
+const ProductFormPage = lazy(() =>
+  import('./features/products/pages/ProductFormPage').then((module) => ({
+    default: module.ProductFormPage,
+  }))
+);
+
+// Importar Subscription pages
+const SubscriptionPlansPage = lazy(() => import('./features/saas/pages/SubscriptionPlansPage'));
+const CurrentSubscriptionPage = lazy(() => import('./features/saas/pages/CurrentSubscriptionPage'));
+const CheckoutPage = lazy(() => import('./features/saas/pages/CheckoutPage'));
+const SubscriptionSuccessPage = lazy(() => import('./features/saas/pages/SubscriptionSuccessPage'));
+
+// Importar Loan pages
+const LoanApplicationListPage = lazy(() => import('./features/loans/pages/LoanApplicationListPage'));
+const LoanApplicationFormPage = lazy(() => import('./features/loans/pages/LoanApplicationFormPage'));
+const LoanApplicationDetailPage = lazy(() => import('./features/loans/pages/LoanApplicationDetailPage'));
 
 // Importar página de gestión de permisos de roles
 const RolePermissionManagementPage = lazy(
@@ -229,6 +279,146 @@ function App() {
               }
             />
 
+            {/* Rutas de Clientes */}
+            <Route
+              path="/clients"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="clients.view">
+                    <ClientListPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/clients/new"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="clients.create">
+                    <ClientFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/clients/:clientId/edit"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="clients.edit">
+                    <ClientFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Productos */}
+            <Route
+              path="/products"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="products.view">
+                    <ProductListPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/products/new"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="products.create">
+                    <ProductFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/products/:productId/edit"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="products.edit">
+                    <ProductFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Suscripciones */}
+            <Route
+              path="/subscription/plans"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionPlansPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/subscription/current"
+              element={
+                <ProtectedRoute>
+                  <CurrentSubscriptionPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/subscription/checkout/:planId"
+              element={
+                <ProtectedRoute>
+                  <CheckoutPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/subscription/success"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionSuccessPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Solicitudes de Crédito */}
+            <Route
+              path="/loans"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="loans.view">
+                    <LoanApplicationListPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/loans/new"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="loans.create">
+                    <LoanApplicationFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/loans/:id"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="loans.view">
+                    <LoanApplicationDetailPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/loans/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="loans.edit">
+                    <LoanApplicationFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+
             {/* Rutas de Panel SaaS (Solo para superadmins) */}
             <Route
               path="/saas/dashboard"
@@ -283,6 +473,38 @@ function App() {
               element={
                 <ProtectedRoute>
                   <PermissionCoveragePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/saas/plans"
+              element={
+                <ProtectedRoute>
+                  <PlanListPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/saas/plans/new"
+              element={
+                <ProtectedRoute>
+                  <PlanFormPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/saas/plans/:planId"
+              element={
+                <ProtectedRoute>
+                  <PlanDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/saas/plans/:planId/edit"
+              element={
+                <ProtectedRoute>
+                  <PlanFormPage />
                 </ProtectedRoute>
               }
             />

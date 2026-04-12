@@ -1,14 +1,14 @@
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
 import { Lock, AlertCircle } from 'lucide-react';
 import { PasswordInput } from '../../../components/ui/PasswordInput';
 import { Button } from '../../../components/ui/Button';
 import { Alert } from '../../../components/ui/Alert';
-import {
-  passwordResetConfirmSchema,
-  type PasswordResetConfirmFormData,
-} from '../schemas/passwordResetSchema';
+
+interface PasswordResetConfirmFormData {
+  new_password: string;
+  confirm_password: string;
+}
 
 interface PasswordResetConfirmFormProps {
   onSubmit: (data: PasswordResetConfirmFormData) => Promise<void>;
@@ -29,9 +29,7 @@ export function PasswordResetConfirmForm({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<PasswordResetConfirmFormData>({
-    resolver: zodResolver(passwordResetConfirmSchema),
-  });
+  } = useForm<PasswordResetConfirmFormData>();
 
   if (tokenError) {
     return (

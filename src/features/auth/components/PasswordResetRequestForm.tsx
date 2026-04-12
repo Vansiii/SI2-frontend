@@ -1,14 +1,13 @@
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft } from 'lucide-react';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
 import { Alert } from '../../../components/ui/Alert';
-import {
-  passwordResetRequestSchema,
-  type PasswordResetRequestFormData,
-} from '../schemas/passwordResetSchema';
+
+interface PasswordResetRequestFormData {
+  email: string;
+}
 
 interface PasswordResetRequestFormProps {
   onSubmit: (data: PasswordResetRequestFormData) => Promise<void>;
@@ -27,9 +26,7 @@ export function PasswordResetRequestForm({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<PasswordResetRequestFormData>({
-    resolver: zodResolver(passwordResetRequestSchema),
-  });
+  } = useForm<PasswordResetRequestFormData>();
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

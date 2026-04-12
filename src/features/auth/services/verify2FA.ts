@@ -10,21 +10,17 @@ export async function verify2FA(
   code: string,
   isBackupCode: boolean = false
 ): Promise<TwoFactorVerifyResponse> {
-  try {
-    const payload: TwoFactorVerifyRequest = {
-      challenge_token: challengeToken,
-      totp_code: code,
-      is_backup_code: isBackupCode,
-    };
+  const payload: TwoFactorVerifyRequest = {
+    challenge_token: challengeToken,
+    totp_code: code,
+    is_backup_code: isBackupCode,
+  };
 
-    const response = await apiClient.post<TwoFactorVerifyResponse>(
-      '/auth/login/2fa/',
-      payload,
-      { skipAuth: true }
-    );
+  const response = await apiClient.post<TwoFactorVerifyResponse>(
+    '/auth/login/2fa/',
+    payload,
+    { skipAuth: true }
+  );
 
-    return response;
-  } catch (error) {
-    throw error;
-  }
+  return response;
 }

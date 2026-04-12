@@ -11,13 +11,13 @@ type SessionAuthMetadata = {
 };
 
 // Crear el contexto
-export const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType | null>(null);
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-export function AuthProvider({ children }: AuthProviderProps) {
+function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [institution, setInstitution] = useState<Institution | null>(null);
   const [role, setRole] = useState<string | null>(null);
@@ -223,3 +223,5 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
+// Exportaciones
+export { AuthContext, AuthProvider };

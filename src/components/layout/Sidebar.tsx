@@ -7,7 +7,10 @@ import {
   LayoutDashboard,
   PieChart,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  UserCircle,
+  Package,
+  CreditCard
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../features/auth/hooks/useAuth';
@@ -42,6 +45,24 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
       label: 'Inicio',
     },
     {
+      to: '/clients',
+      icon: <UserCircle className="h-5 w-5" />,
+      label: 'Clientes',
+      permission: 'clients.view',
+    },
+    {
+      to: '/products',
+      icon: <Package className="h-5 w-5" />,
+      label: 'Productos Crediticios',
+      permission: 'products.view',
+    },
+    {
+      to: '/loans',
+      icon: <CreditCard className="h-5 w-5" />,
+      label: 'Solicitudes',
+      permission: 'loans.view',
+    },
+    {
       to: '/users',
       icon: <Users className="h-5 w-5" />,
       label: 'Usuarios',
@@ -52,6 +73,11 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
       icon: <Shield className="h-5 w-5" />,
       label: 'Roles y Permisos',
       permission: 'roles.view',
+    },
+    {
+      to: '/subscription/current',
+      icon: <Building2 className="h-5 w-5" />,
+      label: 'Mi Suscripción',
     },
     // Reportes y Configuración no están implementados aún
     // {
@@ -79,6 +105,11 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
       to: '/saas/tenants',
       icon: <Building2 className="h-5 w-5" />,
       label: 'Instituciones',
+    },
+    {
+      to: '/saas/plans',
+      icon: <Package className="h-5 w-5" />,
+      label: 'Planes de Suscripción',
     },
     {
       to: '/saas/permissions',
@@ -147,6 +178,7 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
                   <NavLink
                     key={item.to}
                     to={item.to}
+                    end={item.to === '/saas/permissions'}
                     title={!isOpen ? item.label : undefined}
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
