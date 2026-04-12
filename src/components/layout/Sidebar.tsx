@@ -10,7 +10,9 @@ import {
   ChevronRight,
   UserCircle,
   Package,
-  CreditCard
+  CreditCard,
+  FileText,
+  AlertTriangle
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../features/auth/hooks/useAuth';
@@ -123,6 +125,15 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
     },
   ];
 
+  // Items del menú de Auditoría (solo para superadmin)
+  const auditMenuItems: NavItem[] = [
+    {
+      to: '/audit/dashboard',
+      icon: <FileText className="h-5 w-5" />,
+      label: 'Bitácora',
+    },
+  ];
+
   // Filtrar items según permisos (solo para usuarios tenant)
   const visibleItems = userType === 'saas_admin' 
     ? [] // SaaS admin NO ve módulos de tenant
@@ -167,33 +178,63 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
         <nav className="h-full overflow-y-auto py-6 px-3">
           {/* Título de sección para SaaS */}
           {userType === 'saas_admin' && (
-            <div className="mb-4">
-              {isOpen && (
-                <h3 className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                  Administración SaaS
-                </h3>
-              )}
-              <div className="space-y-1">
-                {saasMenuItems.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    end={item.to === '/saas/permissions'}
-                    title={!isOpen ? item.label : undefined}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                        isActive
-                          ? 'bg-blue-600 shadow-md shadow-blue-500/20 text-white'
-                          : 'text-slate-700 hover:bg-slate-100'
-                      } ${!isOpen ? 'justify-center' : ''}`
-                    }
-                  >
-                    {item.icon}
-                    {isOpen && <span>{item.label}</span>}
-                  </NavLink>
-                ))}
+            <>
+              <div className="mb-4">
+                {isOpen && (
+                  <h3 className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                    Administración SaaS
+                  </h3>
+                )}
+                <div className="space-y-1">
+                  {saasMenuItems.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      end={item.to === '/saas/permissions'}
+                      title={!isOpen ? item.label : undefined}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                          isActive
+                            ? 'bg-blue-600 shadow-md shadow-blue-500/20 text-white'
+                            : 'text-slate-700 hover:bg-slate-100'
+                        } ${!isOpen ? 'justify-center' : ''}`
+                      }
+                    >
+                      {item.icon}
+                      {isOpen && <span>{item.label}</span>}
+                    </NavLink>
+                  ))}
+                </div>
               </div>
-            </div>
+
+              {/* Sección de Auditoría */}
+              <div className="mb-4">
+                {isOpen && (
+                  <h3 className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                    Auditoría
+                  </h3>
+                )}
+                <div className="space-y-1">
+                  {auditMenuItems.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      title={!isOpen ? item.label : undefined}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                          isActive
+                            ? 'bg-blue-600 shadow-md shadow-blue-500/20 text-white'
+                            : 'text-slate-700 hover:bg-slate-100'
+                        } ${!isOpen ? 'justify-center' : ''}`
+                      }
+                    >
+                      {item.icon}
+                      {isOpen && <span>{item.label}</span>}
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
 
           {/* Título de sección para gestión (solo si hay items visibles) */}

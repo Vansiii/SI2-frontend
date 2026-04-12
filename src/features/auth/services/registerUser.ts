@@ -99,20 +99,27 @@ function extractErrorMessage(payload: unknown, fieldErrors: RegistrationFieldErr
 }
 
 export async function registerUser(payload: SaasRegistrationData): Promise<RegisterUserResponse> {
+  const requestBody: any = {
+    companyName: payload.companyName,
+    institutionType: payload.industry,
+    firstName: payload.firstName,
+    lastName: payload.lastName,
+    email: payload.email,
+    password: payload.password,
+    confirmPassword: payload.confirmPassword,
+  };
+
+  // Agregar plan seleccionado si existe
+  if (payload.selectedPlanId) {
+    requestBody.selectedPlanId = payload.selectedPlanId;
+  }
+
   const response = await fetch(`${API_BASE_URL}/auth/register/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      companyName: payload.companyName,
-      institutionType: payload.industry,
-      firstName: payload.firstName,
-      lastName: payload.lastName,
-      email: payload.email,
-      password: payload.password,
-      confirmPassword: payload.confirmPassword,
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   const responsePayload = (await response.json().catch(() => null)) as unknown;
