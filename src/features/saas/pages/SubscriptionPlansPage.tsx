@@ -18,6 +18,7 @@ import {
 import {
   getSubscriptionPlans,
   getMySubscription,
+  hasActiveSubscription,
   calculateMonthlyPrice,
   type SubscriptionPlan,
 } from '../services/subscriptionsApi';
@@ -53,10 +54,10 @@ export default function SubscriptionPlansPage() {
   const loadCurrentSubscription = async () => {
     try {
       const subscription = await getMySubscription();
-      if ('has_subscription' in subscription && !subscription.has_subscription) {
-        setCurrentPlanId(null);
-      } else {
+      if (hasActiveSubscription(subscription)) {
         setCurrentPlanId(subscription.plan.id);
+      } else {
+        setCurrentPlanId(null);
       }
     } catch {
       setCurrentPlanId(null);

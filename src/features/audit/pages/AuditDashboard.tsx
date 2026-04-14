@@ -7,13 +7,9 @@ import {
   FileText, 
   RefreshCw, 
   Filter, 
-  Download,
   Eye,
-  Calendar,
-  User,
   Shield,
   AlertTriangle,
-  Activity,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';

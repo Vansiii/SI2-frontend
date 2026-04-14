@@ -28,10 +28,11 @@ export interface SubscriptionPlan {
   has_mobile_app: boolean;
   has_api_access: boolean;
   has_white_label: boolean;
-  has_custom_domain: boolean;
+  has_custom_integrations: boolean;
   has_priority_support: boolean;
   
   is_active: boolean;
+  is_featured: boolean;
   display_order: number;
   created_at: string;
   updated_at: string;
@@ -76,6 +77,19 @@ export interface Subscription {
   updated_at: string;
 }
 
+export interface NoSubscriptionResponse {
+  has_subscription: false;
+  message: string;
+  institution?: unknown;
+  available_plans_url?: string;
+}
+
+export type MySubscriptionResponse = Subscription | NoSubscriptionResponse;
+
+export const hasActiveSubscription = (
+  subscription: MySubscriptionResponse
+): subscription is Subscription => !('has_subscription' in subscription);
+
 export interface CreateSubscriptionData {
   plan_id: number;
   billing_cycle: 'MONTHLY' | 'QUARTERLY' | 'ANNUAL';
@@ -113,8 +127,8 @@ export const getSubscriptionPlan = async (id: number): Promise<SubscriptionPlan>
 /**
  * Obtiene la suscripción actual del usuario autenticado
  */
-export const getMySubscription = async (): Promise<Subscription | { has_subscription: false; message: string; institution?: any; available_plans_url?: string }> => {
-  return apiClient.get<Subscription | { has_subscription: false; message: string; institution?: any; available_plans_url?: string }>('/saas/my-subscription/');
+export const getMySubscription = async (): Promise<MySubscriptionResponse> => {
+  return apiClient.get<MySubscriptionResponse>('/saas/my-subscription/');
 };
 
 /**

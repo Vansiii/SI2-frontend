@@ -15,11 +15,14 @@ import {
   HardDrive,
   Check,
   AlertTriangle,
-  ArrowRight,
   Zap,
   Shield
 } from 'lucide-react';
-import { getMySubscription, type Subscription } from '../services/subscriptionsApi';
+import {
+  getMySubscription,
+  hasActiveSubscription,
+  type Subscription,
+} from '../services/subscriptionsApi';
 
 function CurrentSubscriptionPage() {
   const navigate = useNavigate();
@@ -37,7 +40,7 @@ function CurrentSubscriptionPage() {
       setError(null);
       const data = await getMySubscription();
       
-      if ('has_subscription' in data && !data.has_subscription) {
+      if (!hasActiveSubscription(data)) {
         setError('No tienes una suscripción activa');
         setSubscription(null);
         return;

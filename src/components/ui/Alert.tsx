@@ -3,12 +3,19 @@ import { CheckCircle2, AlertCircle, AlertTriangle, Info, X } from 'lucide-react'
 
 interface AlertProps {
   variant?: 'success' | 'error' | 'warning' | 'info';
+  type?: 'success' | 'error' | 'warning' | 'info';
   children: ReactNode;
   onClose?: () => void;
   className?: string;
 }
 
-export function Alert({ variant = 'info', children, onClose, className = '' }: AlertProps) {
+export function Alert({
+  variant = 'info',
+  type,
+  children,
+  onClose,
+  className = '',
+}: AlertProps) {
   const variantConfig = {
     success: {
       bgColor: 'bg-green-50',
@@ -36,7 +43,8 @@ export function Alert({ variant = 'info', children, onClose, className = '' }: A
     },
   };
 
-  const config = variantConfig[variant];
+  const resolvedVariant = type ?? variant;
+  const config = variantConfig[resolvedVariant];
 
   return (
     <div

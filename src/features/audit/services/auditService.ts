@@ -88,7 +88,7 @@ class AuditService {
     const response = await apiClient.get<PaginatedResponse<SecurityEventList>>(
       `/audit/security-events/?${params}`
     );
-    return response.data;
+    return response;
   }
 
   /**
@@ -98,7 +98,7 @@ class AuditService {
     const response = await apiClient.get<SecurityEvent>(
       `/audit/security-events/${id}/`
     );
-    return response.data;
+    return response;
   }
 
   /**
@@ -108,7 +108,7 @@ class AuditService {
     const response = await apiClient.get<PaginatedResponse<SecurityEventList>>(
       '/audit/security-events/unresolved/'
     );
-    return response.data;
+    return response;
   }
 
   /**
@@ -122,7 +122,7 @@ class AuditService {
       `/audit/security-events/${id}/resolve/`,
       { notes }
     );
-    return response.data;
+    return response;
   }
 
   /**
@@ -132,7 +132,7 @@ class AuditService {
     const response = await apiClient.get<SecurityStats>(
       '/audit/security-events/stats/'
     );
-    return response.data;
+    return response;
   }
 }
 

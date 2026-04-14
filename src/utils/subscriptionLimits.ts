@@ -2,7 +2,11 @@
  * Utilidades para verificar límites de suscripción
  */
 
-import { getMySubscription, type Subscription } from '../features/saas/services/subscriptionsApi';
+import {
+  getMySubscription,
+  hasActiveSubscription,
+  type Subscription,
+} from '../features/saas/services/subscriptionsApi';
 
 export interface LimitCheckResult {
   allowed: boolean;
@@ -23,7 +27,7 @@ export async function checkResourceLimit(
   try {
     const subscription = await getMySubscription();
     
-    if (!subscription) {
+    if (!subscription || !hasActiveSubscription(subscription)) {
       return {
         allowed: false,
         message: 'No tienes una suscripción activa. Por favor, selecciona un plan.',
@@ -85,7 +89,10 @@ export function getResourceLimitInfo(
       resourceName = 'solicitudes este mes';
       break;
     case 'storage':
-      currentUsage = subscription.current_storage_gb;
+      currentUsage =
+        typeof subscription.current_storage_gb === 'number'
+          ? subscription.current_storage_gb
+          : Number.parseFloat(subscription.current_storage_gb) || 0;
       maxLimit = subscription.plan.max_storage_gb;
       resourceName = 'GB de almacenamiento';
       break;

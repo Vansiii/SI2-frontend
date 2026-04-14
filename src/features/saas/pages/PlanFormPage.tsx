@@ -7,7 +7,6 @@ import {
   createSubscriptionPlan,
   updateSubscriptionPlan,
 } from '../services/subscriptionsApi';
-import type { SubscriptionPlan } from '../services/subscriptionsApi';
 import { LoadingState } from '../../../components/ui/LoadingState';
 
 export function PlanFormPage() {

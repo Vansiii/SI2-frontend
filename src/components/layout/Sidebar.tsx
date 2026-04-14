@@ -11,8 +11,7 @@ import {
   UserCircle,
   Package,
   CreditCard,
-  FileText,
-  AlertTriangle
+  FileText
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../features/auth/hooks/useAuth';

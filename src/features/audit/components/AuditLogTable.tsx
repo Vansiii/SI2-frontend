@@ -1,10 +1,7 @@
 /**
  * Tabla de logs de auditoría
  */
-import { useState } from 'react';
 import { Eye } from 'lucide-react';
-import { Button } from '../../../components/ui/Button';
-import { Modal } from '../../../components/ui/Modal';
 import type { AuditLogList } from '../types';
 
 interface AuditLogTableProps {

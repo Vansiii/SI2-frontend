@@ -227,7 +227,7 @@ export function LandingPage() {
               </div>
             ) : (
               <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto items-center">
-                {plans.map((plan, index) => {
+                {plans.map((plan) => {
                   const isPopular = getPopularPlan()?.id === plan.id;
                   const isSelected = selectedPlan === plan.id;
                   const price = formatPrice(plan);
