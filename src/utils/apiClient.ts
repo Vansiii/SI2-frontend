@@ -268,3 +268,5 @@ class ApiClient {
 
 // Exportar instancia única
 export const apiClient = new ApiClient();
+// Exportar también como default para compatibilidad
+export default apiClient;

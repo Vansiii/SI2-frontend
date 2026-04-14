@@ -6,6 +6,7 @@ export interface SaasRegistrationData {
   email: string;
   password: string;
   confirmPassword: string;
+  selectedPlanId?: number;
 }
 
 export interface RegisterUserResponse {

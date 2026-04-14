@@ -1,9 +1,71 @@
 import { Link } from 'react-router-dom';
-import { Shield, Zap, BarChart3, CheckCircle2, Building2, Users, ChevronRight, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { Shield, Zap, BarChart3, CheckCircle2, Building2, Users, ChevronRight, Menu, X, Star, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { getSubscriptionPlans, calculateMonthlyPrice, type SubscriptionPlan } from '../../saas/services/subscriptionsApi';
 
 export function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedPlan, setSelectedPlan] = useState<number | null>(null);
+
+  useEffect(() => {
+    loadPlans();
+  }, []);
+
+  const loadPlans = async () => {
+    try {
+      const plansData = await getSubscriptionPlans();
+      // Ordenar por display_order y filtrar solo activos
+      const activePlans = plansData
+        .filter(plan => plan.is_active)
+        .sort((a, b) => a.display_order - b.display_order);
+      setPlans(activePlans);
+    } catch (error) {
+      console.error('Error loading plans:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePlanSelect = (planId: number) => {
+    setSelectedPlan(planId);
+  };
+
+  const getRegistrationUrl = () => {
+    if (selectedPlan) {
+      return `/register?plan=${selectedPlan}`;
+    }
+    return '/register';
+  };
+
+  const formatPrice = (plan: SubscriptionPlan) => {
+    const price = parseFloat(plan.price);
+    if (price === 0) return 'Gratis';
+    
+    const monthlyPrice = calculateMonthlyPrice(plan);
+    return `$${monthlyPrice.toFixed(0)}`;
+  };
+
+  const getBillingText = (plan: SubscriptionPlan) => {
+    if (parseFloat(plan.price) === 0) return '';
+    
+    switch (plan.billing_cycle) {
+      case 'MONTHLY':
+        return '/mes';
+      case 'QUARTERLY':
+        return '/mes (facturado trimestralmente)';
+      case 'ANNUAL':
+        return '/mes (facturado anualmente)';
+      default:
+        return '/mes';
+    }
+  };
+
+  const getPopularPlan = () => {
+    // El plan más popular es el que tiene display_order = 2 (generalmente el plan Pro)
+    return plans.find(plan => plan.display_order === 2);
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
@@ -93,8 +155,8 @@ export function LandingPage() {
             </p>
             
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 animate-fade-in-up delay-300">
-              <Link to="/register" className="inline-flex items-center justify-center px-6 py-3.5 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)] hover:-translate-y-1 transition-all w-full sm:w-auto">
-                Comenzar gratis
+              <Link to={getRegistrationUrl()} className="inline-flex items-center justify-center px-6 py-3.5 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)] hover:-translate-y-1 transition-all w-full sm:w-auto">
+                {selectedPlan ? 'Registrarse con plan seleccionado' : 'Comenzar gratis'}
                 <ChevronRight className="ml-2 h-5 w-5" />
               </Link>
               <a href="#pricing" className="inline-flex items-center justify-center px-6 py-3.5 text-base font-medium text-slate-700 bg-white/80 backdrop-blur border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-xl shadow-sm hover:shadow hover:-translate-y-1 transition-all w-full sm:w-auto">
@@ -158,70 +220,150 @@ export function LandingPage() {
               <p className="text-lg text-slate-600">Comienza gratis y escala cuando lo necesites. Sin contratos ocultos.</p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto items-center">
-              {/* Basic Plan */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-sm border border-slate-200 flex flex-col h-full hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
-                <h3 className="text-xl font-semibold text-slate-900 mb-2">Básico</h3>
-                <p className="text-slate-500 text-sm mb-6">Ideal para instituciones nacientes.</p>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold text-slate-900">$0</span>
-                  <span className="text-slate-500">/mes</span>
-                </div>
-                <ul className="space-y-4 mb-8 flex-1">
-                  <li className="flex gap-3 text-slate-600"><CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> Hasta 500 clientes</li>
-                  <li className="flex gap-3 text-slate-600"><CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> 2 Usuarios admin</li>
-                  <li className="flex gap-3 text-slate-600"><CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> Gestión de créditos básica</li>
-                  <li className="flex gap-3 text-slate-600"><CheckCircle2 className="h-5 w-5 text-slate-300 shrink-0" /> Reportes personalizados</li>
-                </ul>
-                <Link to="/register" className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-900 font-medium rounded-xl text-center transition-colors">
-                  Empezar gratis
-                </Link>
+            {loading ? (
+              <div className="flex justify-center items-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <span className="ml-2 text-slate-600">Cargando planes...</span>
               </div>
+            ) : (
+              <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto items-center">
+                {plans.map((plan, index) => {
+                  const isPopular = getPopularPlan()?.id === plan.id;
+                  const isSelected = selectedPlan === plan.id;
+                  const price = formatPrice(plan);
+                  const billingText = getBillingText(plan);
+                  
+                  return (
+                    <div
+                      key={plan.id}
+                      className={`
+                        relative rounded-3xl p-8 shadow-sm border flex flex-col h-full transition-all duration-300 cursor-pointer
+                        ${isPopular 
+                          ? 'bg-blue-600 border-blue-500 shadow-[0_20px_40px_-15px_rgba(37,99,235,0.5)] transform md:-translate-y-4 hover:-translate-y-6' 
+                          : 'bg-white/80 backdrop-blur-sm border-slate-200 hover:shadow-xl hover:-translate-y-2'
+                        }
+                        ${isSelected && !isPopular ? 'ring-2 ring-blue-500 border-blue-500' : ''}
+                        ${isSelected && isPopular ? 'ring-2 ring-white/50' : ''}
+                      `}
+                      onClick={() => handlePlanSelect(plan.id)}
+                    >
+                      {/* Badge "Más Popular" */}
+                      {isPopular && (
+                        <div className="absolute top-0 inset-x-0 -translate-y-1/2 flex justify-center">
+                          <span className="bg-gradient-to-r from-blue-200 to-blue-100 text-blue-900 text-xs font-bold uppercase tracking-wider py-1 px-4 rounded-full shadow-sm flex items-center gap-1">
+                            <Star className="h-3 w-3" />
+                            Más Popular
+                          </span>
+                        </div>
+                      )}
 
-              {/* Pro Plan */}
-              <div className="bg-blue-600 rounded-3xl p-8 shadow-[0_20px_40px_-15px_rgba(37,99,235,0.5)] border border-blue-500 flex flex-col h-full relative transform md:-translate-y-4 hover:-translate-y-6 transition-all duration-300">
-                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full border-8 border-white/10 shrink-0 pointer-events-none"></div>
-                <div className="absolute top-0 inset-x-0 -translate-y-1/2 flex justify-center">
-                  <span className="bg-gradient-to-r from-blue-200 to-blue-100 text-blue-900 text-xs font-bold uppercase tracking-wider py-1 px-4 rounded-full shadow-sm">
-                    Más Popular
+                      {/* Badge "Seleccionado" */}
+                      {isSelected && (
+                        <div className="absolute top-4 right-4">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center ${isPopular ? 'bg-white/20' : 'bg-blue-600'}`}>
+                            <CheckCircle2 className={`h-4 w-4 ${isPopular ? 'text-white' : 'text-white'}`} />
+                          </div>
+                        </div>
+                      )}
+
+                      <h3 className={`text-xl font-semibold mb-2 relative z-10 ${isPopular ? 'text-white' : 'text-slate-900'}`}>
+                        {plan.name}
+                      </h3>
+                      
+                      <p className={`text-sm mb-6 relative z-10 ${isPopular ? 'text-blue-200' : 'text-slate-500'}`}>
+                        {plan.description}
+                      </p>
+                      
+                      <div className="mb-6 relative z-10">
+                        <span className={`text-4xl font-bold ${isPopular ? 'text-white' : 'text-slate-900'}`}>
+                          {price}
+                        </span>
+                        <span className={`${isPopular ? 'text-blue-200' : 'text-slate-500'}`}>
+                          {billingText}
+                        </span>
+                      </div>
+
+                      <ul className="space-y-4 mb-8 flex-1 relative z-10">
+                        {/* Límites principales */}
+                        <li className={`flex gap-3 ${isPopular ? 'text-blue-100' : 'text-slate-600'}`}>
+                          <CheckCircle2 className={`h-5 w-5 shrink-0 ${isPopular ? 'text-blue-300' : 'text-emerald-500'}`} />
+                          {plan.max_users === -1 ? 'Usuarios ilimitados' : `Hasta ${plan.max_users} usuarios`}
+                        </li>
+                        
+                        <li className={`flex gap-3 ${isPopular ? 'text-blue-100' : 'text-slate-600'}`}>
+                          <CheckCircle2 className={`h-5 w-5 shrink-0 ${isPopular ? 'text-blue-300' : 'text-emerald-500'}`} />
+                          {plan.max_loans_per_month === -1 ? 'Préstamos ilimitados' : `${plan.max_loans_per_month} préstamos/mes`}
+                        </li>
+
+                        {/* Features principales */}
+                        {plan.has_workflows && (
+                          <li className={`flex gap-3 ${isPopular ? 'text-blue-100' : 'text-slate-600'}`}>
+                            <CheckCircle2 className={`h-5 w-5 shrink-0 ${isPopular ? 'text-blue-300' : 'text-emerald-500'}`} />
+                            Workflows de aprobación
+                          </li>
+                        )}
+                        
+                        {plan.has_reporting && (
+                          <li className={`flex gap-3 ${isPopular ? 'text-blue-100' : 'text-slate-600'}`}>
+                            <CheckCircle2 className={`h-5 w-5 shrink-0 ${isPopular ? 'text-blue-300' : 'text-emerald-500'}`} />
+                            Reportes avanzados
+                          </li>
+                        )}
+
+                        {plan.has_api_access && (
+                          <li className={`flex gap-3 ${isPopular ? 'text-blue-100' : 'text-slate-600'}`}>
+                            <CheckCircle2 className={`h-5 w-5 shrink-0 ${isPopular ? 'text-blue-300' : 'text-emerald-500'}`} />
+                            Acceso API
+                          </li>
+                        )}
+
+                        {plan.has_priority_support && (
+                          <li className={`flex gap-3 ${isPopular ? 'text-blue-100' : 'text-slate-600'}`}>
+                            <CheckCircle2 className={`h-5 w-5 shrink-0 ${isPopular ? 'text-blue-300' : 'text-emerald-500'}`} />
+                            Soporte prioritario 24/7
+                          </li>
+                        )}
+                      </ul>
+
+                      <Link 
+                        to={`/register?plan=${plan.id}`}
+                        className={`
+                          w-full py-3 px-4 font-medium rounded-xl text-center transition-all relative z-10 block
+                          ${isPopular 
+                            ? 'bg-white hover:bg-blue-50 text-blue-600 hover:scale-[1.02] shadow-sm' 
+                            : isSelected
+                              ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                              : 'bg-slate-100 hover:bg-slate-200 text-slate-900'
+                          }
+                        `}
+                      >
+                        {parseFloat(plan.price) === 0 
+                          ? 'Empezar gratis' 
+                          : plan.trial_days > 0 
+                            ? `Probar ${plan.trial_days} días gratis`
+                            : 'Seleccionar plan'
+                        }
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Mensaje de plan seleccionado */}
+            {selectedPlan && (
+              <div className="mt-12 text-center">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-blue-700">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span className="text-sm font-medium">
+                    Plan {plans.find(p => p.id === selectedPlan)?.name} seleccionado
                   </span>
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2 relative z-10">Pro</h3>
-                <p className="text-blue-200 text-sm mb-6 relative z-10">Para instituciones en crecimiento activo.</p>
-                <div className="mb-6 relative z-10">
-                  <span className="text-4xl font-bold text-white">$199</span>
-                  <span className="text-blue-200">/mes</span>
-                </div>
-                <ul className="space-y-4 mb-8 flex-1 relative z-10">
-                  <li className="flex gap-3 text-blue-100"><CheckCircle2 className="h-5 w-5 text-blue-300 shrink-0" /> Clientes ilimitados</li>
-                  <li className="flex gap-3 text-blue-100"><CheckCircle2 className="h-5 w-5 text-blue-300 shrink-0" /> 10 Usuarios admin</li>
-                  <li className="flex gap-3 text-blue-100"><CheckCircle2 className="h-5 w-5 text-blue-300 shrink-0" /> Workflows de aprobación</li>
-                  <li className="flex gap-3 text-blue-100"><CheckCircle2 className="h-5 w-5 text-blue-300 shrink-0" /> Reportes a medida</li>
-                </ul>
-                <Link to="/register" className="w-full py-3 px-4 bg-white hover:bg-blue-50 text-blue-600 font-medium rounded-xl text-center transition-transform hover:scale-[1.02] shadow-sm relative z-10">
-                  Probar Pro 14 días
-                </Link>
+                <p className="mt-2 text-sm text-slate-600">
+                  Haz clic en "Registrarse con plan seleccionado" para continuar
+                </p>
               </div>
-
-              {/* Premium Plan */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-sm border border-slate-200 flex flex-col h-full hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
-                <h3 className="text-xl font-semibold text-slate-900 mb-2">Premium</h3>
-                <p className="text-slate-500 text-sm mb-6">Máximo poder y soporte dedicado.</p>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold text-slate-900">$499</span>
-                  <span className="text-slate-500">/mes</span>
-                </div>
-                <ul className="space-y-4 mb-8 flex-1">
-                  <li className="flex gap-3 text-slate-600"><CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> Todo en Pro</li>
-                  <li className="flex gap-3 text-slate-600"><CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> Usuarios ilimitados</li>
-                  <li className="flex gap-3 text-slate-600"><CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> API Access</li>
-                  <li className="flex gap-3 text-slate-600"><CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" /> SLA & Soporte 24/7</li>
-                </ul>
-                <Link to="/register" className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-900 font-medium rounded-xl text-center transition-colors">
-                  Contactar Ventas
-                </Link>
-              </div>
-            </div>
+            )}
           </div>
         </section>
 
@@ -255,8 +397,8 @@ export function LandingPage() {
           <div className="relative z-10 max-w-3xl mx-auto">
             <h2 className="text-4xl font-bold text-white mb-6">¿Listo para modernizar tu institución?</h2>
             <p className="text-blue-200 text-xl mx-auto mb-10">Únete a cientos de instituciones que ya confían en FinCore para operar de manera eficiente.</p>
-            <Link to="/register" className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-blue-600 bg-white hover:bg-blue-50 rounded-xl shadow-2xl hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] hover:-translate-y-1 transition-all duration-300">
-              Crear cuenta gratis ahora
+            <Link to={getRegistrationUrl()} className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-blue-600 bg-white hover:bg-blue-50 rounded-xl shadow-2xl hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] hover:-translate-y-1 transition-all duration-300">
+              {selectedPlan ? 'Registrarse con plan seleccionado' : 'Crear cuenta gratis ahora'}
             </Link>
           </div>
         </section>

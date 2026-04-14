@@ -145,6 +145,23 @@ const LoanApplicationListPage = lazy(() => import('./features/loans/pages/LoanAp
 const LoanApplicationFormPage = lazy(() => import('./features/loans/pages/LoanApplicationFormPage'));
 const LoanApplicationDetailPage = lazy(() => import('./features/loans/pages/LoanApplicationDetailPage'));
 
+// Importar Audit pages
+const AuditDashboard = lazy(() =>
+  import('./features/audit/pages/AuditDashboard').then((module) => ({
+    default: module.AuditDashboard,
+  }))
+);
+const AuditLogsPage = lazy(() =>
+  import('./features/audit/pages/AuditLogsPage').then((module) => ({
+    default: module.AuditLogsPage,
+  }))
+);
+const SecurityEventsPage = lazy(() =>
+  import('./features/audit/pages/SecurityEventsPage').then((module) => ({
+    default: module.SecurityEventsPage,
+  }))
+);
+
 // Importar página de gestión de permisos de roles
 const RolePermissionManagementPage = lazy(
   () => import('./features/roles/pages/RolePermissionManagementPage')
@@ -505,6 +522,32 @@ function App() {
               element={
                 <ProtectedRoute>
                   <PlanFormPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Auditoría y Seguridad (Solo para superadmins) */}
+            <Route
+              path="/audit/dashboard"
+              element={
+                <ProtectedRoute>
+                  <AuditDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/audit/logs"
+              element={
+                <ProtectedRoute>
+                  <AuditLogsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/audit/security-events"
+              element={
+                <ProtectedRoute>
+                  <SecurityEventsPage />
                 </ProtectedRoute>
               }
             />
