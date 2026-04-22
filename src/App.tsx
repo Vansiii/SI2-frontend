@@ -134,6 +134,13 @@ const ProductFormPage = lazy(() =>
   }))
 );
 
+// Importar Branches page
+const BranchListPage = lazy(() =>
+  import('./features/branches/pages/BranchListPage').then((module) => ({
+    default: module.BranchListPage,
+  }))
+);
+
 // Importar Subscription pages
 const SubscriptionPlansPage = lazy(() => import('./features/saas/pages/SubscriptionPlansPage'));
 const CurrentSubscriptionPage = lazy(() => import('./features/saas/pages/CurrentSubscriptionPage'));
@@ -356,6 +363,16 @@ function App() {
                   <PermissionGuard permission="products.edit">
                     <ProductFormPage />
                   </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Sucursales */}
+            <Route
+              path="/branches"
+              element={
+                <ProtectedRoute>
+                  <BranchListPage />
                 </ProtectedRoute>
               }
             />

@@ -3,6 +3,7 @@ import {
   Users, 
   Shield, 
   Building2, 
+  Building,
   Home,
   LayoutDashboard,
   PieChart,
@@ -21,6 +22,7 @@ interface NavItem {
   icon: React.ReactNode;
   label: string;
   permission?: string;
+  adminOnly?: boolean;
 }
 
 interface SidebarProps {
@@ -33,10 +35,11 @@ interface SidebarProps {
  */
 export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {}) {
   const [internalIsOpen, setInternalIsOpen] = useState(true);
-  const { hasPermission, userType } = useAuth();
+  const { hasPermission, userType, roles } = useAuth();
   
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
   const toggleSidebar = onToggle || (() => setInternalIsOpen(!internalIsOpen));
+  const isTenantAdmin = roles.some((role) => role.toLowerCase().includes('admin'));
 
   // Definir items del menú (solo para usuarios tenant)
   const menuItems: NavItem[] = [
@@ -68,6 +71,12 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
       icon: <Users className="h-5 w-5" />,
       label: 'Usuarios',
       permission: 'users.view',
+    },
+    {
+      to: '/branches',
+      icon: <Building className="h-5 w-5" />,
+      label: 'Sucursales',
+      adminOnly: true,
     },
     {
       to: '/roles',
@@ -137,6 +146,7 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
   const visibleItems = userType === 'saas_admin' 
     ? [] // SaaS admin NO ve módulos de tenant
     : menuItems.filter(item => {
+        if (item.adminOnly && !isTenantAdmin) return false;
         if (!item.permission) return true;
         return hasPermission(item.permission);
       });
