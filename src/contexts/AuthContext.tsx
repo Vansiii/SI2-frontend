@@ -1,8 +1,10 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import type { User, Institution, LoginCredentials, LoginResponse, AuthContextType } from '../types';
+import type { User, Institution, LoginCredentials, LoginResponse, AuthContextType, TenantBranding } from '../types';
 import { getAccessToken, clearTokens, saveTokens } from '../utils/tokenManager';
 import { apiClient } from '../utils/apiClient';
+import { applyTenantBrandingToDocument } from '../features/branding/brandingTheme';
+import { getTenantBranding } from '../features/branding/services/brandingApi';
 
 type SessionAuthMetadata = {
   userType?: 'saas_admin' | 'tenant_user';
@@ -24,12 +26,17 @@ function AuthProvider({ children }: AuthProviderProps) {
   const [userType, setUserType] = useState<'saas_admin' | 'tenant_user' | null>(null);
   const [roles, setRoles] = useState<string[]>([]);
   const [permissions, setPermissions] = useState<string[]>([]);
+  const [tenantBranding, setTenantBranding] = useState<TenantBranding | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Cargar datos de sesión al iniciar
   useEffect(() => {
     loadSession();
   }, []);
+
+  useEffect(() => {
+    applyTenantBrandingToDocument(tenantBranding);
+  }, [tenantBranding]);
 
   /**
    * Carga la sesión desde localStorage
@@ -107,6 +114,25 @@ function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const refreshTenantBranding = useCallback(async () => {
+    if (!institution || userType === 'saas_admin') {
+      setTenantBranding(null);
+      return;
+    }
+
+    try {
+      const response = await getTenantBranding();
+      setTenantBranding(response.branding);
+    } catch (error) {
+      console.error('Error loading tenant branding:', error);
+      setTenantBranding(null);
+    }
+  }, [institution, userType]);
+
+  useEffect(() => {
+    void refreshTenantBranding();
+  }, [refreshTenantBranding]);
+
   /**
    * Login del usuario
    */
@@ -163,6 +189,7 @@ function AuthProvider({ children }: AuthProviderProps) {
       setUserType(null);
       setRoles([]);
       setPermissions([]);
+      setTenantBranding(null);
       
       // Limpiar localStorage
       localStorage.removeItem('userType');
@@ -212,10 +239,12 @@ function AuthProvider({ children }: AuthProviderProps) {
     userType,
     roles,
     permissions,
+    tenantBranding,
     isAuthenticated: !!user && !!getAccessToken(),
     isLoading,
     login,
     logout,
+    refreshTenantBranding,
     updateUser,
     updateSession,
     hasPermission,

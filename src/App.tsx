@@ -39,6 +39,11 @@ const ProfilePage = lazy(() =>
     default: module.ProfilePage,
   }))
 );
+const TenantBrandingPage = lazy(() =>
+  import('./features/branding/pages/TenantBrandingPage').then((module) => ({
+    default: module.TenantBrandingPage,
+  }))
+);
 
 // erick sprint 0
 // Importar roles pages
@@ -407,6 +412,17 @@ function App() {
               element={
                 <ProtectedRoute>
                   <SubscriptionSuccessPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/branding"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="institution.edit">
+                    <TenantBrandingPage />
+                  </PermissionGuard>
                 </ProtectedRoute>
               }
             />

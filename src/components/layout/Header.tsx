@@ -12,11 +12,13 @@ interface HeaderProps {
  * Header con información del usuario y opciones
  */
 export function Header({ onMenuClick }: HeaderProps) {
-  const { user, logout, institution } = useAuth();
+  const { user, logout, institution, tenantBranding } = useAuth();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const displayName = tenantBranding?.display_name || institution?.name || 'Sistema';
+  const logoUrl = tenantBranding?.logo_url || null;
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -81,13 +83,17 @@ export function Header({ onMenuClick }: HeaderProps) {
               </button>
             )}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-md">
-                <span className="text-white font-bold text-lg">
-                  {institution?.name?.charAt(0) || 'S'}
-                </span>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shadow-md overflow-hidden bg-(--tenant-primary)">
+                {logoUrl ? (
+                  <img src={logoUrl} alt={displayName} className="h-full w-full object-contain bg-white p-1" />
+                ) : (
+                  <span className="text-(--tenant-on-primary) font-bold text-lg">
+                    {displayName.charAt(0).toUpperCase()}
+                  </span>
+                )}
               </div>
               <span className="font-semibold text-slate-900 text-lg">
-                {institution?.name || 'Sistema'}
+                {displayName}
               </span>
             </div>
           </div>
@@ -99,7 +105,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-all duration-200 border border-transparent hover:border-slate-200"
               type="button"
             >
-              <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-md">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center shadow-md bg-(--tenant-primary)">
                 <span className="text-white font-semibold text-sm">
                   {getInitials()}
                 </span>
@@ -121,11 +127,11 @@ export function Header({ onMenuClick }: HeaderProps) {
 
             {/* Dropdown */}
             {showDropdown && (
-              <div className="absolute right-0 mt-2 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-slate-200 border border-slate-200 py-2 z-50">
+              <div className="absolute right-0 mt-2 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl ring-1 ring-slate-200 py-2 z-50">
                 {/* User info header */}
                 <div className="px-4 py-3 border-b border-slate-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-md">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-md bg-(--tenant-primary)">
                       <span className="text-white font-semibold">
                         {getInitials()}
                       </span>

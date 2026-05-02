@@ -91,6 +91,26 @@ export interface Institution {
   institution_type: 'banking' | 'microfinance' | 'cooperative' | 'fintech';
 }
 
+export interface TenantBranding {
+  id: number | null;
+  tenant: {
+    id: number;
+    name: string;
+    slug: string;
+  };
+  display_name: string;
+  logo: string | null;
+  logo_url: string | null;
+  primary_color: string;
+  secondary_color: string;
+  accent_color: string;
+  background_color: string;
+  text_color: string;
+  is_active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
 // ============================================
 // Autenticación
 // ============================================
@@ -206,6 +226,7 @@ export interface TwoFactorDisableResponse {
 export interface AuthContextType {
   user: User | null;
   institution: Institution | null;
+  tenantBranding: TenantBranding | null;
   role: string | null;
   userType: 'saas_admin' | 'tenant_user' | null;
   roles: string[];
@@ -214,6 +235,7 @@ export interface AuthContextType {
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<LoginResponse>;
   logout: () => Promise<void>;
+  refreshTenantBranding: () => Promise<void>;
   updateUser: (user: User) => void;
   updateSession: (
     user: User,

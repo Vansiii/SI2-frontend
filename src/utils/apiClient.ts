@@ -43,8 +43,11 @@ class ApiClient {
       Object.assign(headers, config.headers);
     }
 
-    // Agregar Content-Type por defecto si no existe
-    if (!headers['Content-Type']) {
+    // Agregar Content-Type por defecto si no existe y el body no es FormData
+    const isFormData = fetchConfig.body instanceof FormData;
+    if (isFormData) {
+      delete headers['Content-Type'];
+    } else if (!headers['Content-Type']) {
       headers['Content-Type'] = 'application/json';
     }
 
@@ -229,7 +232,7 @@ class ApiClient {
     return this.request<T>(endpoint, {
       ...config,
       method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
+      body: data instanceof FormData ? data : data ? JSON.stringify(data) : undefined,
     });
   }
 
@@ -240,7 +243,7 @@ class ApiClient {
     return this.request<T>(endpoint, {
       ...config,
       method: 'PUT',
-      body: data ? JSON.stringify(data) : undefined,
+      body: data instanceof FormData ? data : data ? JSON.stringify(data) : undefined,
     });
   }
 
@@ -251,7 +254,7 @@ class ApiClient {
     return this.request<T>(endpoint, {
       ...config,
       method: 'PATCH',
-      body: data ? JSON.stringify(data) : undefined,
+      body: data instanceof FormData ? data : data ? JSON.stringify(data) : undefined,
     });
   }
 

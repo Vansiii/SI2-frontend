@@ -12,7 +12,8 @@ import {
   UserCircle,
   Package,
   CreditCard,
-  FileText
+  FileText,
+  Palette,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../features/auth/hooks/useAuth';
@@ -35,11 +36,12 @@ interface SidebarProps {
  */
 export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {}) {
   const [internalIsOpen, setInternalIsOpen] = useState(true);
-  const { hasPermission, userType, roles } = useAuth();
+  const { hasPermission, userType, roles, institution, tenantBranding } = useAuth();
   
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
   const toggleSidebar = onToggle || (() => setInternalIsOpen(!internalIsOpen));
   const isTenantAdmin = roles.some((role) => role.toLowerCase().includes('admin'));
+  const displayName = tenantBranding?.display_name || institution?.name || 'Sistema';
 
   // Definir items del menú (solo para usuarios tenant)
   const menuItems: NavItem[] = [
@@ -71,6 +73,13 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
       icon: <Users className="h-5 w-5" />,
       label: 'Usuarios',
       permission: 'users.view',
+    },
+    {
+      to: '/branding',
+      icon: <Palette className="h-5 w-5" />,
+      label: 'Personalización Visual',
+      permission: 'institution.edit',
+      adminOnly: true,
     },
     {
       to: '/branches',
@@ -184,6 +193,30 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
           )}
         </button>
 
+        {userType !== 'saas_admin' && (
+          <div className="px-3 pt-6">
+            <div className="rounded-2xl border border-slate-200 bg-white/75 shadow-sm p-3">
+              <div className={`flex items-center gap-3 ${!isOpen ? 'justify-center' : ''}`}>
+                <div className="h-11 w-11 rounded-xl bg-(--tenant-primary) flex items-center justify-center text-(--tenant-on-primary) font-bold overflow-hidden shrink-0">
+                  {tenantBranding?.logo_url ? (
+                    <img src={tenantBranding.logo_url} alt={displayName} className="h-full w-full object-contain bg-white p-1" />
+                  ) : (
+                    <span>{displayName.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+                {isOpen && (
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-slate-900 truncate">{displayName}</p>
+                    <p className="text-xs text-slate-500 truncate">
+                      {tenantBranding ? 'Identidad white-label activa' : 'Identidad por defecto'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         <nav className="h-full overflow-y-auto py-6 px-3">
           {/* Título de sección para SaaS */}
           {userType === 'saas_admin' && (
@@ -204,8 +237,8 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
                       className={({ isActive }) =>
                         `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                           isActive
-                            ? 'bg-blue-600 shadow-md shadow-blue-500/20 text-white'
-                            : 'text-slate-700 hover:bg-slate-100'
+                            ? 'bg-(--tenant-primary) shadow-md text-(--tenant-on-primary)'
+                            : 'text-slate-700 hover:bg-(--tenant-primary-soft) hover:text-(--tenant-primary)'
                         } ${!isOpen ? 'justify-center' : ''}`
                       }
                     >
@@ -232,8 +265,8 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
                       className={({ isActive }) =>
                         `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                           isActive
-                            ? 'bg-blue-600 shadow-md shadow-blue-500/20 text-white'
-                            : 'text-slate-700 hover:bg-slate-100'
+                            ? 'bg-(--tenant-primary) shadow-md text-(--tenant-on-primary)'
+                            : 'text-slate-700 hover:bg-(--tenant-primary-soft) hover:text-(--tenant-primary)'
                         } ${!isOpen ? 'justify-center' : ''}`
                       }
                     >
@@ -263,8 +296,8 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                         isActive
-                          ? 'bg-blue-600 shadow-md shadow-blue-500/20 text-white'
-                          : 'text-slate-700 hover:bg-slate-100'
+                          ? 'bg-(--tenant-primary) shadow-md text-(--tenant-on-primary)'
+                          : 'text-slate-700 hover:bg-(--tenant-primary-soft) hover:text-(--tenant-primary)'
                       } ${!isOpen ? 'justify-center' : ''}`
                     }
                   >

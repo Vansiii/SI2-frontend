@@ -8,7 +8,9 @@ import { useAuth } from '../../features/auth/hooks/useAuth';
  */
 export function AppBar() {
   const navigate = useNavigate();
-  const { institution } = useAuth();
+  const { institution, tenantBranding } = useAuth();
+  const displayName = tenantBranding?.display_name || institution?.name || 'Sistema';
+  const logoUrl = tenantBranding?.logo_url || null;
 
   return (
     <header className="bg-white shadow-sm">
@@ -19,13 +21,17 @@ export function AppBar() {
             onClick={() => navigate('/home')}
             className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           >
-            <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-blue-600 shadow-lg">
-              <Building2 className="h-6 w-6 text-white" />
+            <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-(--tenant-primary) shadow-lg overflow-hidden">
+              {logoUrl ? (
+                <img src={logoUrl} alt={displayName} className="h-full w-full object-contain bg-white p-1" />
+              ) : (
+                <Building2 className="h-6 w-6 text-(--tenant-on-primary)" />
+              )}
             </div>
-            {institution && (
+            {displayName && (
               <div className="hidden sm:block">
                 <h1 className="text-lg font-semibold text-slate-900">
-                  {institution.name}
+                  {displayName}
                 </h1>
               </div>
             )}
