@@ -2,7 +2,7 @@
  * Página de Éxito de Suscripción - Diseño Consistente con el Sistema
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   CheckCircle,
@@ -19,6 +19,10 @@ export default function SubscriptionSuccessPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { planName, trialDays } = location.state || {};
+  // Use a function to initialize state to lazily compute the date
+  const [trialEndDate] = useState<Date>(() => 
+    new Date(Date.now() + (trialDays || 14) * 24 * 60 * 60 * 1000)
+  );
 
   useEffect(() => {
     // Si no hay datos, redirigir a planes
@@ -110,7 +114,7 @@ export default function SubscriptionSuccessPage() {
               <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-lg border border-slate-200">
                 <Calendar className="w-5 h-5 text-slate-600" />
                 <span className="font-bold text-slate-900">
-                  Hasta {new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES', {
+                  Hasta {trialEndDate.toLocaleDateString('es-ES', {
                     day: 'numeric',
                     month: 'short'
                   })}

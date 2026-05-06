@@ -1,567 +1,368 @@
-/**
- * Página de detalle de solicitud de crédito
- */
-
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, CheckCircle2, MessageSquare, Send, ShieldAlert } from 'lucide-react';
 import {
+  addLoanApplicationComment,
+  changeLoanApplicationStatus,
   getLoanApplication,
-  getLoanApplicationDocuments,
-  getLoanApplicationComments,
-  getStatusColor,
-  getRiskLevelColor,
-  formatApplicationNumber,
-  getAvailableActions,
+  submitLoanApplication,
   type LoanApplication,
-  type LoanApplicationDocument,
-  type LoanApplicationComment,
+  type LoanApplicationStatus,
 } from '../services/loansApi';
-import { SubmitApplicationModal } from '../components/SubmitApplicationModal';
-import { ReviewApplicationModal } from '../components/ReviewApplicationModal';
-import { ApproveApplicationModal } from '../components/ApproveApplicationModal';
-import { RejectApplicationModal } from '../components/RejectApplicationModal';
-import { DisburseApplicationModal } from '../components/DisburseApplicationModal';
-import { DocumentList } from '../components/DocumentList';
-import { CommentList } from '../components/CommentList';
+import {
+  ApplicationComments,
+  ApplicationDetailsGrid,
+  ApplicationDocuments,
+  ApplicationHeader,
+  ApplicationTimeline,
+  CreditApplicationStatusBadge,
+  SectionCard,
+  formatDateTime,
+} from '../components/CreditApplicationComponents';
+
+type ActionFormValues = {
+  new_status: LoanApplicationStatus | '';
+  reason: string;
+  approved_amount: string;
+  approved_term_months: number | '';
+  approved_interest_rate: string;
+};
+
+const actionDefaults: ActionFormValues = {
+  new_status: '',
+  reason: '',
+  approved_amount: '',
+  approved_term_months: '',
+  approved_interest_rate: '',
+};
 
 export default function LoanApplicationDetailPage() {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  
+  const params = useParams();
+  const applicationId = Number(params.id);
+
   const [application, setApplication] = useState<LoanApplication | null>(null);
-  const [documents, setDocuments] = useState<LoanApplicationDocument[]>([]);
-  const [comments, setComments] = useState<LoanApplicationComment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  // Estados de modales
-  const [showSubmitModal, setShowSubmitModal] = useState(false);
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [showApproveModal, setShowApproveModal] = useState(false);
-  const [showRejectModal, setShowRejectModal] = useState(false);
-  const [showDisburseModal, setShowDisburseModal] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [isInternalComment, setIsInternalComment] = useState(true);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<ActionFormValues>({ defaultValues: actionDefaults });
+
+  const selectedAction = watch('new_status');
+  const timeline = application?.timeline || [];
+  const comments = application?.comments || [];
+  const documents = application?.documents || [];
 
   useEffect(() => {
-    if (id) {
-      loadApplicationData();
+    if (Number.isFinite(applicationId)) {
+      loadApplication();
     }
-  }, [id]);
+  }, [applicationId]);
 
-  const loadApplicationData = async () => {
+  async function loadApplication() {
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
-      setError(null);
-      
-      const [appData, docsData, commentsData] = await Promise.all([
-        getLoanApplication(parseInt(id!)),
-        getLoanApplicationDocuments(parseInt(id!)),
-        getLoanApplicationComments(parseInt(id!)),
-      ]);
-      
-      setApplication(appData);
-      setDocuments(docsData);
-      setComments(commentsData);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al cargar la solicitud');
+      const detail = await getLoanApplication(applicationId);
+      setApplication(detail);
+      reset(actionDefaults);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : 'No fue posible cargar la solicitud');
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const handleActionClick = (action: string) => {
-    switch (action) {
-      case 'edit':
-        navigate(`/loans/${id}/edit`);
-        break;
-      case 'submit':
-        setShowSubmitModal(true);
-        break;
-      case 'review':
-      case 'calculate-score':
-        setShowReviewModal(true);
-        break;
-      case 'approve':
-        setShowApproveModal(true);
-        break;
-      case 'reject':
-        setShowRejectModal(true);
-        break;
-      case 'disburse':
-        setShowDisburseModal(true);
-        break;
+  const canSubmit = useMemo(
+    () => application?.status === 'DRAFT' || application?.status === 'OBSERVED',
+    [application]
+  );
+
+  async function handleSubmitApplication() {
+    if (!application) {
+      return;
     }
-  };
 
-  const handleModalSuccess = () => {
-    // Recargar datos después de una acción exitosa
-    loadApplicationData();
-  };
+    setSaving(true);
+    setError(null);
 
-  const getStatusBadge = (status: string, statusDisplay: string) => {
-    const color = getStatusColor(status);
-    const colorClasses = {
-      gray: 'bg-gray-100 text-gray-800',
-      blue: 'bg-blue-100 text-blue-800',
-      yellow: 'bg-yellow-100 text-yellow-800',
-      green: 'bg-green-100 text-green-800',
-      red: 'bg-red-100 text-red-800',
-      emerald: 'bg-emerald-100 text-emerald-800',
-    };
-    
+    try {
+      const updated = await submitLoanApplication(application.id);
+      setApplication(updated);
+      await loadApplication();
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'No fue posible enviar la solicitud');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleAction(values: ActionFormValues) {
+    if (!application || !values.new_status) {
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      const updated = await changeLoanApplicationStatus(application.id, {
+        new_status: values.new_status as Exclude<LoanApplicationStatus, 'DRAFT'>,
+        reason: values.reason || undefined,
+        approved_amount: values.approved_amount || undefined,
+        approved_term_months: values.approved_term_months ? Number(values.approved_term_months) : undefined,
+        approved_interest_rate: values.approved_interest_rate || undefined,
+      });
+      setApplication(updated);
+      reset(actionDefaults);
+      await loadApplication();
+    } catch (actionError) {
+      setError(actionError instanceof Error ? actionError.message : 'No fue posible cambiar el estado');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleAddComment(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!application || !commentText.trim()) {
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      await addLoanApplicationComment(application.id, commentText.trim(), isInternalComment);
+      setCommentText('');
+      await loadApplication();
+    } catch (commentError) {
+      setError(commentError instanceof Error ? commentError.message : 'No fue posible agregar el comentario');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const actionNeedsApprovalFields = selectedAction === 'APPROVED';
+
+  if (loading && !application) {
     return (
-      <span className={`px-3 py-1 text-sm font-medium rounded-full ${colorClasses[color as keyof typeof colorClasses] || colorClasses.gray}`}>
-        {statusDisplay}
-      </span>
-    );
-  };
-
-  const getRiskBadge = (riskLevel: string | undefined, riskLevelDisplay: string | undefined) => {
-    if (!riskLevel || !riskLevelDisplay) return null;
-    
-    const color = getRiskLevelColor(riskLevel);
-    const colorClasses = {
-      green: 'bg-green-100 text-green-800',
-      yellow: 'bg-yellow-100 text-yellow-800',
-      orange: 'bg-orange-100 text-orange-800',
-      red: 'bg-red-100 text-red-800',
-      gray: 'bg-gray-100 text-gray-800',
-    };
-    
-    return (
-      <span className={`px-3 py-1 text-sm font-medium rounded-full ${colorClasses[color as keyof typeof colorClasses] || colorClasses.gray}`}>
-        {riskLevelDisplay}
-      </span>
-    );
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando solicitud...</p>
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+        <div className="rounded-3xl border border-slate-200 bg-white px-6 py-10 text-center shadow-sm">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+          <p className="mt-4 text-sm text-slate-500">Cargando detalle...</p>
         </div>
       </div>
     );
   }
 
-  if (error || !application) {
+  if (!application) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <p className="text-red-800">{error || 'Solicitud no encontrada'}</p>
+      <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl rounded-3xl border border-rose-200 bg-rose-50 px-6 py-8 text-center text-rose-700 shadow-sm">
+          <p>{error || 'Solicitud no encontrada'}</p>
           <button
-            onClick={() => navigate('/loans')}
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            type="button"
+            onClick={() => navigate('/credit-applications')}
+            className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-4 py-3 text-sm font-semibold text-white"
           >
-            Volver a Solicitudes
+            <ArrowLeft className="h-4 w-4" />
+            Volver al listado
           </button>
         </div>
       </div>
     );
   }
 
-  const availableActions = getAvailableActions(application);
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.10),transparent_30%),linear-gradient(180deg,#f8fafc_0%,#ffffff_45%,#f8fafc_100%)] px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-6">
         <button
-          onClick={() => navigate('/loans')}
-          className="text-blue-600 hover:text-blue-700 mb-4 flex items-center"
+          type="button"
+          onClick={() => navigate('/credit-applications')}
+          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
         >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Volver a Solicitudes
+          <ArrowLeft className="h-4 w-4" />
+          Volver al listado
         </button>
-        
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Solicitud {formatApplicationNumber(application.application_number)}
-            </h1>
-            <p className="text-gray-600 mt-2">
-              Creada el {new Date(application.created_at).toLocaleDateString()}
-            </p>
+
+        <ApplicationHeader application={application} />
+
+        {error ? <div className="rounded-3xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">{error}</div> : null}
+
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(360px,0.8fr)]">
+          <div className="space-y-6">
+            <SectionCard
+              title="Detalles de la solicitud"
+              subtitle="Resumen de los datos capturados para la originación."
+              action={<CreditApplicationStatusBadge status={application.status} label={application.status_display} />}
+            >
+              <ApplicationDetailsGrid application={application} />
+            </SectionCard>
+
+            <SectionCard
+              title="Timeline"
+              subtitle="Eventos visibles del flujo de originación."
+            >
+              <ApplicationTimeline events={timeline} />
+            </SectionCard>
+
+            <SectionCard
+              title="Comentarios"
+              subtitle="Notas internas o públicas asociadas a la solicitud."
+              action={<MessageSquare className="h-4 w-4 text-slate-400" />}
+            >
+              <ApplicationComments comments={comments} />
+            </SectionCard>
+
+            <SectionCard
+              title="Documentos"
+              subtitle="Soportes cargados para la solicitud."
+              action={<ShieldAlert className="h-4 w-4 text-slate-400" />}
+            >
+              <ApplicationDocuments documents={documents} />
+            </SectionCard>
           </div>
-          
-          <div className="flex items-center space-x-4">
-            {getStatusBadge(application.status, application.status_display)}
-            {getRiskBadge(application.risk_level, application.risk_level_display)}
+
+          <div className="space-y-6">
+            <SectionCard title="Acciones" subtitle="Envía, cambia de estado o agrega comentarios sin salir del detalle.">
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+                  <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Actualización</div>
+                  <div className="mt-2 text-sm font-semibold text-slate-900">{formatDateTime(application.updated_at)}</div>
+                </div>
+
+                {canSubmit ? (
+                  <button
+                    type="button"
+                    onClick={handleSubmitApplication}
+                    disabled={saving}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <Send className="h-4 w-4" />
+                    {saving ? 'Enviando...' : 'Enviar solicitud'}
+                  </button>
+                ) : null}
+
+                <form onSubmit={handleSubmit(handleAction)} className="space-y-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div>
+                    <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Nuevo estado</label>
+                    <select
+                      {...register('new_status', { required: 'Seleccione un estado' })}
+                      className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:bg-white"
+                    >
+                      <option value="">Seleccione</option>
+                      <option value="SUBMITTED">Regresar a enviada</option>
+                      <option value="IN_REVIEW">En revisión</option>
+                      <option value="OBSERVED">Observar</option>
+                      <option value="APPROVED">Aprobar</option>
+                      <option value="REJECTED">Rechazar</option>
+                      <option value="DISBURSED">Desembolsar</option>
+                      <option value="CANCELLED">Cancelar</option>
+                    </select>
+                    {errors.new_status ? <span className="mt-2 block text-xs text-rose-600">{errors.new_status.message}</span> : null}
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Motivo</label>
+                    <textarea
+                      {...register('reason')}
+                      rows={4}
+                      placeholder="Razón de la transición"
+                      className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:bg-white"
+                    />
+                  </div>
+
+                  {actionNeedsApprovalFields ? (
+                    <div className="grid gap-4">
+                      <div>
+                        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Monto aprobado</label>
+                        <input
+                          {...register('approved_amount')}
+                          inputMode="decimal"
+                          placeholder="4500.00"
+                          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Plazo aprobado</label>
+                        <input
+                          type="number"
+                          {...register('approved_term_months', { valueAsNumber: true })}
+                          placeholder="24"
+                          min={1}
+                          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Tasa aprobada</label>
+                        <input
+                          {...register('approved_interest_rate')}
+                          inputMode="decimal"
+                          placeholder="12.50"
+                          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:bg-white"
+                        />
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    {saving ? 'Aplicando...' : 'Aplicar cambio de estado'}
+                  </button>
+                </form>
+
+                <form onSubmit={handleAddComment} className="space-y-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div>
+                    <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Nuevo comentario</label>
+                    <textarea
+                      value={commentText}
+                      onChange={(event) => setCommentText(event.target.value)}
+                      rows={4}
+                      placeholder="Escribe un comentario para la solicitud"
+                      className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:bg-white"
+                    />
+                  </div>
+
+                  <label className="flex items-center gap-3 text-sm text-slate-600">
+                    <input
+                      type="checkbox"
+                      checked={isInternalComment}
+                      onChange={(event) => setIsInternalComment(event.target.checked)}
+                      className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                    />
+                    Comentario interno
+                  </label>
+
+                  <button
+                    type="submit"
+                    disabled={saving || !commentText.trim()}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    {saving ? 'Guardando...' : 'Agregar comentario'}
+                  </button>
+                </form>
+              </div>
+            </SectionCard>
           </div>
         </div>
       </div>
-
-      {/* Acciones */}
-      {availableActions.length > 0 && (
-        <div className="mb-6 bg-white rounded-lg shadow-md p-4">
-          <h3 className="text-lg font-medium text-gray-900 mb-3">Acciones Disponibles</h3>
-          <div className="flex flex-wrap gap-3">
-            {availableActions.map((action) => (
-              <button
-                key={action.key}
-                onClick={() => handleActionClick(action.key)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  action.color === 'blue' ? 'bg-blue-600 text-white hover:bg-blue-700' :
-                  action.color === 'green' ? 'bg-green-600 text-white hover:bg-green-700' :
-                  action.color === 'yellow' ? 'bg-yellow-600 text-white hover:bg-yellow-700' :
-                  action.color === 'red' ? 'bg-red-600 text-white hover:bg-red-700' :
-                  action.color === 'purple' ? 'bg-purple-600 text-white hover:bg-purple-700' :
-                  action.color === 'emerald' ? 'bg-emerald-600 text-white hover:bg-emerald-700' :
-                  'bg-gray-600 text-white hover:bg-gray-700'
-                }`}
-              >
-                {action.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Información Principal */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Datos de la Solicitud */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Información de la Solicitud</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-medium text-gray-700 mb-3">Cliente</h3>
-                <div className="space-y-2">
-                  <p className="text-lg font-medium text-gray-900">
-                    {application.client_detail?.full_name || 'N/A'}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Documento: {application.client_detail?.document_number || 'N/A'}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Email: {application.client_detail?.email || 'N/A'}
-                  </p>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="font-medium text-gray-700 mb-3">Producto</h3>
-                <div className="space-y-2">
-                  <p className="text-lg font-medium text-gray-900">
-                    {application.product_detail?.name || 'N/A'}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Tipo: {application.product_detail?.product_type || 'N/A'}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Tasa: {application.product_detail?.interest_rate || 'N/A'}% anual
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Detalles Financieros */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Detalles Financieros</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-blue-50 rounded-lg p-4">
-                <h3 className="font-medium text-blue-700 mb-2">Monto Solicitado</h3>
-                <p className="text-2xl font-bold text-blue-900">
-                  ${parseFloat(application.requested_amount).toLocaleString()}
-                </p>
-                <p className="text-sm text-blue-600 mt-1">
-                  {application.term_months} meses
-                </p>
-              </div>
-              
-              {application.approved_amount && (
-                <div className="bg-green-50 rounded-lg p-4">
-                  <h3 className="font-medium text-green-700 mb-2">Monto Aprobado</h3>
-                  <p className="text-2xl font-bold text-green-900">
-                    ${parseFloat(application.approved_amount).toLocaleString()}
-                  </p>
-                  <p className="text-sm text-green-600 mt-1">
-                    {application.approved_term_months} meses
-                  </p>
-                </div>
-              )}
-              
-              {application.monthly_payment && (
-                <div className="bg-purple-50 rounded-lg p-4">
-                  <h3 className="font-medium text-purple-700 mb-2">Cuota Mensual</h3>
-                  <p className="text-2xl font-bold text-purple-900">
-                    ${parseFloat(application.monthly_payment).toLocaleString()}
-                  </p>
-                  <p className="text-sm text-purple-600 mt-1">
-                    Tasa: {application.approved_interest_rate || application.product_detail?.interest_rate}%
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Evaluación de Riesgo */}
-          {(application.credit_score || application.debt_to_income_ratio) && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Evaluación de Riesgo</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {application.credit_score && (
-                  <div className="text-center">
-                    <h3 className="font-medium text-gray-700 mb-2">Score Crediticio</h3>
-                    <div className="text-3xl font-bold text-blue-600">
-                      {application.credit_score}
-                    </div>
-                    <div className="text-sm text-gray-500 mt-1">
-                      Sobre 1000 puntos
-                    </div>
-                  </div>
-                )}
-                
-                {application.debt_to_income_ratio && (
-                  <div className="text-center">
-                    <h3 className="font-medium text-gray-700 mb-2">Ratio Deuda/Ingreso</h3>
-                    <div className="text-3xl font-bold text-orange-600">
-                      {parseFloat(application.debt_to_income_ratio).toFixed(1)}%
-                    </div>
-                    <div className="text-sm text-gray-500 mt-1">
-                      Capacidad de pago
-                    </div>
-                  </div>
-                )}
-                
-                {application.risk_level && (
-                  <div className="text-center">
-                    <h3 className="font-medium text-gray-700 mb-2">Nivel de Riesgo</h3>
-                    <div className="flex justify-center">
-                      {getRiskBadge(application.risk_level, application.risk_level_display)}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Propósito y Notas */}
-          {(application.purpose || application.notes || application.rejection_reason) && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Observaciones</h2>
-              
-              {application.purpose && (
-                <div className="mb-4">
-                  <h3 className="font-medium text-gray-700 mb-2">Propósito del Crédito</h3>
-                  <p className="text-gray-900 bg-gray-50 rounded-lg p-3">
-                    {application.purpose}
-                  </p>
-                </div>
-              )}
-              
-              {application.notes && (
-                <div className="mb-4">
-                  <h3 className="font-medium text-gray-700 mb-2">Notas de Evaluación</h3>
-                  <p className="text-gray-900 bg-blue-50 rounded-lg p-3">
-                    {application.notes}
-                  </p>
-                </div>
-              )}
-              
-              {application.rejection_reason && (
-                <div className="mb-4">
-                  <h3 className="font-medium text-red-700 mb-2">Motivo de Rechazo</h3>
-                  <p className="text-red-900 bg-red-50 rounded-lg p-3">
-                    {application.rejection_reason}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Documentos */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Documentos</h2>
-            <DocumentList 
-              applicationId={application.id}
-              documents={documents}
-              onDocumentUploaded={loadApplicationData}
-            />
-          </div>
-
-          {/* Comentarios */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Comentarios</h2>
-            <CommentList 
-              applicationId={application.id}
-              comments={comments}
-              onCommentAdded={loadApplicationData}
-            />
-          </div>
-        </div>
-
-        {/* Timeline y Información Adicional */}
-        <div className="space-y-6">
-          {/* Timeline de Estados */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Timeline</h2>
-            
-            <div className="space-y-4">
-              <div className="flex items-start">
-                <div className="flex-shrink-0 w-3 h-3 bg-gray-400 rounded-full mt-2"></div>
-                <div className="ml-4">
-                  <p className="font-medium text-gray-900">Solicitud Creada</p>
-                  <p className="text-sm text-gray-500">
-                    {new Date(application.created_at).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-              
-              {application.submitted_at && (
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 w-3 h-3 bg-blue-500 rounded-full mt-2"></div>
-                  <div className="ml-4">
-                    <p className="font-medium text-gray-900">Solicitud Enviada</p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(application.submitted_at).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              )}
-              
-              {application.reviewed_at && (
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 w-3 h-3 bg-yellow-500 rounded-full mt-2"></div>
-                  <div className="ml-4">
-                    <p className="font-medium text-gray-900">Solicitud Revisada</p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(application.reviewed_at).toLocaleString()}
-                    </p>
-                    {application.reviewed_by_detail && (
-                      <p className="text-sm text-gray-500">
-                        Por: {application.reviewed_by_detail.first_name} {application.reviewed_by_detail.last_name}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              {application.approved_at && (
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 w-3 h-3 bg-green-500 rounded-full mt-2"></div>
-                  <div className="ml-4">
-                    <p className="font-medium text-gray-900">Solicitud Aprobada</p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(application.approved_at).toLocaleString()}
-                    </p>
-                    {application.approved_by_detail && (
-                      <p className="text-sm text-gray-500">
-                        Por: {application.approved_by_detail.first_name} {application.approved_by_detail.last_name}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              {application.rejected_at && (
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 w-3 h-3 bg-red-500 rounded-full mt-2"></div>
-                  <div className="ml-4">
-                    <p className="font-medium text-gray-900">Solicitud Rechazada</p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(application.rejected_at).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              )}
-              
-              {application.disbursed_at && (
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 w-3 h-3 bg-emerald-500 rounded-full mt-2"></div>
-                  <div className="ml-4">
-                    <p className="font-medium text-gray-900">Crédito Desembolsado</p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(application.disbursed_at).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Información del Producto */}
-          {application.product_detail && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Información del Producto</h2>
-              
-              <div className="space-y-3">
-                <div>
-                  <span className="text-sm font-medium text-gray-500">Rango de Monto:</span>
-                  <p className="text-gray-900">
-                    ${parseFloat(application.product_detail.min_amount).toLocaleString()} - 
-                    ${parseFloat(application.product_detail.max_amount).toLocaleString()}
-                  </p>
-                </div>
-                
-                <div>
-                  <span className="text-sm font-medium text-gray-500">Rango de Plazo:</span>
-                  <p className="text-gray-900">
-                    {application.product_detail.min_term_months} - {application.product_detail.max_term_months} meses
-                  </p>
-                </div>
-                
-                <div>
-                  <span className="text-sm font-medium text-gray-500">Tasa de Interés:</span>
-                  <p className="text-gray-900">
-                    {application.product_detail.interest_rate}% anual
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Modales */}
-      {showSubmitModal && (
-        <SubmitApplicationModal
-          applicationId={application.id}
-          onClose={() => setShowSubmitModal(false)}
-          onSuccess={handleModalSuccess}
-        />
-      )}
-      
-      {showReviewModal && (
-        <ReviewApplicationModal
-          applicationId={application.id}
-          onClose={() => setShowReviewModal(false)}
-          onSuccess={handleModalSuccess}
-        />
-      )}
-      
-      {showApproveModal && (
-        <ApproveApplicationModal
-          applicationId={application.id}
-          application={application}
-          onClose={() => setShowApproveModal(false)}
-          onSuccess={handleModalSuccess}
-        />
-      )}
-      
-      {showRejectModal && (
-        <RejectApplicationModal
-          applicationId={application.id}
-          onClose={() => setShowRejectModal(false)}
-          onSuccess={handleModalSuccess}
-        />
-      )}
-      
-      {showDisburseModal && (
-        <DisburseApplicationModal
-          applicationId={application.id}
-          application={application}
-          onClose={() => setShowDisburseModal(false)}
-          onSuccess={handleModalSuccess}
-        />
-      )}
     </div>
   );
 }

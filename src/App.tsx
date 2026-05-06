@@ -429,6 +429,46 @@ function App() {
 
             {/* Rutas de Solicitudes de Crédito */}
             <Route
+              path="/credit-applications"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="loans.view">
+                    <LoanApplicationListPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/credit-applications/new"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="loans.create">
+                    <LoanApplicationFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/credit-applications/:id"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="loans.view">
+                    <LoanApplicationDetailPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/credit-applications/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="loans.edit">
+                    <LoanApplicationFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/loans"
               element={
                 <ProtectedRoute>

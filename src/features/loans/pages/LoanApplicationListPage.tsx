@@ -1,420 +1,344 @@
-/**
- * Página de lista de solicitudes de crédito
- */
-
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, Filter, Plus, RefreshCw, Search } from 'lucide-react';
 import {
   getLoanApplications,
-  getStatusColor,
-  getRiskLevelColor,
   formatApplicationNumber,
-  type LoanApplication,
   type LoanApplicationFilters,
+  type LoanApplicationListItem,
 } from '../services/loansApi';
-import { getClients } from '@/features/clients/services/clientsApi';
-import { getProducts } from '@/features/products/services/productsApi';
-import type { Client } from '@/features/clients/types';
-import type { CreditProduct } from '@/features/products/types';
-
-const STATUS_OPTIONS = [
-  { value: '', label: 'Todos los estados' },
-  { value: 'DRAFT', label: 'Borrador' },
-  { value: 'SUBMITTED', label: 'Enviada' },
-  { value: 'UNDER_REVIEW', label: 'En Revisión' },
-  { value: 'APPROVED', label: 'Aprobada' },
-  { value: 'REJECTED', label: 'Rechazada' },
-  { value: 'DISBURSED', label: 'Desembolsada' },
-  { value: 'CANCELLED', label: 'Cancelada' },
-];
-
-const RISK_LEVEL_OPTIONS = [
-  { value: '', label: 'Todos los niveles' },
-  { value: 'LOW', label: 'Bajo' },
-  { value: 'MEDIUM', label: 'Medio' },
-  { value: 'HIGH', label: 'Alto' },
-  { value: 'VERY_HIGH', label: 'Muy Alto' },
-];
+import {
+  Badge,
+  CreditApplicationStatusBadge,
+  EmptyState,
+  IdentityStatusBadge,
+  MetricCard,
+  SectionCard,
+  formatCurrency,
+  formatDateTime,
+} from '../components/CreditApplicationComponents';
 
 export default function LoanApplicationListPage() {
   const navigate = useNavigate();
-  
-  const [applications, setApplications] = useState<LoanApplication[]>([]);
+  const [items, setItems] = useState<LoanApplicationListItem[]>([]);
+  const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [clients, setClients] = useState<Client[]>([]);
-  const [products, setProducts] = useState<CreditProduct[]>([]);
-  
-  // Filtros
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(12);
+  const [searchDraft, setSearchDraft] = useState('');
   const [filters, setFilters] = useState<LoanApplicationFilters>({
     page: 1,
-    page_size: 20,
+    page_size: pageSize,
+    ordering: '-created_at',
   });
-  
-  // Paginación
-  const [totalCount, setTotalCount] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-
-  useEffect(() => {
-    loadInitialData();
-  }, []);
 
   useEffect(() => {
     loadApplications();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
-  const loadInitialData = async () => {
-    try {
-      const [clientsData, productsData] = await Promise.all([
-        getClients({ page_size: 100 }),
-        getProducts({ page_size: 100, is_active: true }),
-      ]);
-      
-      setClients(clientsData.results || clientsData);
-      setProducts(productsData.results || productsData);
-    } catch (err: unknown) {
-      console.error('Error loading initial data:', err);
-    }
-  };
+  async function loadApplications() {
+    setLoading(true);
+    setError(null);
 
-  const loadApplications = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      
       const response = await getLoanApplications(filters);
-      
-      setApplications(response.results);
-      setTotalCount(response.count);
-      setTotalPages(Math.ceil(response.count / (filters.page_size || 20)));
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || 'Error al cargar las solicitudes');
+      setItems(response.results || []);
+      setCount(response.count || 0);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : 'No fue posible cargar las solicitudes');
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const handleFilterChange = (key: keyof LoanApplicationFilters, value: any) => {
-    setFilters(prev => ({
-      ...prev,
+  const metrics = useMemo(() => {
+    const submitted = items.filter((item) => item.status === 'SUBMITTED' || item.status === 'IN_REVIEW').length;
+    const draft = items.filter((item) => item.status === 'DRAFT').length;
+    const approved = items.filter((item) => item.status === 'APPROVED' || item.status === 'DISBURSED').length;
+    const rejected = items.filter((item) => item.status === 'REJECTED' || item.status === 'CANCELLED').length;
+
+    return { submitted, draft, approved, rejected };
+  }, [items]);
+
+  const canGoNext = page * pageSize < count;
+
+  function updateFilter<K extends keyof LoanApplicationFilters>(key: K, value: LoanApplicationFilters[K]) {
+    setPage(1);
+    setFilters((previous) => ({
+      ...previous,
+      page: 1,
       [key]: value,
-      page: 1, // Reset page when filters change
     }));
-  };
+  }
 
-  const handlePageChange = (page: number) => {
-    setFilters(prev => ({ ...prev, page }));
-  };
+  function applySearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    updateFilter('search', searchDraft.trim() || undefined);
+  }
 
-  const getStatusBadge = (status: string, statusDisplay: string) => {
-    const color = getStatusColor(status);
-    const colorClasses: Record<string, string> = {
-      gray: 'bg-gray-100 text-gray-800',
-      blue: 'bg-blue-100 text-blue-800',
-      yellow: 'bg-yellow-100 text-yellow-800',
-      green: 'bg-green-100 text-green-800',
-      red: 'bg-red-100 text-red-800',
-      emerald: 'bg-emerald-100 text-emerald-800',
-    };
-    
-    return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${colorClasses[color] || colorClasses.gray}`}>
-        {statusDisplay}
-      </span>
-    );
-  };
+  function clearFilters() {
+    setSearchDraft('');
+    setPage(1);
+    setFilters({ page: 1, page_size: pageSize, ordering: '-created_at' });
+  }
 
-  const getRiskBadge = (riskLevel: string | undefined, riskLevelDisplay: string | undefined) => {
-    if (!riskLevel || !riskLevelDisplay) return null;
-    
-    const color = getRiskLevelColor(riskLevel);
-    const colorClasses = {
-      green: 'bg-green-100 text-green-800',
-      yellow: 'bg-yellow-100 text-yellow-800',
-      orange: 'bg-orange-100 text-orange-800',
-      red: 'bg-red-100 text-red-800',
-      gray: 'bg-gray-100 text-gray-800',
-    };
-    
-    return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${colorClasses[color as keyof typeof colorClasses] || colorClasses.gray}`}>
-        {riskLevelDisplay}
-      </span>
-    );
-  };
+  function goToPage(nextPage: number) {
+    setPage(nextPage);
+    setFilters((previous) => ({
+      ...previous,
+      page: nextPage,
+      page_size: pageSize,
+    }));
+  }
+
+  const hasFilters = Boolean(filters.search || filters.status || filters.identity_verification_status);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Solicitudes de Crédito</h1>
-            <p className="text-gray-600 mt-2">Gestiona las solicitudes de crédito de tu institución</p>
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.14),transparent_36%),linear-gradient(180deg,#f8fafc_0%,#ffffff_42%,#f8fafc_100%)] px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-6">
+        <div className="rounded-4xl border border-slate-200 bg-slate-950 px-6 py-7 text-white shadow-xl shadow-slate-200/40">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">CU-11 · Originación</div>
+              <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">Solicitudes de crédito</h1>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
+                Gestiona el ciclo completo de la originación: borradores, revisión, observaciones, aprobación y desembolso.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/credit-applications/new')}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
+            >
+              <Plus className="h-4 w-4" />
+              Nueva solicitud
+            </button>
           </div>
-          <button
-            onClick={() => navigate('/loans/new')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Nueva Solicitud
-          </button>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-4">
+          <MetricCard label="Total visible" value={String(count)} helper="Resultados filtrados" color="blue" />
+          <MetricCard label="Borradores" value={String(metrics.draft)} helper="Pendientes de envío" color="slate" />
+          <MetricCard label="En revisión" value={String(metrics.submitted)} helper="En ruta de decisión" color="amber" />
+          <MetricCard label="Cerradas" value={String(metrics.approved + metrics.rejected)} helper="Aprobadas, desembolsadas o rechazadas" color="emerald" />
+        </div>
+
+        <SectionCard
+          title="Filtros"
+          subtitle="Filtra por estado, identidad y búsqueda libre para encontrar solicitudes rápidamente."
+          action={
+            <button
+              type="button"
+              onClick={loadApplications}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              Actualizar
+            </button>
+          }
+        >
+          <form onSubmit={applySearch} className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_repeat(2,minmax(0,1fr))_auto]">
+            <label className="block">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Buscar</span>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  value={searchDraft}
+                  onChange={(event) => setSearchDraft(event.target.value)}
+                  placeholder="Número de solicitud, cliente o producto"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:bg-white"
+                />
+              </div>
+            </label>
+
+            <label className="block">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Estado</span>
+              <select
+                value={filters.status || ''}
+                onChange={(event) => updateFilter('status', (event.target.value || '') as LoanApplicationFilters['status'])}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:bg-white"
+              >
+                <option value="">Todos</option>
+                <option value="DRAFT">Borrador</option>
+                <option value="SUBMITTED">Enviada</option>
+                <option value="IN_REVIEW">En revisión</option>
+                <option value="OBSERVED">Observada</option>
+                <option value="APPROVED">Aprobada</option>
+                <option value="REJECTED">Rechazada</option>
+                <option value="DISBURSED">Desembolsada</option>
+                <option value="CANCELLED">Cancelada</option>
+              </select>
+            </label>
+
+            <label className="block">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Identidad</span>
+              <select
+                value={filters.identity_verification_status || ''}
+                onChange={(event) =>
+                  updateFilter(
+                    'identity_verification_status',
+                    (event.target.value || '') as LoanApplicationFilters['identity_verification_status']
+                  )
+                }
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:bg-white"
+              >
+                <option value="">Todos</option>
+                <option value="PENDING">Pendiente</option>
+                <option value="IN_PROGRESS">En progreso</option>
+                <option value="APPROVED">Aprobada</option>
+                <option value="DECLINED">Rechazada</option>
+                <option value="MANUAL_REVIEW">Revisión manual</option>
+                <option value="EXPIRED">Expirada</option>
+                <option value="ERROR">Error</option>
+              </select>
+            </label>
+
+            <div className="flex items-end gap-2">
+              <button
+                type="submit"
+                className="inline-flex h-11.5 items-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+              >
+                <Filter className="h-4 w-4" />
+                Filtrar
+              </button>
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="inline-flex h-11.5 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Limpiar
+              </button>
+            </div>
+          </form>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {hasFilters ? <Badge label="Filtros activos" color="blue" /> : <Badge label="Sin filtros" color="slate" />}
+            <Badge label={`Página ${page}`} color="emerald" />
+          </div>
+        </SectionCard>
+
+        {loading && items.length === 0 ? (
+          <div className="rounded-4xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+            <p className="mt-4 text-sm text-slate-500">Cargando solicitudes de crédito...</p>
+          </div>
+        ) : error && items.length === 0 ? (
+          <div className="rounded-4xl border border-rose-200 bg-rose-50 p-10 text-center">
+            <p className="text-sm font-medium text-rose-700">{error}</p>
+            <button
+              type="button"
+              onClick={loadApplications}
+              className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-rose-700"
+            >
+              Reintentar
+            </button>
+          </div>
+        ) : items.length === 0 ? (
+          <EmptyState
+            title="No hay solicitudes"
+            description="No encontramos solicitudes con los filtros actuales. Prueba una búsqueda más amplia o crea una nueva solicitud."
+            action={
+              <button
+                type="button"
+                onClick={() => navigate('/credit-applications/new')}
+                className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+              >
+                <Plus className="h-4 w-4" />
+                Nueva solicitud
+              </button>
+            }
+          />
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+            {items.map((application) => (
+              <article
+                key={application.id}
+                className="group rounded-4xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-semibold text-slate-900">{formatApplicationNumber(application.application_number)}</div>
+                    <div className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">{application.application_number}</div>
+                  </div>
+                  <CreditApplicationStatusBadge status={application.status} label={application.status_display} />
+                </div>
+
+                <div className="mt-4 space-y-2 text-sm text-slate-600">
+                  <div className="flex items-center justify-between gap-3">
+                    <span>Cliente</span>
+                    <span className="font-medium text-slate-900">{application.client_name}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span>Producto</span>
+                    <span className="font-medium text-slate-900">{application.product_name}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span>Monto</span>
+                    <span className="font-medium text-slate-900">{formatCurrency(application.requested_amount)}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span>Plazo</span>
+                    <span className="font-medium text-slate-900">{application.term_months} meses</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span>Identidad</span>
+                    <IdentityStatusBadge
+                      status={application.identity_verification_status}
+                      label={application.identity_verification_status || 'N/D'}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span>Creada</span>
+                    <span className="font-medium text-slate-900">{formatDateTime(application.created_at)}</span>
+                  </div>
+                </div>
+
+                <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+                  <Link
+                    to={`/credit-applications/${application.id}`}
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 transition group-hover:text-blue-800"
+                  >
+                    Ver detalle
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/credit-applications/${application.id}/edit`)}
+                    className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                  >
+                    Editar borrador
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
+          <div>
+            Mostrando {items.length} de {count} solicitudes
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => goToPage(Math.max(1, page - 1))}
+              disabled={page <= 1}
+              className="rounded-xl border border-slate-200 px-3 py-2 font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Anterior
+            </button>
+            <button
+              type="button"
+              onClick={() => goToPage(page + 1)}
+              disabled={!canGoNext}
+              className="rounded-xl border border-slate-200 px-3 py-2 font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Siguiente
+            </button>
+          </div>
         </div>
       </div>
-
-      {/* Filtros */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Filtros</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Estado */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-            <select
-              value={filters.status || ''}
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              {STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Cliente */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Cliente</label>
-            <select
-              value={filters.client || ''}
-              onChange={(e) => handleFilterChange('client', e.target.value ? parseInt(e.target.value) : undefined)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Todos los clientes</option>
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.first_name} {client.last_name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Producto */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Producto</label>
-            <select
-              value={filters.product || ''}
-              onChange={(e) => handleFilterChange('product', e.target.value ? parseInt(e.target.value) : undefined)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Todos los productos</option>
-              {products.map((product) => (
-                <option key={product.id} value={product.id}>
-                  {product.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Nivel de Riesgo */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Nivel de Riesgo</label>
-            <select
-              value={filters.risk_level || ''}
-              onChange={(e) => handleFilterChange('risk_level', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              {RISK_LEVEL_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-sm text-red-800">{error}</p>
-        </div>
-      )}
-
-      {/* Loading State */}
-      {loading ? (
-        <div className="bg-white rounded-lg shadow-md p-8">
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-3 text-gray-600">Cargando solicitudes...</span>
-          </div>
-        </div>
-      ) : (
-        <>
-          {/* Tabla */}
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Solicitud
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Cliente
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Producto
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Monto
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Estado
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Riesgo
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Fecha
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {applications.length === 0 ? (
-                    <tr>
-                      <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
-                        <div className="flex flex-col items-center">
-                          <svg className="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          <p className="text-lg font-medium text-gray-900 mb-2">No hay solicitudes</p>
-                          <p className="text-gray-500 mb-4">Comienza creando tu primera solicitud de crédito</p>
-                          <button
-                            onClick={() => navigate('/loans/new')}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                          >
-                            Nueva Solicitud
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : (
-                    applications.map((application) => (
-                      <tr key={application.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">
-                              {formatApplicationNumber(application.application_number)}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {application.credit_score && (
-                                <span>Score: {application.credit_score}</span>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {application.client_name}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {application.product_name}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            ${parseFloat(application.requested_amount).toLocaleString()}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {application.term_months} meses
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {getStatusBadge(application.status, application.status_display)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {getRiskBadge(application.risk_level, application.risk_level_display)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(application.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button
-                            onClick={() => navigate(`/loans/${application.id}`)}
-                            className="text-blue-600 hover:text-blue-900 mr-3"
-                          >
-                            Ver
-                          </button>
-                          {application.can_be_edited && (
-                            <button
-                              onClick={() => navigate(`/loans/${application.id}/edit`)}
-                              className="text-green-600 hover:text-green-900"
-                            >
-                              Editar
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Paginación */}
-          {totalPages > 1 && (
-            <div className="mt-6 flex items-center justify-between">
-              <div className="text-sm text-gray-700">
-                Mostrando {((filters.page || 1) - 1) * (filters.page_size || 20) + 1} a{' '}
-                {Math.min((filters.page || 1) * (filters.page_size || 20), totalCount)} de {totalCount} solicitudes
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handlePageChange((filters.page || 1) - 1)}
-                  disabled={filters.page === 1}
-                  className="px-3 py-2 border border-gray-300 text-gray-500 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Anterior
-                </button>
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  const page = i + 1;
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={`px-3 py-2 border rounded-lg ${
-                        filters.page === page
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'border-gray-300 text-gray-500 hover:bg-gray-50'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  );
-                })}
-                <button
-                  onClick={() => handlePageChange((filters.page || 1) + 1)}
-                  disabled={filters.page === totalPages}
-                  className="px-3 py-2 border border-gray-300 text-gray-500 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Siguiente
-                </button>
-              </div>
-            </div>
-          )}
-        </>
-      )}
     </div>
   );
 }

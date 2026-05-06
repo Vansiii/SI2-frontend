@@ -7,9 +7,9 @@ import { useForm } from 'react-hook-form';
 import { approveLoanApplication, calculateMonthlyPayment, type ApproveLoanApplicationData, type LoanApplication } from '../services/loansApi';
 
 interface FormData {
-  approved_amount: string;
-  approved_term_months: number;
-  approved_interest_rate: string;
+  approved_amount?: string | null;
+  approved_term_months?: number | null;
+  approved_interest_rate?: string | null;
   notes?: string;
 }
 
@@ -33,7 +33,7 @@ export function ApproveApplicationModal({ applicationId, application, onClose, o
     defaultValues: {
       approved_amount: application.requested_amount,
       approved_term_months: application.term_months,
-      approved_interest_rate: application.product_detail?.interest_rate || '',
+      approved_interest_rate: application.product?.interest_rate || '',
     },
   });
 
@@ -60,10 +60,16 @@ export function ApproveApplicationModal({ applicationId, application, onClose, o
       setLoading(true);
       setError(null);
       
+      if (!data.approved_amount || !data.approved_term_months || !data.approved_interest_rate) {
+        setError('Por favor completa todos los campos requeridos');
+        setLoading(false);
+        return;
+      }
+      
       const approveData: ApproveLoanApplicationData = {
-        approved_amount: data.approved_amount,
-        approved_term_months: data.approved_term_months,
-        approved_interest_rate: data.approved_interest_rate,
+        approved_amount: data.approved_amount || '',
+        approved_term_months: data.approved_term_months || 0,
+        approved_interest_rate: data.approved_interest_rate || '',
         notes: data.notes,
       };
       
@@ -100,11 +106,11 @@ export function ApproveApplicationModal({ applicationId, application, onClose, o
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-blue-700">Cliente:</span>
-                <p className="font-medium text-blue-900">{application.client_detail?.full_name}</p>
+                <p className="font-medium text-blue-900">{application.client?.full_name}</p>
               </div>
               <div>
                 <span className="text-blue-700">Producto:</span>
-                <p className="font-medium text-blue-900">{application.product_detail?.name}</p>
+                <p className="font-medium text-blue-900">{application.product?.name}</p>
               </div>
               <div>
                 <span className="text-blue-700">Monto Solicitado:</span>
@@ -148,9 +154,9 @@ export function ApproveApplicationModal({ applicationId, application, onClose, o
                     placeholder="0.00"
                   />
                 </div>
-                {application.product_detail && (
+                {application.product && (
                   <p className="mt-1 text-xs text-gray-500">
-                    Rango del producto: ${application.product_detail.min_amount} - ${application.product_detail.max_amount}
+                    Rango del producto: ${application.product.min_amount} - ${application.product.max_amount}
                   </p>
                 )}
                 {errors.approved_amount && (
@@ -171,9 +177,9 @@ export function ApproveApplicationModal({ applicationId, application, onClose, o
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   placeholder="12"
                 />
-                {application.product_detail && (
+                {application.product && (
                   <p className="mt-1 text-xs text-gray-500">
-                    Rango del producto: {application.product_detail.min_term_months} - {application.product_detail.max_term_months} meses
+                    Rango del producto: {application.product.min_term_months} - {application.product.max_term_months} meses
                   </p>
                 )}
                 {errors.approved_term_months && (
@@ -196,9 +202,9 @@ export function ApproveApplicationModal({ applicationId, application, onClose, o
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 placeholder="0.00"
               />
-              {application.product_detail && (
+              {application.product && (
                 <p className="mt-1 text-xs text-gray-500">
-                  Tasa del producto: {application.product_detail.interest_rate}% anual
+                  Tasa del producto: {application.product.interest_rate}% anual
                 </p>
               )}
               {errors.approved_interest_rate && (

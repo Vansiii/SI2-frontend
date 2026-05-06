@@ -1,93 +1,43 @@
 /**
- * Servicio de API para gestión de solicitudes de crédito
+ * Servicio API para gestión de solicitudes de crédito CU-11.
  */
 
 import { apiClient } from '@/utils/apiClient';
 
-// Interfaces TypeScript
-export interface LoanApplication {
-  id: number;
-  application_number: string;
-  client: number;
-  client_name: string;
-  client_detail?: {
-    id: number;
-    full_name: string;
-    document_number: string;
-    email: string;
-  };
-  product: number;
-  product_name: string;
-  product_detail?: {
-    id: number;
-    name: string;
-    product_type: string;
-    min_amount: string;
-    max_amount: string;
-    min_term_months: number;
-    max_term_months: number;
-    interest_rate: string;
-  };
-  requested_amount: string;
-  term_months: number;
-  purpose: string;
-  status: 'DRAFT' | 'SUBMITTED' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'DISBURSED' | 'CANCELLED';
-  status_display: string;
-  submitted_at?: string;
-  reviewed_at?: string;
-  approved_at?: string;
-  rejected_at?: string;
-  disbursed_at?: string;
-  credit_score?: number;
-  risk_level?: 'LOW' | 'MEDIUM' | 'HIGH' | 'VERY_HIGH';
-  risk_level_display?: string;
-  debt_to_income_ratio?: string;
-  approved_amount?: string;
-  approved_term_months?: number;
-  approved_interest_rate?: string;
-  monthly_payment?: string;
-  reviewed_by?: number;
-  reviewed_by_detail?: {
-    id: number;
-    first_name: string;
-    last_name: string;
-    email: string;
-  };
-  approved_by?: number;
-  approved_by_detail?: {
-    id: number;
-    first_name: string;
-    last_name: string;
-    email: string;
-  };
-  notes: string;
-  rejection_reason: string;
-  documents?: LoanApplicationDocument[];
-  comments?: LoanApplicationComment[];
-  is_pending: boolean;
-  can_be_edited: boolean;
-  can_be_submitted: boolean;
-  can_be_approved: boolean;
-  can_be_rejected: boolean;
-  can_be_disbursed: boolean;
-  created_at: string;
-  updated_at: string;
-}
+export type LoanApplicationStatus =
+  | 'DRAFT'
+  | 'SUBMITTED'
+  | 'IN_REVIEW'
+  | 'OBSERVED'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'DISBURSED'
+  | 'CANCELLED';
+
+export type IdentityVerificationStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'APPROVED'
+  | 'DECLINED'
+  | 'MANUAL_REVIEW'
+  | 'EXPIRED'
+  | 'ERROR';
+
+export type DocumentsStatus = 'PENDING' | 'INCOMPLETE' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'COMPLETE';
 
 export interface LoanApplicationDocument {
   id: number;
-  document_type: 'ID_DOCUMENT' | 'INCOME_PROOF' | 'BANK_STATEMENT' | 'EMPLOYMENT_LETTER' | 'TAX_RETURN' | 'PROPERTY_DEED' | 'OTHER';
+  document_type: string;
   file: string;
-  file_url?: string;
+  file_url?: string | null;
   file_name: string;
   file_size: number;
   description: string;
   uploaded_by: number;
-  uploaded_by_name: string;
+  uploaded_by_name?: string | null;
   is_verified: boolean;
-  verified_by?: number;
-  verified_by_name?: string;
-  verified_at?: string;
+  verified_by?: number | null;
+  verified_at?: string | null;
   created_at: string;
 }
 
@@ -95,158 +45,319 @@ export interface LoanApplicationComment {
   id: number;
   user: number;
   user_name: string;
+  user_email?: string | null;
   comment: string;
   is_internal: boolean;
   created_at: string;
+  updated_at?: string;
+}
+
+export interface LoanApplicationTimelineEvent {
+  id: number;
+  previous_status: LoanApplicationStatus | null;
+  new_status: LoanApplicationStatus;
+  title: string;
+  description: string;
+  actor: number | null;
+  actor_name?: string | null;
+  actor_role?: string | null;
+  is_visible_to_borrower: boolean;
+  metadata?: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export interface LoanApplicationClient {
+  id: number;
+  full_name?: string;
+  document_number?: string;
+  email?: string;
+  user?: {
+    id?: number;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+  };
+}
+
+export interface LoanApplicationProduct {
+  id: number;
+  name: string;
+  product_type?: string;
+  min_amount?: string;
+  max_amount?: string;
+  min_term_months?: number;
+  max_term_months?: number;
+  interest_rate?: string;
+}
+
+export interface LoanApplicationBranch {
+  id: number;
+  name?: string;
+  code?: string;
+}
+
+export interface LoanApplicationListItem {
+  id: number;
+  application_number: string;
+  client_name: string;
+  product_name: string;
+  requested_amount: string;
+  term_months: number;
+  status: LoanApplicationStatus;
+  status_display: string;
+  submitted_at?: string | null;
+  identity_verification_status?: IdentityVerificationStatus | null;
+  assigned_to?: number | null;
+  assigned_to_name?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LoanApplication extends LoanApplicationListItem {
+  client?: LoanApplicationClient;
+  product?: LoanApplicationProduct;
+  branch?: LoanApplicationBranch | null;
+  purpose?: string;
+  monthly_income?: string | null;
+  employment_type?: string | null;
+  employment_type_display?: string | null;
+  employment_description?: string | null;
+  additional_data?: Record<string, unknown> | null;
+  identity_verification_display?: string | null;
+  documents_status?: DocumentsStatus | null;
+  documents_status_display?: string | null;
+  credit_score?: number | null;
+  risk_level?: 'LOW' | 'MEDIUM' | 'HIGH' | 'VERY_HIGH' | null;
+  risk_level_display?: string | null;
+  debt_to_income_ratio?: string | null;
+  approved_amount?: string | null;
+  approved_term_months?: number | null;
+  approved_interest_rate?: string | null;
+  monthly_payment?: string | null;
+  reviewed_by?: number | null;
+  reviewed_by_name?: string | null;
+  approved_by?: number | null;
+  approved_by_name?: string | null;
+  created_by?: number | null;
+  created_by_name?: string | null;
+  updated_by?: number | null;
+  updated_by_name?: string | null;
+  notes?: string | null;
+  internal_notes?: string | null;
+  observation_reason?: string | null;
+  rejection_reason?: string | null;
+  reviewed_at?: string | null;
+  approved_at?: string | null;
+  rejected_at?: string | null;
+  disbursed_at?: string | null;
+  timeline?: LoanApplicationTimelineEvent[];
+  comments?: LoanApplicationComment[];
+  documents?: LoanApplicationDocument[];
+}
+
+export type CreditApplication = LoanApplication;
+
+export interface LoanApplicationListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: LoanApplicationListItem[];
 }
 
 export interface CreateLoanApplicationData {
-  client: number;
-  product: number;
+  product_id: number;
   requested_amount: string;
   term_months: number;
-  purpose?: string;
+  purpose: string;
+  monthly_income?: string | null;
+  employment_type?: string | null;
+  employment_description?: string;
+  branch_id?: number | null;
+  additional_data?: Record<string, unknown>;
 }
 
 export interface UpdateLoanApplicationData {
+  product_id?: number;
   requested_amount?: string;
   term_months?: number;
   purpose?: string;
-  notes?: string;
+  monthly_income?: string | null;
+  employment_type?: string | null;
+  employment_description?: string;
+  branch_id?: number | null;
+  additional_data?: Record<string, unknown>;
 }
 
-export interface ReviewLoanApplicationData {
-  credit_score?: number;
-  risk_level?: 'LOW' | 'MEDIUM' | 'HIGH' | 'VERY_HIGH';
-  debt_to_income_ratio?: string;
-  notes?: string;
+export interface ChangeLoanApplicationStatusData {
+  new_status: Exclude<LoanApplicationStatus, 'DRAFT'>;
+  reason?: string;
+  approved_amount?: string | null;
+  approved_term_months?: number | null;
+  approved_interest_rate?: string | null;
+}
+
+export interface AddLoanApplicationCommentData {
+  comment: string;
+  is_internal?: boolean;
 }
 
 export interface ApproveLoanApplicationData {
-  approved_amount: string;
-  approved_term_months: number;
-  approved_interest_rate: string;
+  approved_amount?: string;
+  approved_term_months?: number;
+  approved_interest_rate?: string;
   notes?: string;
-}
-
-export interface RejectLoanApplicationData {
-  rejection_reason: string;
 }
 
 export interface DisburseLoanApplicationData {
   notes?: string;
 }
 
-export interface LoanApplicationFilters {
-  status?: string;
-  client?: number;
-  product?: number;
+export interface RejectLoanApplicationData {
+  rejection_reason: string;
+  notes?: string;
+}
+
+export interface ReviewLoanApplicationData {
+  credit_score?: number;
   risk_level?: string;
+  notes?: string;
+}
+
+export interface LoanApplicationFilters {
+  search?: string;
+  status?: LoanApplicationStatus | '';
+  branch_id?: number | '';
+  product_id?: number | '';
+  identity_verification_status?: IdentityVerificationStatus | '';
+  ordering?: string;
   page?: number;
   page_size?: number;
 }
 
-// Funciones de API
+const CREDIT_APPLICATIONS_ENDPOINT = '/loans/credit-applications/';
 
-/**
- * Obtiene lista de solicitudes de crédito
- */
-export async function getLoanApplications(filters: LoanApplicationFilters = {}): Promise<{ results: LoanApplication[]; count: number }> {
+function buildQueryString(filters: LoanApplicationFilters = {}): string {
   const params = new URLSearchParams();
-  
+
   Object.entries(filters).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
-      params.append(key, value.toString());
+      params.append(key, String(value));
     }
   });
-  
-  return apiClient.get<{ results: LoanApplication[]; count: number }>(`/loans/?${params.toString()}`);
+
+  const query = params.toString();
+  return query ? `?${query}` : '';
 }
 
-/**
- * Obtiene detalle de una solicitud de crédito
- */
+function normalizeListResponse(
+  response: LoanApplicationListResponse | LoanApplicationListItem[]
+): LoanApplicationListResponse {
+  if (Array.isArray(response)) {
+    return {
+      count: response.length,
+      next: null,
+      previous: null,
+      results: response,
+    };
+  }
+
+  return response;
+}
+
+function buildStatusPayload(
+  status: ChangeLoanApplicationStatusData['new_status'],
+  data: Record<string, unknown> = {}
+): ChangeLoanApplicationStatusData {
+  const payload: ChangeLoanApplicationStatusData = { new_status: status };
+
+  if (typeof data.reason === 'string') {
+    payload.reason = data.reason;
+  }
+  if (typeof data.approved_amount === 'string') {
+    payload.approved_amount = data.approved_amount;
+  }
+  if (typeof data.approved_term_months === 'number') {
+    payload.approved_term_months = data.approved_term_months;
+  }
+  if (typeof data.approved_interest_rate === 'string') {
+    payload.approved_interest_rate = data.approved_interest_rate;
+  }
+
+  return payload;
+}
+
+export async function getLoanApplications(
+  filters: LoanApplicationFilters = {}
+): Promise<LoanApplicationListResponse> {
+  const response = await apiClient.get<LoanApplicationListResponse | LoanApplicationListItem[]>(
+    `${CREDIT_APPLICATIONS_ENDPOINT}${buildQueryString(filters)}`
+  );
+
+  return normalizeListResponse(response);
+}
+
 export async function getLoanApplication(id: number): Promise<LoanApplication> {
-  return apiClient.get<LoanApplication>(`/loans/${id}/`);
+  return apiClient.get<LoanApplication>(`${CREDIT_APPLICATIONS_ENDPOINT}${id}/`);
 }
 
-/**
- * Crea una nueva solicitud de crédito
- */
-export async function createLoanApplication(data: CreateLoanApplicationData): Promise<LoanApplication> {
-  return apiClient.post<LoanApplication>('/loans/', data);
+export async function createLoanApplication(
+  data: CreateLoanApplicationData
+): Promise<LoanApplication> {
+  return apiClient.post<LoanApplication>(CREDIT_APPLICATIONS_ENDPOINT, data);
 }
 
-/**
- * Actualiza una solicitud de crédito (solo en borrador)
- */
-export async function updateLoanApplication(id: number, data: UpdateLoanApplicationData): Promise<LoanApplication> {
-  return apiClient.patch<LoanApplication>(`/loans/${id}/`, data);
+export async function updateLoanApplication(
+  id: number,
+  data: UpdateLoanApplicationData
+): Promise<LoanApplication> {
+  return apiClient.patch<LoanApplication>(`${CREDIT_APPLICATIONS_ENDPOINT}${id}/`, data);
 }
 
-/**
- * Elimina (desactiva) una solicitud de crédito
- */
 export async function deleteLoanApplication(id: number): Promise<void> {
-  await apiClient.delete(`/loans/${id}/`);
+  await apiClient.delete(`${CREDIT_APPLICATIONS_ENDPOINT}${id}/`);
 }
 
-/**
- * Envía solicitud para revisión
- */
 export async function submitLoanApplication(id: number): Promise<LoanApplication> {
-  return apiClient.post<LoanApplication>(`/loans/${id}/submit/`, {});
+  return apiClient.post<LoanApplication>(`${CREDIT_APPLICATIONS_ENDPOINT}${id}/submit/`, {});
 }
 
-/**
- * Inicia revisión y actualiza evaluación
- */
-export async function reviewLoanApplication(id: number, data: ReviewLoanApplicationData): Promise<LoanApplication> {
-  return apiClient.post<LoanApplication>(`/loans/${id}/review/`, data);
+export async function changeLoanApplicationStatus(
+  id: number,
+  data: ChangeLoanApplicationStatusData
+): Promise<LoanApplication> {
+  return apiClient.post<LoanApplication>(`${CREDIT_APPLICATIONS_ENDPOINT}${id}/change-status/`, data);
 }
 
-/**
- * Calcula score automático
- */
-export async function calculateLoanScore(id: number): Promise<{
-  credit_score?: number;
-  risk_level?: string;
-  debt_to_income_ratio?: number;
-}> {
-  return apiClient.post(`/loans/${id}/calculate-score/`, {});
+export async function getLoanApplicationTimeline(
+  applicationId: number
+): Promise<LoanApplicationTimelineEvent[]> {
+  return apiClient.get<LoanApplicationTimelineEvent[]>(
+    `${CREDIT_APPLICATIONS_ENDPOINT}${applicationId}/timeline/`
+  );
 }
 
-/**
- * Aprueba una solicitud
- */
-export async function approveLoanApplication(id: number, data: ApproveLoanApplicationData): Promise<LoanApplication> {
-  return apiClient.post<LoanApplication>(`/loans/${id}/approve/`, data);
+export async function getLoanApplicationComments(
+  applicationId: number
+): Promise<LoanApplicationComment[]> {
+  return apiClient.get<LoanApplicationComment[]>(
+    `${CREDIT_APPLICATIONS_ENDPOINT}${applicationId}/comments/`
+  );
 }
 
-/**
- * Rechaza una solicitud
- */
-export async function rejectLoanApplication(id: number, data: RejectLoanApplicationData): Promise<LoanApplication> {
-  return apiClient.post<LoanApplication>(`/loans/${id}/reject/`, data);
+export async function addLoanApplicationComment(
+  applicationId: number,
+  comment: string,
+  isInternal = true
+): Promise<LoanApplicationComment> {
+  return apiClient.post<LoanApplicationComment>(
+    `${CREDIT_APPLICATIONS_ENDPOINT}${applicationId}/comments/`,
+    {
+      comment,
+      is_internal: isInternal,
+    }
+  );
 }
 
-/**
- * Desembolsa una solicitud aprobada
- */
-export async function disburseLoanApplication(id: number, data: DisburseLoanApplicationData): Promise<LoanApplication> {
-  return apiClient.post<LoanApplication>(`/loans/${id}/disburse/`, data);
-}
-
-/**
- * Obtiene documentos de una solicitud
- */
-export async function getLoanApplicationDocuments(applicationId: number): Promise<LoanApplicationDocument[]> {
-  return apiClient.get<LoanApplicationDocument[]>(`/loans/${applicationId}/documents/`);
-}
-
-/**
- * Sube un documento a una solicitud
- */
 export async function uploadLoanApplicationDocument(
   applicationId: number,
   file: File,
@@ -259,128 +370,158 @@ export async function uploadLoanApplicationDocument(
   if (description) {
     formData.append('description', description);
   }
-  
-  return apiClient.post<LoanApplicationDocument>(`/loans/${applicationId}/documents/`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+
+  return apiClient.post<LoanApplicationDocument>(
+    `${CREDIT_APPLICATIONS_ENDPOINT}${applicationId}/documents/`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
 }
 
-/**
- * Obtiene comentarios de una solicitud
- */
-export async function getLoanApplicationComments(applicationId: number): Promise<LoanApplicationComment[]> {
-  return apiClient.get<LoanApplicationComment[]>(`/loans/${applicationId}/comments/`);
-}
-
-/**
- * Agrega un comentario a una solicitud
- */
-export async function addLoanApplicationComment(
-  applicationId: number,
-  comment: string,
-  isInternal: boolean = true
-): Promise<LoanApplicationComment> {
-  return apiClient.post<LoanApplicationComment>(`/loans/${applicationId}/comments/`, {
-    comment,
-    is_internal: isInternal,
-  });
-}
-
-// Utilidades
-
-/**
- * Calcula la cuota mensual estimada
- */
 export function calculateMonthlyPayment(
   amount: number,
   termMonths: number,
   interestRate: number
 ): number {
   const monthlyRate = interestRate / 100 / 12;
-  
-  if (monthlyRate === 0) {
-    return amount / termMonths;
+
+  if (termMonths <= 0) {
+    return 0;
   }
-  
-  const payment = amount * (monthlyRate * Math.pow(1 + monthlyRate, termMonths)) / 
-                  (Math.pow(1 + monthlyRate, termMonths) - 1);
-  
+
+  if (monthlyRate === 0) {
+    return Math.round((amount / termMonths) * 100) / 100;
+  }
+
+  const payment =
+    (amount * (monthlyRate * Math.pow(1 + monthlyRate, termMonths))) /
+    (Math.pow(1 + monthlyRate, termMonths) - 1);
+
   return Math.round(payment * 100) / 100;
 }
 
-/**
- * Obtiene el color del badge según el estado
- */
-export function getStatusColor(status: string): string {
-  const colors: Record<string, string> = {
-    DRAFT: 'gray',
-    SUBMITTED: 'blue',
-    UNDER_REVIEW: 'yellow',
-    APPROVED: 'green',
-    REJECTED: 'red',
-    DISBURSED: 'emerald',
-    CANCELLED: 'gray',
-  };
-  return colors[status] || 'gray';
-}
-
-/**
- * Obtiene el color del badge según el nivel de riesgo
- */
-export function getRiskLevelColor(riskLevel: string): string {
-  const colors: Record<string, string> = {
-    LOW: 'green',
-    MEDIUM: 'yellow',
-    HIGH: 'orange',
-    VERY_HIGH: 'red',
-  };
-  return colors[riskLevel] || 'gray';
-}
-
-/**
- * Formatea el número de solicitud para mostrar
- */
 export function formatApplicationNumber(applicationNumber: string): string {
-  // Formato: LOAN-1-2026-0001-1234 -> #2026-0001
   const parts = applicationNumber.split('-');
+
   if (parts.length >= 4) {
     return `#${parts[2]}-${parts[3]}`;
   }
+
   return applicationNumber;
 }
 
-/**
- * Obtiene las acciones disponibles para una solicitud
- */
-export function getAvailableActions(application: LoanApplication) {
-  const actions = [];
-  
-  if (application.can_be_edited) {
-    actions.push({ key: 'edit', label: 'Editar', color: 'blue' });
+export function getStatusColor(status: string): string {
+  const colors: Record<string, string> = {
+    DRAFT: 'slate',
+    SUBMITTED: 'blue',
+    IN_REVIEW: 'amber',
+    OBSERVED: 'orange',
+    APPROVED: 'emerald',
+    REJECTED: 'rose',
+    DISBURSED: 'teal',
+    CANCELLED: 'gray',
+  };
+
+  return colors[status] || 'slate';
+}
+
+export function getIdentityStatusColor(status?: string | null): string {
+  const colors: Record<string, string> = {
+    PENDING: 'slate',
+    IN_PROGRESS: 'blue',
+    APPROVED: 'emerald',
+    DECLINED: 'rose',
+    MANUAL_REVIEW: 'amber',
+    EXPIRED: 'orange',
+    ERROR: 'red',
+  };
+
+  return colors[status || ''] || 'slate';
+}
+
+export function getDocumentsStatusColor(status?: string | null): string {
+  const colors: Record<string, string> = {
+    PENDING: 'slate',
+    INCOMPLETE: 'amber',
+    UNDER_REVIEW: 'blue',
+    APPROVED: 'emerald',
+    REJECTED: 'rose',
+    COMPLETE: 'teal',
+  };
+
+  return colors[status || ''] || 'slate';
+}
+
+export function getAvailableActions(application: Pick<LoanApplication, 'status'>) {
+  const actions: Array<{ key: string; label: string; color: string }> = [];
+
+  if (application.status === 'DRAFT' || application.status === 'OBSERVED') {
+    actions.push({ key: 'submit', label: 'Enviar', color: 'emerald' });
   }
-  
-  if (application.can_be_submitted) {
-    actions.push({ key: 'submit', label: 'Enviar', color: 'green' });
+
+  if (application.status === 'SUBMITTED' || application.status === 'IN_REVIEW') {
+    actions.push({ key: 'review', label: 'Poner en revisión', color: 'amber' });
+    actions.push({ key: 'observe', label: 'Observar', color: 'orange' });
+    actions.push({ key: 'approve', label: 'Aprobar', color: 'emerald' });
+    actions.push({ key: 'reject', label: 'Rechazar', color: 'rose' });
   }
-  
-  if (application.status === 'SUBMITTED' || application.status === 'UNDER_REVIEW') {
-    actions.push({ key: 'review', label: 'Revisar', color: 'yellow' });
-    actions.push({ key: 'calculate-score', label: 'Calcular Score', color: 'purple' });
+
+  if (application.status === 'APPROVED') {
+    actions.push({ key: 'disburse', label: 'Desembolsar', color: 'teal' });
   }
-  
-  if (application.can_be_approved) {
-    actions.push({ key: 'approve', label: 'Aprobar', color: 'green' });
-  }
-  
-  if (application.can_be_rejected) {
-    actions.push({ key: 'reject', label: 'Rechazar', color: 'red' });
-  }
-  
-  if (application.can_be_disbursed) {
-    actions.push({ key: 'disburse', label: 'Desembolsar', color: 'emerald' });
-  }
-  
+
   return actions;
+}
+
+export async function reviewLoanApplication(
+  id: number,
+  data: { credit_score?: number; risk_level?: string; debt_to_income_ratio?: string; notes?: string }
+): Promise<LoanApplication> {
+  return changeLoanApplicationStatus(id, buildStatusPayload('IN_REVIEW', { reason: data.notes }));
+}
+
+export async function approveLoanApplication(
+  id: number,
+  data: ApproveLoanApplicationData
+): Promise<LoanApplication> {
+  return changeLoanApplicationStatus(
+    id,
+    buildStatusPayload('APPROVED', {
+      reason: data.notes,
+      approved_amount: data.approved_amount,
+      approved_term_months: data.approved_term_months,
+      approved_interest_rate: data.approved_interest_rate,
+    })
+  );
+}
+
+export async function rejectLoanApplication(
+  id: number,
+  data: { rejection_reason: string }
+): Promise<LoanApplication> {
+  return changeLoanApplicationStatus(id, buildStatusPayload('REJECTED', { reason: data.rejection_reason }));
+}
+
+export async function disburseLoanApplication(
+  id: number,
+  data: { notes?: string }
+): Promise<LoanApplication> {
+  return changeLoanApplicationStatus(id, buildStatusPayload('DISBURSED', { reason: data.notes }));
+}
+
+export async function calculateLoanScore(id: number): Promise<{
+  credit_score?: number;
+  risk_level?: string;
+  debt_to_income_ratio?: number;
+}> {
+  const application = await getLoanApplication(id);
+  return {
+    credit_score: application.credit_score ?? undefined,
+    risk_level: application.risk_level ?? undefined,
+    debt_to_income_ratio: application.debt_to_income_ratio ? Number(application.debt_to_income_ratio) : undefined,
+  };
 }

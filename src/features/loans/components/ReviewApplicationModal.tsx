@@ -9,7 +9,6 @@ import { reviewLoanApplication, calculateLoanScore, type ReviewLoanApplicationDa
 interface FormData {
   credit_score?: number;
   risk_level?: 'LOW' | 'MEDIUM' | 'HIGH' | 'VERY_HIGH';
-  debt_to_income_ratio?: string;
   notes?: string;
 }
 
@@ -47,9 +46,6 @@ export function ReviewApplicationModal({ applicationId, onClose, onSuccess }: Re
       if (result.risk_level) {
         setValue('risk_level', result.risk_level as 'LOW' | 'MEDIUM' | 'HIGH' | 'VERY_HIGH');
       }
-      if (result.debt_to_income_ratio) {
-        setValue('debt_to_income_ratio', result.debt_to_income_ratio.toString());
-      }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error al calcular el score');
     } finally {
@@ -66,7 +62,6 @@ export function ReviewApplicationModal({ applicationId, onClose, onSuccess }: Re
       const reviewData: ReviewLoanApplicationData = {};
       if (data.credit_score !== undefined) reviewData.credit_score = data.credit_score;
       if (data.risk_level) reviewData.risk_level = data.risk_level;
-      if (data.debt_to_income_ratio) reviewData.debt_to_income_ratio = data.debt_to_income_ratio;
       if (data.notes) reviewData.notes = data.notes;
       
       await reviewLoanApplication(applicationId, reviewData);
@@ -170,28 +165,6 @@ export function ReviewApplicationModal({ applicationId, onClose, onSuccess }: Re
               </div>
             </div>
 
-            {/* Ratio Deuda/Ingreso */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Ratio Deuda/Ingreso (%)
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                min="0"
-                max="100"
-                {...register('debt_to_income_ratio')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                placeholder="0.0"
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                Porcentaje de ingresos comprometidos con deudas
-              </p>
-              {errors.debt_to_income_ratio && (
-                <p className="mt-1 text-sm text-red-600">{errors.debt_to_income_ratio.message}</p>
-              )}
-            </div>
-
             {/* Notas de Evaluación */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -235,15 +208,6 @@ export function ReviewApplicationModal({ applicationId, onClose, onSuccess }: Re
                          watchedValues.risk_level === 'HIGH' ? 'Alto' : 'Muy Alto'}
                       </div>
                       <div className="text-sm text-gray-500">Riesgo</div>
-                    </div>
-                  )}
-                  
-                  {watchedValues.debt_to_income_ratio && (
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-orange-600">
-                        {parseFloat(watchedValues.debt_to_income_ratio).toFixed(1)}%
-                      </div>
-                      <div className="text-sm text-gray-500">Deuda/Ingreso</div>
                     </div>
                   )}
                 </div>

@@ -73,15 +73,15 @@ export function DisburseApplicationModal({ applicationId, application, onClose, 
                 <div className="space-y-2 text-sm">
                   <div>
                     <span className="text-emerald-700">Nombre:</span>
-                    <p className="font-medium text-emerald-900">{application.client_detail?.full_name}</p>
+                    <p className="font-medium text-emerald-900">{application.client?.full_name}</p>
                   </div>
                   <div>
                     <span className="text-emerald-700">Documento:</span>
-                    <p className="font-medium text-emerald-900">{application.client_detail?.document_number}</p>
+                    <p className="font-medium text-emerald-900">{application.client?.document_number}</p>
                   </div>
                   <div>
                     <span className="text-emerald-700">Email:</span>
-                    <p className="font-medium text-emerald-900">{application.client_detail?.email}</p>
+                    <p className="font-medium text-emerald-900">{application.client?.email}</p>
                   </div>
                 </div>
               </div>
@@ -104,7 +104,7 @@ export function DisburseApplicationModal({ applicationId, application, onClose, 
                   <div>
                     <span className="text-emerald-700">Tasa:</span>
                     <p className="font-medium text-emerald-900">
-                      {application.approved_interest_rate || application.product_detail?.interest_rate}% anual
+                      {application.approved_interest_rate || application.product?.interest_rate}% anual
                     </p>
                   </div>
                   {application.monthly_payment && (

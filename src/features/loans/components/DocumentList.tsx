@@ -285,9 +285,9 @@ export function DocumentList({ applicationId, documents, onDocumentUploaded }: D
                       <span>Subido por {document.uploaded_by_name}</span>
                       <span>{new Date(document.created_at).toLocaleDateString()}</span>
                     </div>
-                    {document.verified_by_name && (
+                    {document.is_verified && (
                       <p className="text-xs text-green-600 mt-1">
-                        Verificado por {document.verified_by_name} el {new Date(document.verified_at!).toLocaleDateString()}
+                        Verificado el {new Date(document.verified_at!).toLocaleDateString()}
                       </p>
                     )}
                   </div>
