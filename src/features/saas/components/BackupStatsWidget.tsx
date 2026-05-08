@@ -15,12 +15,11 @@ import { backupsApi } from '../services/backupsApi';
 import type { Backup } from '../types/backup.types';
 
 interface BackupStatsWidgetProps {
-  tenantId: number;
   backups: Backup[];
   onRefresh?: () => void;
 }
 
-export function BackupStatsWidget({ tenantId, backups, onRefresh }: BackupStatsWidgetProps) {
+export function BackupStatsWidget({ backups, onRefresh }: BackupStatsWidgetProps) {
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
 
