@@ -12,6 +12,7 @@ interface RequestConfig extends RequestInit {
   skipAuth?: boolean;
   skipRefresh?: boolean;
   headers?: Record<string, string>;
+  params?: Record<string, string | number | boolean>;
 }
 
 class ApiClient {
@@ -25,7 +26,21 @@ class ApiClient {
     endpoint: string,
     config: RequestConfig = {}
   ): Promise<T> {
-    const { skipAuth, skipRefresh, ...fetchConfig } = config;
+    const { skipAuth, skipRefresh, params, ...fetchConfig } = config;
+
+    // Construir URL con query parameters si existen
+    let url = `${API_BASE_URL}${endpoint}`;
+    if (params) {
+      const queryString = new URLSearchParams(
+        Object.entries(params).reduce((acc, [key, value]) => {
+          acc[key] = String(value);
+          return acc;
+        }, {} as Record<string, string>)
+      ).toString();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
+    }
 
     // Inicializar headers como objeto
     const headers: Record<string, string> = {};
@@ -55,7 +70,7 @@ class ApiClient {
     fetchConfig.headers = headers;
 
     try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchConfig);
+      const response = await fetch(url, fetchConfig);
 
       // Si es 401 y no se debe saltar refresh, intentar renovar token
       if (response.status === 401 && !skipRefresh && !skipAuth) {
@@ -218,10 +233,11 @@ class ApiClient {
   /**
    * GET request
    */
-  async get<T>(endpoint: string, config: RequestConfig = {}): Promise<T> {
+  async get<T>(endpoint: string, params?: Record<string, string | number | boolean>, config: RequestConfig = {}): Promise<T> {
     return this.request<T>(endpoint, {
       ...config,
       method: 'GET',
+      params: params || config.params,
     });
   }
 

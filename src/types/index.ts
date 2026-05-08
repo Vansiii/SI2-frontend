@@ -101,6 +101,8 @@ export interface TenantBranding {
   display_name: string;
   logo: string | null;
   logo_url: string | null;
+  favicon_url: string | null;
+  cover_url: string | null;
   primary_color: string;
   secondary_color: string;
   accent_color: string;
@@ -109,6 +111,24 @@ export interface TenantBranding {
   is_active: boolean;
   created_at: string | null;
   updated_at: string | null;
+}
+
+export interface FileUploadResponse {
+  success: boolean;
+  message: string;
+  file: {
+    id: string;
+    file_path: string;
+    url: string;
+    mime_type: string;
+    size: number;
+  };
+  branding: TenantBranding;
+}
+
+export interface PublicBrandingResponse {
+  success: boolean;
+  branding: TenantBranding;
 }
 
 // ============================================
