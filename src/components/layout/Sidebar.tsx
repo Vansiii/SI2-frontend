@@ -14,6 +14,7 @@ import {
   CreditCard,
   FileText,
   Palette,
+  HardDrive,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../features/auth/hooks/useAuth';
@@ -40,8 +41,20 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
   
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
   const toggleSidebar = onToggle || (() => setInternalIsOpen(!internalIsOpen));
-  const isTenantAdmin = roles.some((role) => role.toLowerCase().includes('admin'));
+  const isTenantAdmin = roles.some((role) => 
+    role.toLowerCase().includes('admin') || 
+    role.toLowerCase().includes('administrador')
+  );
   const displayName = tenantBranding?.display_name || institution?.name || 'Sistema';
+
+  // Debug temporal - remover después
+  console.log('Sidebar Debug:', {
+    institution: institution,
+    isTenantAdmin,
+    roles,
+    userType,
+    institutionId: institution?.id
+  });
 
   // Definir items del menú (solo para usuarios tenant)
   const menuItems: NavItem[] = [
@@ -93,6 +106,12 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
       label: 'Roles y Permisos',
       permission: 'roles.view',
     },
+    ...(institution?.id && isTenantAdmin ? [{
+      to: `/saas/tenants/${institution.id}/backups`,
+      icon: <HardDrive className="h-5 w-5" />,
+      label: 'Backups',
+      adminOnly: true,
+    }] : []),
     {
       to: '/subscription/current',
       icon: <Building2 className="h-5 w-5" />,

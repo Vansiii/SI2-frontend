@@ -157,6 +157,13 @@ const LoanApplicationListPage = lazy(() => import('./features/loans/pages/LoanAp
 const LoanApplicationFormPage = lazy(() => import('./features/loans/pages/LoanApplicationFormPage'));
 const LoanApplicationDetailPage = lazy(() => import('./features/loans/pages/LoanApplicationDetailPage'));
 
+// Importar Backup pages
+const TenantBackupsPage = lazy(() =>
+  import('./features/saas/pages/TenantBackupsPage').then((module) => ({
+    default: module.TenantBackupsPage,
+  }))
+);
+
 // Importar Audit pages
 const AuditDashboard = lazy(() =>
   import('./features/audit/pages/AuditDashboard').then((module) => ({
@@ -595,6 +602,16 @@ function App() {
               element={
                 <ProtectedRoute>
                   <PlanFormPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Backups */}
+            <Route
+              path="/saas/tenants/:tenantId/backups"
+              element={
+                <ProtectedRoute>
+                  <TenantBackupsPage />
                 </ProtectedRoute>
               }
             />

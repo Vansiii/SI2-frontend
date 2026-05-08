@@ -23,6 +23,23 @@ export function LoginPage() {
   const registrationSuccess = location.state?.registrationSuccess;
   const registeredEmail = location.state?.email;
 
+  // Cargar branding público antes de autenticación
+  useEffect(() => {
+    // Código de branding comentado temporalmente
+    // const loadPublicBranding = async () => {
+    //   try {
+    //     const hostname = window.location.hostname;
+    //     const slug = hostname.split('.')[0];
+    //     const tenantSlug = hostname === 'localhost' ? 'uagrm' : slug;
+    //     const response = await getPublicBranding(tenantSlug);
+    //     applyTenantBrandingToDocument(response.branding);
+    //   } catch (error) {
+    //     console.error('Error loading public branding:', error);
+    //   }
+    // };
+    // loadPublicBranding();
+  }, []);
+
   // Redirigir a home si ya está autenticado
   useEffect(() => {
     if (isAuthenticated) {
