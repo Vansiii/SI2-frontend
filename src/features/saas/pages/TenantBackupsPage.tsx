@@ -254,7 +254,6 @@ export function TenantBackupsPage() {
       {tenantId && (
         <div className="animate-in slide-in-from-bottom duration-300">
           <BackupStatsWidget 
-            tenantId={parseInt(tenantId)} 
             backups={backups}
             onRefresh={loadBackups}
           />
