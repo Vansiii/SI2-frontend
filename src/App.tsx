@@ -138,6 +138,16 @@ const ProductFormPage = lazy(() =>
     default: module.ProductFormPage,
   }))
 );
+const ProductDetailPage = lazy(() =>
+  import('./features/products/pages/ProductDetailPage').then((module) => ({
+    default: module.ProductDetailPage,
+  }))
+);
+const ProductParametersViewPage = lazy(() =>
+  import('./features/products/pages/ProductParametersViewPage').then((module) => ({
+    default: module.ProductParametersViewPage,
+  }))
+);
 
 // Importar Branches page
 const BranchListPage = lazy(() =>
@@ -156,6 +166,66 @@ const SubscriptionSuccessPage = lazy(() => import('./features/saas/pages/Subscri
 const LoanApplicationListPage = lazy(() => import('./features/loans/pages/LoanApplicationListPage'));
 const LoanApplicationFormPage = lazy(() => import('./features/loans/pages/LoanApplicationFormPage'));
 const LoanApplicationDetailPage = lazy(() => import('./features/loans/pages/LoanApplicationDetailPage'));
+const IncomingApplicationsPage = lazy(() =>
+  import('./features/loans/pages/IncomingApplicationsPage').then((module) => ({
+    default: module.IncomingApplicationsPage,
+  }))
+);
+const LoanDossierPage = lazy(() =>
+  import('./features/loans/pages/LoanDossierPage').then((module) => ({
+    default: module.LoanDossierPage,
+  }))
+);
+
+// Importar Client Loan pages (CU-07: Timeline para clientes)
+const MyApplicationsPage = lazy(() =>
+  import('./features/loans/pages/MyApplicationsPage').then((module) => ({
+    default: module.MyApplicationsPage,
+  }))
+);
+const ClientApplicationDetailPage = lazy(() =>
+  import('./features/loans/pages/ClientApplicationDetailPage').then((module) => ({
+    default: module.ClientApplicationDetailPage,
+  }))
+);
+
+// Importar Document pages (CU-12)
+const DocumentManagementPage = lazy(() =>
+  import('./features/documents/pages/DocumentManagementPage').then((module) => ({
+    default: module.DocumentManagementPage,
+  }))
+);
+const StaffDocumentsPage = lazy(() =>
+  import('./features/documents/pages/StaffDocumentsPage').then((module) => ({
+    default: module.StaffDocumentsPage,
+  }))
+);
+
+// Importar Rule pages (CU-09)
+const RulesManagementPage = lazy(() =>
+  import('./features/rules/pages/RulesManagementPage').then((module) => ({
+    default: module.RulesManagementPage,
+  }))
+);
+const RuleSetListPage = lazy(() =>
+  import('./features/rules/pages/RuleSetListPage').then((module) => ({
+    default: module.RuleSetListPage,
+  }))
+);
+const RuleSetAuditPage = lazy(() =>
+  import('./features/rules/pages/RuleSetAuditPage').then((module) => ({
+    default: module.RuleSetAuditPage,
+  }))
+);
+const EligibilityRuleListPage = lazy(() =>
+  import('./features/rules/pages/EligibilityRuleListPage').then((module) => ({
+    default: module.EligibilityRuleListPage,
+  }))
+);
+const ProductParameterListPage = lazy(() =>
+  import('./features/rules/pages/ProductParameterListPage')
+);
+// DocumentRequirementListPage - DEPRECATED: Ya no se usa, los documentos se gestionan en productos
 
 // Importar Backup pages
 const TenantBackupsPage = lazy(() =>
@@ -189,6 +259,38 @@ const RolePermissionManagementPage = lazy(
 const LandingPage = lazy(() =>
   import('./features/home/pages/LandingPage').then((module) => ({
     default: module.LandingPage,
+  }))
+);
+
+// Importar Reports pages (CU-39)
+const ReportsPage = lazy(() =>
+  import('./features/reports/pages/ReportsPage').then((module) => ({
+    default: module.ReportsPage,
+  }))
+);
+const ReportBuilderPage = lazy(() =>
+  import('./features/reports/pages/ReportBuilderPage').then((module) => ({
+    default: module.ReportBuilderPage,
+  }))
+);
+const VoiceReportPage = lazy(() =>
+  import('./features/reports/pages/VoiceReportPage').then((module) => ({
+    default: module.VoiceReportPage,
+  }))
+);
+const TemplatesPage = lazy(() =>
+  import('./features/reports/pages/TemplatesPage').then((module) => ({
+    default: module.TemplatesPage,
+  }))
+);
+const HistoryPage = lazy(() =>
+  import('./features/reports/pages/HistoryPage').then((module) => ({
+    default: module.HistoryPage,
+  }))
+);
+const ManualReportsPage = lazy(() =>
+  import('./features/reports/pages/ManualReportsPage').then((module) => ({
+    default: module.ManualReportsPage,
   }))
 );
 
@@ -369,11 +471,31 @@ function App() {
               }
             />
             <Route
+              path="/products/:productId"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="products.view">
+                    <ProductDetailPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/products/:productId/edit"
               element={
                 <ProtectedRoute>
                   <PermissionGuard permission="products.edit">
                     <ProductFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/products/:productId/parameters"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="products.view">
+                    <ProductParametersViewPage />
                   </PermissionGuard>
                 </ProtectedRoute>
               }
@@ -434,7 +556,65 @@ function App() {
               }
             />
 
-            {/* Rutas de Solicitudes de Crédito */}
+            {/* Rutas de Solicitudes de Crédito - Staff/Admin */}
+            <Route
+              path="/loans"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="loans.view">
+                    <LoanApplicationListPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/loans/incoming"
+              element={
+                <ProtectedRoute>
+                  <IncomingApplicationsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/loans/new"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="loans.create">
+                    <LoanApplicationFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/loans/:id"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="loans.view">
+                    <LoanApplicationDetailPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/loans/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="loans.edit">
+                    <LoanApplicationFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/loans/:id/dossier"
+              element={
+                <ProtectedRoute>
+                  <LoanDossierPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas legacy / credit-applications - Redirigir o mantener por compatibilidad */}
             <Route
               path="/credit-applications"
               element={
@@ -475,46 +655,105 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* Rutas de Solicitudes de Crédito - Cliente (CU-07: Timeline) */}
             <Route
-              path="/loans"
+              path="/my-applications"
               element={
                 <ProtectedRoute>
-                  <PermissionGuard permission="loans.view">
-                    <LoanApplicationListPage />
+                  <MyApplicationsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-applications/:id"
+              element={
+                <ProtectedRoute>
+                  <ClientApplicationDetailPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Documentos (CU-12) - Staff revisa documentos en WEB */}
+            <Route
+              path="/admin/documents"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="loans.review_loan_documents">
+                    <DocumentManagementPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            {/* Ruta legacy - mantener por compatibilidad */}
+            <Route
+              path="/staff/documents"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="loans.review_loan_documents">
+                    <StaffDocumentsPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Administración de Reglas (CU-09) - Administradores configuran reglas en WEB */}
+            <Route
+              path="/admin/credit-rules"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="loans.manage_credit_rules">
+                    <RulesManagementPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            {/* Rutas individuales - mantener por compatibilidad y navegación directa */}
+            <Route
+              path="/admin/rules"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="loans.manage_credit_rules">
+                    <RuleSetListPage />
                   </PermissionGuard>
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/loans/new"
+              path="/admin/rules/:id/audit"
               element={
                 <ProtectedRoute>
-                  <PermissionGuard permission="loans.create">
-                    <LoanApplicationFormPage />
+                  <PermissionGuard permission="loans.manage_credit_rules">
+                    <RuleSetAuditPage />
                   </PermissionGuard>
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/loans/:id"
+              path="/admin/eligibility-rules"
               element={
                 <ProtectedRoute>
-                  <PermissionGuard permission="loans.view">
-                    <LoanApplicationDetailPage />
+                  <PermissionGuard permission="loans.manage_credit_rules">
+                    <EligibilityRuleListPage />
                   </PermissionGuard>
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/loans/:id/edit"
+              path="/admin/product-parameters"
               element={
                 <ProtectedRoute>
-                  <PermissionGuard permission="loans.edit">
-                    <LoanApplicationFormPage />
+                  <PermissionGuard permission="loans.manage_credit_rules">
+                    <ProductParameterListPage />
                   </PermissionGuard>
                 </ProtectedRoute>
               }
             />
+            {/* 
+              RUTA ELIMINADA: /admin/document-requirements
+              Los documentos requeridos ahora se gestionan directamente en cada producto.
+              Ver: RESUMEN_ELIMINACION_DOCUMENT_REQUIREMENT.md
+            */}
 
             {/* Rutas de Panel SaaS (Solo para superadmins) */}
             <Route
@@ -638,6 +877,78 @@ function App() {
               element={
                 <ProtectedRoute>
                   <SecurityEventsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Reportes (CU-39) */}
+            <Route
+              path="/reports"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="reports.view_report_catalog">
+                    <ReportsPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports/builder"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="reports.generate_report">
+                    <ReportBuilderPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports/builder/:reportType"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="reports.generate_report">
+                    <ReportBuilderPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports/voice"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="reports.use_voice_reports">
+                    <VoiceReportPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports/templates"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="reports.manage_templates">
+                    <TemplatesPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports/history"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="reports.view_report_catalog">
+                    <HistoryPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports/manual"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="reports.generate_report">
+                    <ManualReportsPage />
+                  </PermissionGuard>
                 </ProtectedRoute>
               }
             />

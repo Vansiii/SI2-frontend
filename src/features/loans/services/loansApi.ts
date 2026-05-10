@@ -23,6 +23,24 @@ export type IdentityVerificationStatus =
   | 'EXPIRED'
   | 'ERROR';
 
+export interface IdentityVerification {
+  id: number;
+  user: any;
+  institution_name: string;
+  credit_application_number: string;
+  status: IdentityVerificationStatus;
+  decision: string;
+  document_type: string;
+  document_number: string;
+  full_name: string;
+  date_of_birth: string;
+  country: string;
+  error_message?: string;
+  raw_response?: any;
+  completed_at: string;
+  created_at: string;
+}
+
 export type DocumentsStatus = 'PENDING' | 'INCOMPLETE' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'COMPLETE';
 
 export interface LoanApplicationDocument {
@@ -153,6 +171,20 @@ export interface LoanApplication extends LoanApplicationListItem {
   timeline?: LoanApplicationTimelineEvent[];
   comments?: LoanApplicationComment[];
   documents?: LoanApplicationDocument[];
+  identity_verification_id?: number | null;
+  identity_verification_details?: {
+    id: number;
+    status: string;
+    decision: string;
+    document_type: string;
+    document_number: string;
+    full_name: string;
+    date_of_birth: string | null;
+    country: string;
+    provider: string;
+    completed_at: string | null;
+    created_at: string;
+  } | null;
 }
 
 export type CreditApplication = LoanApplication;
@@ -298,6 +330,10 @@ export async function getLoanApplications(
 
 export async function getLoanApplication(id: number): Promise<LoanApplication> {
   return apiClient.get<LoanApplication>(`${CREDIT_APPLICATIONS_ENDPOINT}${id}/`);
+}
+
+export async function getIdentityVerification(id: number): Promise<IdentityVerification> {
+  return apiClient.get<IdentityVerification>(`/identity-verifications/${id}/`);
 }
 
 export async function createLoanApplication(

@@ -15,8 +15,12 @@ import {
   FileText,
   Palette,
   HardDrive,
+  FileCheck,
+  Sliders,
+  Inbox,
+  BarChart3,
 } from 'lucide-react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../features/auth/hooks/useAuth';
 
 interface NavItem {
@@ -47,14 +51,6 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
   );
   const displayName = tenantBranding?.display_name || institution?.name || 'Sistema';
 
-  // Debug temporal - remover después
-  console.log('Sidebar Debug:', {
-    institution: institution,
-    isTenantAdmin,
-    roles,
-    userType,
-    institutionId: institution?.id
-  });
 
   // Definir items del menú (solo para usuarios tenant)
   const menuItems: NavItem[] = [
@@ -78,8 +74,32 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
     {
       to: '/loans',
       icon: <CreditCard className="h-5 w-5" />,
-      label: 'Solicitudes',
+      label: 'Bandeja de Solicitudes',
       permission: 'loans.view',
+    },
+    {
+      to: '/loans/incoming',
+      icon: <Inbox className="h-5 w-5" />,
+      label: 'Solicitudes Entrantes',
+      // Remove or relax permission for testing visibility
+    },
+    {
+      to: '/admin/documents',
+      icon: <FileCheck className="h-5 w-5" />,
+      label: 'Expedientes y Documentos',
+      permission: 'loans.review_loan_documents',
+    },
+    {
+      to: '/admin/credit-rules',
+      icon: <Sliders className="h-5 w-5" />,
+      label: 'Reglas de Crédito',
+      permission: 'loans.manage_credit_rules',
+    },
+    {
+      to: '/reports',
+      icon: <BarChart3 className="h-5 w-5" />,
+      label: 'Reportes',
+      permission: 'reports.view_report_catalog',
     },
     {
       to: '/users',
@@ -117,19 +137,6 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
       icon: <Building2 className="h-5 w-5" />,
       label: 'Mi Suscripción',
     },
-    // Reportes y Configuración no están implementados aún
-    // {
-    //   to: '/reports',
-    //   icon: <BarChart3 className="h-5 w-5" />,
-    //   label: 'Reportes',
-    //   permission: 'reports.view',
-    // },
-    // {
-    //   to: '/settings',
-    //   icon: <Settings className="h-5 w-5" />,
-    //   label: 'Configuración',
-    //   permission: 'config.view',
-    // },
   ];
 
   // Items del menú SaaS (solo para superadmin)
@@ -170,14 +177,12 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
     },
   ];
 
-  // Filtrar items según permisos (solo para usuarios tenant)
-  const visibleItems = userType === 'saas_admin' 
-    ? [] // SaaS admin NO ve módulos de tenant
-    : menuItems.filter(item => {
-        if (item.adminOnly && !isTenantAdmin) return false;
-        if (!item.permission) return true;
-        return hasPermission(item.permission);
-      });
+  // Filtrar items según permisos
+  const visibleItems = menuItems.filter(item => {
+    if (item.adminOnly && !isTenantAdmin) return false;
+    if (!item.permission) return true;
+    return hasPermission(item.permission);
+  });
 
   // Agregar items SaaS si es superadmin
   const allItems = userType === 'saas_admin' 

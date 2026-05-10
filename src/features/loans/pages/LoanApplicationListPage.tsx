@@ -296,10 +296,10 @@ export default function LoanApplicationListPage() {
 
                 <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
                   <Link
-                    to={`/credit-applications/${application.id}`}
+                    to={`/loans/${application.id}/dossier`}
                     className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 transition group-hover:text-blue-800"
                   >
-                    Ver detalle
+                    Ver expediente
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <button

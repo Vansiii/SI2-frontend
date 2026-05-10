@@ -340,16 +340,26 @@ export default function LoanApplicationFormPage() {
                       <div className="flex items-center justify-between gap-3">
                         <span>Rango</span>
                         <span>
-                          {formatCurrency(selectedProduct.min_amount)} - {formatCurrency(selectedProduct.max_amount)}
+                          {selectedProduct.selected_parameter_detail 
+                            ? `${formatCurrency(selectedProduct.selected_parameter_detail.min_amount)} - ${formatCurrency(selectedProduct.selected_parameter_detail.max_amount)}`
+                            : 'No disponible'}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-3">
                         <span>Plazo</span>
-                        <span>{selectedProduct.min_term_months} - {selectedProduct.max_term_months} meses</span>
+                        <span>
+                          {selectedProduct.selected_parameter_detail
+                            ? `${selectedProduct.selected_parameter_detail.min_term_months} - ${selectedProduct.selected_parameter_detail.max_term_months} meses`
+                            : 'No disponible'}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between gap-3">
                         <span>Tasa referencial</span>
-                        <span>{selectedProduct.interest_rate}%</span>
+                        <span>
+                          {selectedProduct.selected_parameter_detail
+                            ? `${selectedProduct.selected_parameter_detail.min_interest_rate}% - ${selectedProduct.selected_parameter_detail.max_interest_rate}%`
+                            : 'No disponible'}
+                        </span>
                       </div>
                     </div>
                   ) : null}

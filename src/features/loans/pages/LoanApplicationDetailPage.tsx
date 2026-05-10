@@ -211,6 +211,86 @@ export default function LoanApplicationDetailPage() {
               <ApplicationDetailsGrid application={application} />
             </SectionCard>
 
+            {/* Nueva sección: Validación KYC y Scoring */}
+            {(application.identity_verification_details || application.credit_score) && (
+              <SectionCard
+                title="Validación KYC y Scoring Crediticio"
+                subtitle="Datos reales de verificación de identidad y análisis de riesgo."
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  {/* Validación KYC */}
+                  {application.identity_verification_details && (
+                    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                      <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3">Verificación de Identidad</h4>
+                      <dl className="space-y-2">
+                        <div>
+                          <dt className="text-xs text-slate-500">Estado</dt>
+                          <dd className="text-sm font-semibold text-slate-900">{application.identity_verification_details.status}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs text-slate-500">Decisión</dt>
+                          <dd className="text-sm font-semibold text-slate-900">{application.identity_verification_details.decision}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs text-slate-500">Documento</dt>
+                          <dd className="text-sm font-semibold text-slate-900">
+                            {application.identity_verification_details.document_type} - {application.identity_verification_details.document_number}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs text-slate-500">Nombre Verificado</dt>
+                          <dd className="text-sm font-semibold text-slate-900">{application.identity_verification_details.full_name || 'N/D'}</dd>
+                        </div>
+                        {application.identity_verification_details.date_of_birth && (
+                          <div>
+                            <dt className="text-xs text-slate-500">Fecha de Nacimiento</dt>
+                            <dd className="text-sm font-semibold text-slate-900">{application.identity_verification_details.date_of_birth}</dd>
+                          </div>
+                        )}
+                        <div>
+                          <dt className="text-xs text-slate-500">Proveedor</dt>
+                          <dd className="text-sm font-semibold text-slate-900">{application.identity_verification_details.provider}</dd>
+                        </div>
+                        {application.identity_verification_details.completed_at && (
+                          <div>
+                            <dt className="text-xs text-slate-500">Completado</dt>
+                            <dd className="text-sm font-semibold text-slate-900">{formatDateTime(application.identity_verification_details.completed_at)}</dd>
+                          </div>
+                        )}
+                      </dl>
+                    </div>
+                  )}
+
+                  {/* Scoring Crediticio */}
+                  {(application.credit_score || application.risk_level) && (
+                    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                      <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-3">Análisis de Riesgo</h4>
+                      <dl className="space-y-2">
+                        {application.credit_score && (
+                          <div>
+                            <dt className="text-xs text-slate-500">Score Crediticio</dt>
+                            <dd className="text-2xl font-bold text-slate-900">{application.credit_score}</dd>
+                          </div>
+                        )}
+                        {application.risk_level && (
+                          <div>
+                            <dt className="text-xs text-slate-500">Nivel de Riesgo</dt>
+                            <dd className="text-sm font-semibold text-slate-900">{application.risk_level_display || application.risk_level}</dd>
+                          </div>
+                        )}
+                        {application.debt_to_income_ratio && (
+                          <div>
+                            <dt className="text-xs text-slate-500">Relación Deuda/Ingreso</dt>
+                            <dd className="text-sm font-semibold text-slate-900">{application.debt_to_income_ratio}</dd>
+                          </div>
+                        )}
+                      </dl>
+                    </div>
+                  )}
+                </div>
+              </SectionCard>
+            )}
+
             <SectionCard
               title="Timeline"
               subtitle="Eventos visibles del flujo de originación."
