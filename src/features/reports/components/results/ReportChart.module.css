@@ -1,0 +1,117 @@
+.chartContainer {
+  width: 100%;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+}
+
+.chartTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.chartWrapper {
+  width: 100%;
+  position: relative;
+}
+
+.chartLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: #666666;
+  font-size: 14px;
+}
+
+.chartError {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: #d32f2f;
+  text-align: center;
+  padding: 20px;
+}
+
+.chartError svg {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+}
+
+.chartError p {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.chartError ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+}
+
+.chartError li {
+  margin: 4px 0;
+}
+
+.chartEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: #999999;
+  text-align: center;
+}
+
+.chartEmpty svg {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.chartEmpty p {
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .chartContainer {
+    padding: 16px;
+  }
+
+  .chartTitle {
+    font-size: 16px;
+  }
+
+  .chartLoading,
+  .chartError,
+  .chartEmpty {
+    height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chartContainer {
+    padding: 12px;
+  }
+
+  .chartTitle {
+    font-size: 14px;
+  }
+
+  .chartLoading,
+  .chartError,
+  .chartEmpty {
+    height: 250px;
+  }
+}

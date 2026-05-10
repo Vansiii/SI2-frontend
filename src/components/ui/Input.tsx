@@ -1,58 +1,28 @@
-﻿import { forwardRef } from 'react';
-import type { InputHTMLAttributes, ReactNode } from 'react';
+﻿import React from 'react';
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string;
-  icon?: ReactNode;
-  iconPosition?: 'left' | 'right';
 }
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, icon, iconPosition = 'left', className = '', ...props }, ref) => {
-    const hasError = Boolean(error);
-
-    const inputClass = `focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm rounded-lg py-3 outline-none border transition-colors ${
-      hasError ? 'border-red-400 bg-red-50' : 'border-slate-300'
-    } ${icon && iconPosition === 'left' ? 'pl-10' : ''} ${icon && iconPosition === 'right' ? 'pr-10' : ''} ${!icon ? 'px-3' : ''}`;
-
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className = '', error, ...props }, ref) => {
     return (
       <div className="w-full">
-        {label && (
-          <label htmlFor={props.id} className="block text-sm font-medium text-slate-700 mb-1">
-            {label}
-          </label>
-        )}
-        <div className="relative">
-          {icon && iconPosition === 'left' && (
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <div className="h-5 w-5 text-slate-400">{icon}</div>
-            </div>
-          )}
-          <input
-            ref={ref}
-            className={`${inputClass} ${className}`}
-            aria-invalid={hasError}
-            aria-describedby={error ? `${props.id}-error` : undefined}
-            {...props}
-          />
-          {icon && iconPosition === 'right' && (
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <div className="h-5 w-5 text-slate-400">{icon}</div>
-            </div>
-          )}
-        </div>
-        {error && (
-          <p id={`${props.id}-error`} className="mt-1 text-xs text-red-600">
-            {error}
-          </p>
-        )}
+        <input
+          ref={ref}
+          className={`
+            w-full px-3 py-2 border rounded-lg
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+            disabled:bg-gray-100 disabled:cursor-not-allowed
+            ${error ? 'border-red-500' : 'border-gray-300'}
+            ${className}
+          `}
+          {...props}
+        />
+        {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
       </div>
     );
   }
 );
 
 Input.displayName = 'Input';
-
-
-
