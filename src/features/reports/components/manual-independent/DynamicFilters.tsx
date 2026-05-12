@@ -4,9 +4,17 @@
  * Renderiza filtros específicos según el tipo de reporte seleccionado.
  */
 
-import React from 'react';
 import { Filter, X, Search } from 'lucide-react';
-import type { ReportType, ReportFilters } from '../../types/manualReports.types';
+import type { 
+  ReportType, 
+  ReportFilters,
+  ClientFilters as ClientFiltersType,
+  ProductFilters as ProductFiltersType,
+  ApplicationFilters as ApplicationFiltersType,
+  AuditFilters as AuditFiltersType,
+  UserFilters as UserFiltersType,
+  BranchFilters as BranchFiltersType
+} from '../../types/manualReports.types';
 import { ClientFilters } from './filters/ClientFilters';
 import { ProductFilters } from './filters/ProductFilters';
 import { ApplicationFilters } from './filters/ApplicationFilters';
@@ -24,10 +32,11 @@ interface Props {
 
 export function DynamicFilters({ reportType, filters, onChange, onApply, onClear }: Props) {
   
-  const activeFiltersCount = Object.keys(filters).filter(
-    key => filters[key as keyof ReportFilters] !== undefined && 
-           filters[key as keyof ReportFilters] !== ''
-  ).length;
+  const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
+    // Excluir metadatos de paginación y scope del conteo de filtros "activos"
+    if (['page', 'page_size', 'scope'].includes(key)) return false;
+    return value !== undefined && value !== '' && value !== null;
+  }).length;
   
   /**
    * Renderiza los filtros específicos según el tipo de reporte
@@ -35,17 +44,17 @@ export function DynamicFilters({ reportType, filters, onChange, onApply, onClear
   const renderFilters = () => {
     switch (reportType) {
       case 'clients':
-        return <ClientFilters filters={filters} onChange={onChange} />;
+        return <ClientFilters filters={filters as ClientFiltersType} onChange={onChange as any} />;
       case 'products':
-        return <ProductFilters filters={filters} onChange={onChange} />;
+        return <ProductFilters filters={filters as ProductFiltersType} onChange={onChange as any} />;
       case 'applications':
-        return <ApplicationFilters filters={filters} onChange={onChange} />;
+        return <ApplicationFilters filters={filters as ApplicationFiltersType} onChange={onChange as any} />;
       case 'audit':
-        return <AuditFilters filters={filters} onChange={onChange} />;
+        return <AuditFilters filters={filters as AuditFiltersType} onChange={onChange as any} />;
       case 'users':
-        return <UserFilters filters={filters} onChange={onChange} />;
+        return <UserFilters filters={filters as UserFiltersType} onChange={onChange as any} />;
       case 'branches':
-        return <BranchFilters filters={filters} onChange={onChange} />;
+        return <BranchFilters filters={filters as BranchFiltersType} onChange={onChange as any} />;
       default:
         return null;
     }

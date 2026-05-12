@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { DocumentCard } from './DocumentCard';
 import { DocumentUploadDialog } from './DocumentUploadDialog';
-import { Badge } from '../../../components/ui/Badge';
 import { FileText, CheckCircle, AlertCircle, Filter } from 'lucide-react';
 import type { LoanApplicationDocumentRequirement } from '../types/document.types';
 import { documentApi } from '../services/documentApi';
 
 interface DocumentChecklistProps {
   documents: LoanApplicationDocumentRequirement[];
-  applicationId: number;
   onDocumentUploaded?: () => void;
   className?: string;
 }
@@ -17,7 +15,6 @@ type FilterType = 'all' | 'pending' | 'uploaded' | 'approved' | 'rejected';
 
 export const DocumentChecklist: React.FC<DocumentChecklistProps> = ({
   documents,
-  applicationId,
   onDocumentUploaded,
   className = '',
 }) => {

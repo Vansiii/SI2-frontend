@@ -7,7 +7,6 @@
 import React from 'react';
 import { Users, Package, FileText, Shield, UserCheck, Building } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { REPORT_TYPE_LABELS } from '../../types/manualReports.types';
 import type { ReportType } from '../../types/manualReports.types';
 
 interface ReportTypeOption {

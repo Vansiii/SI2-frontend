@@ -247,7 +247,7 @@ function renderPieChart(
         label={(entry) => entry[labelField]}
         {...ANIMATION_CONFIG}
       >
-        {data.map((entry, index) => (
+        {data.map((_, index) => (
           <Cell
             key={`cell-${index}`}
             fill={
@@ -357,7 +357,7 @@ function renderBackendDonutChart(
         label={(entry) => `${entry[nameKey]}: ${entry[dataKey]}`}
         {...ANIMATION_CONFIG}
       >
-        {data.map((entry, index) => (
+        {data.map((_, index) => (
           <Cell
             key={`cell-${index}`}
             fill={colors[index % colors.length]}
@@ -393,7 +393,7 @@ function renderBackendPieChart(
         label={(entry) => `${entry[nameKey]}: ${entry[dataKey]}`}
         {...ANIMATION_CONFIG}
       >
-        {data.map((entry, index) => (
+        {data.map((_, index) => (
           <Cell
             key={`cell-${index}`}
             fill={colors[index % colors.length]}
@@ -450,7 +450,7 @@ function renderBackendBarChart(
       <Tooltip />
       <Legend {...LEGEND_CONFIG} />
       
-      {bars.map((bar, index) => (
+      {bars.map((bar, _index) => (
         <Bar
           key={bar.key}
           dataKey={bar.key}
@@ -492,7 +492,7 @@ function renderBackendLineChart(
       <Tooltip />
       <Legend {...LEGEND_CONFIG} />
       
-      {lines.map((line, index) => (
+      {lines.map((line, _index) => (
         <Line
           key={line.key}
           type="monotone"
@@ -538,7 +538,7 @@ function renderBackendAreaChart(
       <Tooltip />
       <Legend {...LEGEND_CONFIG} />
       
-      {areas.map((area, index) => (
+      {areas.map((area, _index) => (
         <Line
           key={area.key}
           type="monotone"
@@ -570,7 +570,7 @@ function renderBackendGaugeChart(
   }
 
   // Preparar datos para RadialBarChart
-  const gaugeData = metrics.map((metric, index) => {
+  const gaugeData = metrics.map((metric, _index) => {
     const value = data[0]?.[metric.key] || 0;
     return {
       name: metric.label,
@@ -593,8 +593,8 @@ function renderBackendGaugeChart(
     >
       <RadialBar
         minAngle={15}
-        label={{ position: 'insideStart', fill: '#fff' }}
-        background
+        label={{ position: 'insideStart' as any, fill: '#fff' }}
+        background={{ fill: '#eee' }}
         clockWise
         dataKey="value"
       />

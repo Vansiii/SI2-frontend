@@ -9,12 +9,14 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { 
   FileText, 
-  Calendar, 
-  DollarSign, 
-  Clock,
-  AlertCircle,
-  ArrowRight,
-  Plus
+  Clock, 
+  CheckCircle2, 
+  AlertCircle, 
+  ChevronRight,
+  Plus,
+  DollarSign,
+  Calendar,
+  ArrowRight
 } from 'lucide-react';
 
 export const MyApplicationsPage: React.FC = () => {

@@ -6,6 +6,7 @@
 
 import React from 'react';
 import type { UserFilters as UserFiltersType } from '../../../types/manualReports.types';
+import { FilterSelect } from './FilterSelect';
 
 interface Props {
   filters: UserFiltersType;

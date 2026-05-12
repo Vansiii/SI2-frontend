@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader } from '../../../components/ui/Card';
+import { Card, CardContent } from '../../../components/ui/Card';
 import { LoadingState } from '../../../components/ui/LoadingState';
 import { DocumentCard } from '../components/DocumentCard';
 import { DocumentReviewDialog } from '../components/DocumentReviewDialog';
 import { useStaffDocuments } from '../hooks/useDocuments';
 import { documentApi } from '../services/documentApi';
-import { FileText, AlertCircle, Filter, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { FileText, AlertCircle, CheckCircle, XCircle, Clock } from 'lucide-react';
 import type { LoanApplicationDocumentRequirement } from '../types/document.types';
 
 type FilterType = 'all' | 'uploaded' | 'under_review' | 'approved' | 'rejected';

@@ -11,7 +11,7 @@ import type { ReportTemplate, ReportConfig } from '../types';
 
 export function TemplatesPage() {
   const navigate = useNavigate();
-  const { templates, loading, create, update, deleteTemplate, error } = useTemplates();
+  const { templates, loading, createTemplate, updateTemplate, deleteTemplate, error } = useTemplates();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<ReportTemplate | undefined>();
@@ -28,18 +28,18 @@ export function TemplatesPage() {
   };
 
   const handleEdit = (template: ReportTemplate) => {
-    setCurrentConfig(template.config);
+    setCurrentConfig(template.config_json);
     setEditingTemplate(template);
     setIsModalOpen(true);
   };
 
-  const handleSave = async (templateData: Partial<ReportTemplate>) => {
+  const handleSave = async (templateData: any) => {
     try {
       if (editingTemplate) {
-        await update(editingTemplate.id, templateData);
+        await updateTemplate(editingTemplate.id, templateData);
         setSuccessMessage('Plantilla actualizada exitosamente');
       } else {
-        await create(templateData);
+        await createTemplate(templateData);
         setSuccessMessage('Plantilla creada exitosamente');
       }
       setIsModalOpen(false);
@@ -53,7 +53,7 @@ export function TemplatesPage() {
     }
   };
 
-  const handleDelete = async (templateId: number) => {
+  const handleDelete = async (templateId: string) => {
     try {
       await deleteTemplate(templateId);
       setSuccessMessage('Plantilla eliminada exitosamente');
@@ -65,7 +65,7 @@ export function TemplatesPage() {
 
   const handleUse = (template: ReportTemplate) => {
     // Navegar al builder con la configuración de la plantilla
-    const config = template.config;
+    const config = template.config_json;
     navigate(
       `/reports/builder?scope=${config.scope}&category=${config.category}&type=${config.report_type}`,
       { state: { config } }

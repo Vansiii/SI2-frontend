@@ -61,8 +61,8 @@ export interface SimpleReportCatalog {
 export async function getSimpleReportCatalog(): Promise<SimpleReportCatalog> {
   try {
     const response = await apiClient.get<SimpleReportCatalog>('/reports/simple/catalog/');
-    console.log('Catálogo recibido:', response.data);
-    return response.data;
+    console.log('Catálogo recibido:', response);
+    return response;
   } catch (error: any) {
     console.error('Error al obtener catálogo:', error);
     throw new Error(error.response?.data?.error || error.message || 'Error al obtener catálogo');
@@ -80,8 +80,8 @@ export async function getSimpleReportPreview(
       '/reports/simple/preview/',
       request
     );
-    console.log('Vista previa recibida:', response.data);
-    return response.data;
+    console.log('Vista previa recibida:', response);
+    return response;
   } catch (error: any) {
     console.error('Error al obtener vista previa:', error);
     throw new Error(error.response?.data?.error || error.message || 'Error al obtener vista previa');

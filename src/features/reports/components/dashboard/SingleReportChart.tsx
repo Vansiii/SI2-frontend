@@ -5,7 +5,7 @@
  * @module SingleReportChart
  */
 
-import React from 'react';
+
 import {
   BarChart,
   Bar,
@@ -107,7 +107,7 @@ function renderApplicationsMainChart(data: any) {
           outerRadius={120}
           label={(entry) => `${entry.name}: ${entry.value}`}
         >
-          {data.by_status.map((entry: any, index: number) => (
+          {data.by_status.map((_: any, index: number) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
@@ -160,7 +160,7 @@ function renderClientsMainChart(data: any) {
           outerRadius={120}
           label={(entry) => `${entry.name}: ${entry.value}`}
         >
-          {data.by_status.map((entry: any, index: number) => (
+          {data.by_status.map((_: any, index: number) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
@@ -191,7 +191,7 @@ function renderProductsMainChart(data: any) {
           outerRadius={120}
           label={(entry) => `${entry.name}: ${entry.value}`}
         >
-          {data.by_type.map((entry: any, index: number) => (
+          {data.by_type.map((_: any, index: number) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
@@ -222,7 +222,7 @@ function renderUsersMainChart(data: any) {
           outerRadius={120}
           label={(entry) => `${entry.name}: ${entry.value}`}
         >
-          {data.by_role.map((entry: any, index: number) => (
+          {data.by_role.map((_: any, index: number) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>

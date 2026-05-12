@@ -8,7 +8,7 @@ interface TemplateCardProps {
   template: ReportTemplate;
   onUse: (template: ReportTemplate) => void;
   onEdit: (template: ReportTemplate) => void;
-  onDelete: (templateId: number) => void;
+  onDelete: (templateId: string) => void;
 }
 
 export function TemplateCard({ template, onUse, onEdit, onDelete }: TemplateCardProps) {

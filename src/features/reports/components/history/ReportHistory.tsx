@@ -2,16 +2,16 @@
  * Componente principal de historial de reportes
  */
 import { useState } from 'react';
-import type { GeneratedReport, ReportStatus, ReportScope } from '../../types';
+import type { GeneratedReportList, ReportStatus, ReportScope } from '../../types';
 import { ReportHistoryFilters } from './ReportHistoryFilters';
 import { ReportHistoryTable } from './ReportHistoryTable';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
 interface ReportHistoryProps {
-  reports: GeneratedReport[];
+  reports: GeneratedReportList[];
   loading: boolean;
-  onDownload: (report: GeneratedReport) => void;
-  onViewDetails: (report: GeneratedReport) => void;
+  onDownload: (report: GeneratedReportList) => void;
+  onViewDetails: (report: GeneratedReportList) => void;
 }
 
 export function ReportHistory({ reports = [], loading, onDownload, onViewDetails }: ReportHistoryProps) {

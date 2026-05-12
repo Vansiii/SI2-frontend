@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogTitle } from '../../../components/ui/Dialo
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Label } from '../../../components/ui/Label';
-import { Shield, UserCheck, Calendar, TrendingDown, CheckSquare, Save, X } from 'lucide-react';
+import { ShieldCheck, Calendar, TrendingDown, CheckSquare, Layers, ChevronRight } from 'lucide-react';
 import type { EligibilityRule, EligibilityRuleWrite } from '../types/eligibilityRule.types';
 import { CIC_CATEGORIES } from '../types/eligibilityRule.types';
 import { useRuleSets } from '../hooks/useRuleSets';

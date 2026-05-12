@@ -5,8 +5,7 @@
  * con una interfaz visual de botones seleccionables.
  */
 
-import React from 'react';
-import { Check } from 'lucide-react';
+import { Check, ChevronsUpDown, X } from 'lucide-react';
 import { Label } from '../../../components/ui/Label';
 
 interface CatalogItem {

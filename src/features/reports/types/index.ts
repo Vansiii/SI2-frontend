@@ -20,7 +20,7 @@ export type ReportCategory =
 
 export type ReportStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
 
-export type ReportFormat = 'csv' | 'xlsx';
+export type ReportFormat = 'csv' | 'xlsx' | 'pdf';
 
 export type ValidationStatus = 'VALID' | 'NEEDS_REVIEW' | 'INVALID';
 
@@ -270,6 +270,11 @@ export interface VoiceInterpretRequest {
   scope: ReportScope;
 }
 
+export interface UnsupportedTerm {
+  term: string;
+  reason: string;
+}
+
 export interface VoiceInterpretResponse {
   voice_request_id: string;
   transcription: string;
@@ -277,10 +282,7 @@ export interface VoiceInterpretResponse {
   validation_status: ValidationStatus;
   proposed_config: ReportConfig;
   missing_fields: string[];
-  unsupported_terms: Array<{
-    term: string;
-    reason: string;
-  }>;
+  unsupported_terms: UnsupportedTerm[];
   interpretation_notes: string;
   confidence: number;
   processing_time_seconds?: number;

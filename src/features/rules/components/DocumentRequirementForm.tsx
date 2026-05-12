@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/Dialog';
+import { Dialog, DialogContent, DialogTitle } from '../../../components/ui/Dialog';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Label } from '../../../components/ui/Label';
-import { FileText, FileType, HardDrive, Clock, CheckCircle, AlertCircle, Info, ChevronRight, Layers, CreditCard } from 'lucide-react';
+import { FileText, FileType, HardDrive, Clock, ChevronRight, Layers } from 'lucide-react';
 import type { DocumentRequirement, DocumentRequirementWrite } from '../types/documentRequirement.types';
 import { useActiveProducts } from '../../products/hooks';
 import { useRuleSets } from '../hooks/useRuleSets';
@@ -65,7 +65,7 @@ export function DocumentRequirementForm({
     requires_manual_review: true,
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (requirement) {

@@ -11,7 +11,7 @@ interface IntentEditorProps {
   onChange: (intent: VoiceIntent) => void;
   missingFields: string[];
   unsupportedTerms: UnsupportedTerm[];
-  availableColumns: string[];
+
 }
 
 export function IntentEditor({
@@ -19,7 +19,7 @@ export function IntentEditor({
   onChange,
   missingFields,
   unsupportedTerms,
-  availableColumns,
+
 }: IntentEditorProps) {
   const hasIssues = missingFields.length > 0 || unsupportedTerms.length > 0;
 
@@ -159,7 +159,7 @@ export function IntentEditor({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Formato</label>
             <FormatSelector
-              value={intent.format}
+              value={intent.format || 'csv'}
               onChange={(format) =>
                 onChange({
                   ...intent,

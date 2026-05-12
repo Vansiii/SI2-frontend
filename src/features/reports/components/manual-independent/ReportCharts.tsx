@@ -6,6 +6,7 @@
  * @module ReportCharts
  */
 
+
 import React from 'react';
 import {
   BarChart,
@@ -116,7 +117,7 @@ function renderClientCharts(data: any) {
                 outerRadius={100}
                 label
               >
-                {data.by_status?.map((entry: any, index: number) => (
+                {data.by_status?.map((_: any, index: number) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
@@ -212,7 +213,7 @@ function renderProductCharts(data: any) {
               outerRadius={100}
               label
             >
-              {data.by_type?.map((entry: any, index: number) => (
+              {data.by_type?.map((_: any, index: number) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
@@ -291,7 +292,7 @@ function renderApplicationCharts(data: any) {
               outerRadius={100}
               label
             >
-              {data.by_status?.map((entry: any, index: number) => (
+              {data.by_status?.map((_: any, index: number) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
@@ -415,7 +416,7 @@ function renderAuditCharts(data: any) {
               outerRadius={100}
               label
             >
-              {data.by_severity?.map((entry: any, index: number) => (
+              {data.by_severity?.map((_: any, index: number) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
@@ -476,7 +477,7 @@ function renderUserCharts(data: any) {
               outerRadius={100}
               label
             >
-              {data.by_role?.map((entry: any, index: number) => (
+              {data.by_role?.map((_: any, index: number) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
@@ -550,7 +551,7 @@ function renderBranchCharts(data: any) {
               outerRadius={100}
               label
             >
-              {data.by_status?.map((entry: any, index: number) => (
+              {data.by_status?.map((_: any, index: number) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>

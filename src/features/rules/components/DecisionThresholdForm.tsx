@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/Dialog';
+import { Dialog, DialogContent, DialogTitle } from '../../../components/ui/Dialog';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Label } from '../../../components/ui/Label';
-import { Gauge, TrendingUp, DollarSign, CheckCircle, AlertCircle, XCircle, ChevronRight, Info, Layers } from 'lucide-react';
+import { Gauge, TrendingUp, DollarSign, CheckCircle, AlertCircle, XCircle, ChevronRight, Info } from 'lucide-react';
 import type { DecisionThreshold, DecisionThresholdWrite } from '../types/decisionThreshold.types';
 import { useRuleSets } from '../hooks/useRuleSets';
 import type { TenantRuleSet } from '../types/ruleSet.types';

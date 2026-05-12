@@ -154,7 +154,7 @@ export function ReportTable({ rows, reportType, pagination, onPageChange }: Prop
             {rows.map((row, rowIndex) => (
               <tr key={rowIndex} className="hover:bg-gray-50 transition-colors">
                 {columns.map((column) => {
-                  const value = row[column.key as keyof ReportRow];
+                  const value = (row as any)[column.key];
                   const formattedValue = formatCellValue(value, column.format);
                   const isStatusField = ['status', 'kyc_status', 'risk_level', 'severity'].includes(column.key);
                   

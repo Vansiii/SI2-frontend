@@ -67,7 +67,7 @@ export function WorkflowPreview({ ruleSetId }: WorkflowPreviewProps) {
 
         {/* Etapas */}
         <div className="space-y-4">
-          {stages.map((stage, index) => (
+          {stages.map((stage) => (
             <div key={stage.id} className="relative flex items-start">
               {/* Número de etapa */}
               <div className="relative z-10 flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-sm font-medium">

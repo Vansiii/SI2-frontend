@@ -5,7 +5,7 @@
  * para procesos de revisión, auditoría y decisión crediticia.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ArrowLeft, 

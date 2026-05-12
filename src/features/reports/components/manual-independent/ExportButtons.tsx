@@ -6,16 +6,15 @@
 
 import React from 'react';
 import { Download, FileText, FileSpreadsheet, FileImage } from 'lucide-react';
-import type { ReportType, ReportData, ReportFilters, ExportFormat } from '../../types/manualReports.types';
+import type { ReportType, ReportFilters, ExportFormat } from '../../types/manualReports.types';
 import { useReportExport } from '../../hooks/useReportExport';
 
 interface Props {
-  data: ReportData;
   reportType: ReportType;
   filters: ReportFilters;
 }
 
-export function ExportButtons({ data, reportType, filters }: Props) {
+export function ExportButtons({ reportType, filters }: Props) {
   const { exportReport, isExporting, exportingFormat, error } = useReportExport();
   
   const handleExport = (format: ExportFormat) => {

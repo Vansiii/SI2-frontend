@@ -17,7 +17,7 @@ export function VoiceRecorder({ onRecordingComplete }: VoiceRecorderProps) {
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<any>(null);
 
   useEffect(() => {
     return () => {
