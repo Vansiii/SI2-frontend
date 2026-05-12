@@ -204,6 +204,47 @@ class ReportService {
     link.click();
     document.body.removeChild(link);
   }
+
+  /**
+   * Obtiene metadatos completos de un reporte para construir formulario
+   * ✅ NUEVO MÉTODO - FASE 2
+   */
+  async getReportMetadata(
+    reportType: string,
+    scope?: string
+  ): Promise<any> {
+    const params = scope ? `?scope=${scope}` : '';
+    const response = await apiClient.get<any>(
+      `/reports/catalog/${reportType}/${params}`
+    );
+    return response;
+  }
+
+  /**
+   * Genera vista previa con chart_config incluido
+   * ✅ NUEVO MÉTODO - FASE 2
+   */
+  async getPreviewWithChart(
+    scope: string,
+    category: string,
+    reportType: string,
+    config: any,
+    page: number = 1,
+    pageSize: number = 50
+  ): Promise<any> {
+    const response = await apiClient.post<any>(
+      '/reports/generate/preview/',
+      {
+        scope,
+        category,
+        report_type: reportType,
+        config,
+        page,
+        page_size: pageSize
+      }
+    );
+    return response;
+  }
 }
 
 export const reportService = new ReportService();

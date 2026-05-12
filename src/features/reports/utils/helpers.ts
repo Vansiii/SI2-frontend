@@ -226,11 +226,29 @@ export function getColumnLabel(columnName: string): string {
     'created_at': 'Fecha de Creación',
     'updated_at': 'Fecha de Actualización',
     'deleted_at': 'Fecha de Eliminación',
+    'submitted_at': 'Fecha de Envío',
+    'reviewed_at': 'Fecha de Revisión',
+    'approved_at': 'Fecha de Aprobación',
+    'rejected_at': 'Fecha de Rechazo',
+    'disbursed_at': 'Fecha de Desembolso',
     'date': 'Fecha',
     'start_date': 'Fecha de Inicio',
     'end_date': 'Fecha de Fin',
     'due_date': 'Fecha de Vencimiento',
     'birth_date': 'Fecha de Nacimiento',
+    
+    // Solicitudes de Crédito
+    'application_number': 'Número de Solicitud',
+    'application_id': 'ID de Solicitud',
+    'risk_level': 'Nivel de Riesgo',
+    'credit_score': 'Puntaje de Crédito',
+    'requested_amount': 'Monto Solicitado',
+    'approved_amount': 'Monto Aprobado',
+    'disbursed_amount': 'Monto Desembolsado',
+    'purpose': 'Propósito',
+    'notes': 'Notas',
+    'observation_reason': 'Motivo de Observación',
+    'rejection_reason': 'Motivo de Rechazo',
     
     // Créditos
     'loan_id': 'ID de Crédito',
@@ -238,19 +256,34 @@ export function getColumnLabel(columnName: string): string {
     'amount': 'Monto',
     'principal_amount': 'Monto Principal',
     'interest_rate': 'Tasa de Interés',
+    'approved_interest_rate': 'Tasa de Interés Aprobada',
     'term_months': 'Plazo (meses)',
+    'approved_term_months': 'Plazo Aprobado (meses)',
+    'monthly_payment': 'Cuota Mensual',
     'status': 'Estado',
     'payment_frequency': 'Frecuencia de Pago',
+    'debt_to_income_ratio': 'Ratio Deuda/Ingreso',
     
     // Clientes
     'customer_id': 'ID de Cliente',
     'customer_name': 'Nombre del Cliente',
+    'client_id': 'ID de Cliente',
+    'client_name': 'Nombre del Cliente',
+    'client_document': 'Documento del Cliente',
+    'client_email': 'Email del Cliente',
+    'client_phone': 'Teléfono del Cliente',
+    'client_type': 'Tipo de Cliente',
     'first_name': 'Nombre',
     'last_name': 'Apellido',
     'email': 'Correo Electrónico',
     'phone': 'Teléfono',
+    'mobile_phone': 'Teléfono Móvil',
     'document_number': 'Número de Documento',
     'document_type': 'Tipo de Documento',
+    'address': 'Dirección',
+    'city': 'Ciudad',
+    'department': 'Departamento',
+    'country': 'País',
     
     // Productos
     'product_id': 'ID de Producto',
@@ -262,11 +295,16 @@ export function getColumnLabel(columnName: string): string {
     'branch_id': 'ID de Sucursal',
     'branch_name': 'Nombre de Sucursal',
     'branch_code': 'Código de Sucursal',
+    'branch_city': 'Ciudad de Sucursal',
     
     // Usuarios
     'user_id': 'ID de Usuario',
     'username': 'Nombre de Usuario',
     'full_name': 'Nombre Completo',
+    'assigned_to_name': 'Asignado a',
+    'reviewed_by_name': 'Revisado Por',
+    'approved_by_name': 'Aprobado Por',
+    'created_by_name': 'Creado Por',
     'role': 'Rol',
     'is_active': 'Activo',
     
@@ -281,19 +319,42 @@ export function getColumnLabel(columnName: string): string {
     'file_name': 'Nombre de Archivo',
     'file_size': 'Tamaño de Archivo',
     'mime_type': 'Tipo de Archivo',
+    'documents_status': 'Estado de Documentos',
     
     // Verificación
     'verification_id': 'ID de Verificación',
     'verification_status': 'Estado de Verificación',
+    'identity_verification_status': 'Estado de Verificación de Identidad',
     'verified_at': 'Fecha de Verificación',
     'verified_by': 'Verificado Por',
+    'kyc_status': 'Estado KYC',
     
-    // Contadores
+    // Empleo
+    'employment_type': 'Tipo de Empleo',
+    'employment_status': 'Estado Laboral',
+    'employer_name': 'Nombre del Empleador',
+    'job_title': 'Cargo',
+    'monthly_income': 'Ingreso Mensual',
+    
+    // Contadores y Agregaciones
     'count': 'Cantidad',
     'total': 'Total',
     'total_amount': 'Monto Total',
+    'total_applications': 'Total de Solicitudes',
+    'approved_count': 'Aprobadas',
+    'rejected_count': 'Rechazadas',
+    'pending_count': 'Pendientes',
+    'approval_rate': 'Tasa de Aprobación',
     'average': 'Promedio',
-    'sum': 'Suma'
+    'avg_credit_score': 'Puntaje de Crédito Promedio',
+    'sum': 'Suma',
+    
+    // Agrupaciones temporales
+    'month': 'Mes',
+    'quarter': 'Trimestre',
+    'year': 'Año',
+    'day': 'Día',
+    'week': 'Semana'
   };
 
   return translations[columnName] || formatFieldName(columnName);

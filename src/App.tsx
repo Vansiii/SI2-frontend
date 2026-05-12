@@ -288,9 +288,9 @@ const HistoryPage = lazy(() =>
     default: module.HistoryPage,
   }))
 );
-const ManualReportsPage = lazy(() =>
-  import('./features/reports/pages/ManualReportsPage').then((module) => ({
-    default: module.ManualReportsPage,
+const ManualReportsIndependentPage = lazy(() =>
+  import('./features/reports/pages/ManualReportsIndependentPage').then((module) => ({
+    default: module.ManualReportsIndependentPage,
   }))
 );
 
@@ -947,7 +947,7 @@ function App() {
               element={
                 <ProtectedRoute>
                   <PermissionGuard permission="reports.generate_report">
-                    <ManualReportsPage />
+                    <ManualReportsIndependentPage />
                   </PermissionGuard>
                 </ProtectedRoute>
               }

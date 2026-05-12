@@ -513,3 +513,181 @@ export function isNumericFilter(definition: FilterDefinitionExtended): boolean {
 export function isErrorInfo(value: any): value is ErrorInfo {
   return typeof value === 'object' && value !== null && 'message' in value;
 }
+
+// ============================================================================
+// REPORTES MANUALES - METADATOS ENRIQUECIDOS (FASE 2)
+// ============================================================================
+
+/**
+ * Componente UI para renderizar filtro
+ */
+export type UIComponent = 
+  | 'multiselect' 
+  | 'number_input' 
+  | 'date_picker' 
+  | 'date_range_picker' 
+  | 'toggle' 
+  | 'text_input';
+
+/**
+ * Opción de filtro tipo choice
+ */
+export interface FilterOption {
+  value: string | number;
+  label: string;
+}
+
+/**
+ * Metadatos enriquecidos de un filtro
+ */
+export interface FilterMetadata {
+  field: string;
+  label: string;
+  type: FilterType;
+  operators: FilterOperator[];
+  required: boolean;
+  ui_component: UIComponent;
+  ui_props: Record<string, any>;
+  options?: FilterOption[];
+  default_value?: any;
+}
+
+/**
+ * Metadatos de columna
+ */
+export interface ColumnMetadata {
+  field: string;
+  label: string;
+  sortable: boolean;
+  groupable: boolean;
+}
+
+/**
+ * Metadatos de agrupación
+ */
+export interface GroupingMetadata {
+  field: string;
+  label: string;
+}
+
+/**
+ * Metadatos de campo ordenable
+ */
+export interface SortFieldMetadata {
+  field: string;
+  label: string;
+}
+
+/**
+ * Configuración completa de gráficos
+ */
+export interface ChartConfigFull {
+  default_chart: string;
+  available_charts: string[];
+  chart_config: Record<string, ChartSpecificConfig>;
+}
+
+/**
+ * Configuración específica por tipo de gráfico
+ */
+export interface ChartSpecificConfig {
+  type?: string;
+  
+  // Para donut/pie
+  data_key?: string;
+  name_key?: string;
+  colors?: string[];
+  label_format?: string;
+  
+  // Para bar/line
+  x_axis?: string;
+  y_axis?: string;
+  y_axes?: Array<{
+    key: string;
+    color: string;
+    label: string;
+    fill?: boolean;
+  }>;
+  color?: string;
+  label?: string;
+  
+  // Para gauge
+  metrics?: Array<{
+    key: string;
+    label: string;
+    max: number;
+    color: string;
+  }>;
+  
+  // Para funnel
+  stages?: Array<{
+    key: string;
+    label: string;
+  }>;
+}
+
+/**
+ * Metadatos completos de un reporte
+ */
+export interface ReportMetadata {
+  scope: ReportScope;
+  category: ReportCategory;
+  report_type: string;
+  name: string;
+  description: string;
+  datasource: string;
+  filters: FilterMetadata[];
+  columns: ColumnMetadata[];
+  groupings: GroupingMetadata[];
+  sort_fields: SortFieldMetadata[];
+  formats: ExportFormat[];
+  chart_config: ChartConfigFull;
+  default_config: ReportConfigExtended;
+}
+
+/**
+ * Configuración extendida de reporte (incluye chart_type)
+ */
+export interface ReportConfigExtended extends ReportConfig {
+  chart_type?: string;
+}
+
+/**
+ * Paginación de resultados
+ */
+export interface Pagination {
+  page: number;
+  page_size: number;
+  total_count: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
+}
+
+/**
+ * Resumen estadístico
+ */
+export interface ReportSummary {
+  total_records: number;
+  [key: string]: number;
+}
+
+/**
+ * Vista previa con chart_config del backend
+ */
+export interface ReportPreviewWithChart {
+  data: Record<string, any>[];
+  pagination: Pagination;
+  chart_config: ChartSpecificConfig;
+  summary: ReportSummary;
+  columns: string[];
+}
+
+/**
+ * Extender ReportResults para incluir nuevos campos
+ */
+export interface ReportResultsExtended extends ReportResults {
+  chart_config?: ChartSpecificConfig;
+  summary?: ReportSummary;
+  pagination?: Pagination;
+}
