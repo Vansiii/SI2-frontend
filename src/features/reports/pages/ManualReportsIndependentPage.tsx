@@ -31,7 +31,7 @@ export function ManualReportsIndependentPage() {
   const [reportType, setReportType] = useState<ReportType | null>(null);
   const [filters, setFilters] = useState<ReportFilters>({});
   const [hasAppliedFilters, setHasAppliedFilters] = useState(false);
-  const [selectedScope, setSelectedScope] = useState<ReportScope>(initialScope);
+  const selectedScope: ReportScope = initialScope;
   
   // Hooks
   const { data, isLoading, error, refetch, isFetching } = useManualReport(
