@@ -12,10 +12,12 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  RadialBarChart,
+  RadialBar
 } from 'recharts';
 import { AlertCircle, BarChart3 } from 'lucide-react';
-import type { ChartConfig, ChartType } from '../../types';
+import type { ChartConfig, ChartType, ChartSpecificConfig } from '../../types';
 import {
   CHART_COLOR_PALETTE,
   GRID_CONFIG,
@@ -35,7 +37,7 @@ import styles from './ReportChart.module.css';
 export interface ReportChartProps {
   type: ChartType;
   data: Record<string, any>[];
-  config: ChartConfig;
+  config: ChartConfig | ChartSpecificConfig;
   height?: number;
   loading?: boolean;
 }
@@ -47,23 +49,40 @@ export function ReportChart({
   height,
   loading = false
 }: ReportChartProps) {
-  // Validar configuración
-  const validation = validateChartConfig(config);
-  
-  if (!validation.valid) {
+  // Validar que config existe
+  if (!config) {
     return (
       <div className={styles.chartContainer}>
         <div className={styles.chartError}>
           <AlertCircle />
-          <p>Error en configuración del gráfico</p>
-          <ul>
-            {validation.errors.map((error, index) => (
-              <li key={index}>{error}</li>
-            ))}
-          </ul>
+          <p>Configuración de gráfico no disponible</p>
         </div>
       </div>
     );
+  }
+
+  // ✅ NUEVO: Detectar si es ChartSpecificConfig del backend
+  const isBackendConfig = 'data_key' in config || 'x_axis' in config || 'metrics' in config;
+  
+  // Validar configuración solo si es ChartConfig tradicional
+  if (!isBackendConfig) {
+    const validation = validateChartConfig(config as ChartConfig);
+    
+    if (!validation.valid) {
+      return (
+        <div className={styles.chartContainer}>
+          <div className={styles.chartError}>
+            <AlertCircle />
+            <p>Error en configuración del gráfico</p>
+            <ul>
+              {validation.errors.map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      );
+    }
   }
 
   if (loading) {
@@ -87,17 +106,26 @@ export function ReportChart({
     );
   }
 
-  const chartData = prepareChartData(data, type);
+  // ✅ MODIFICADO: Usar datos directamente si es backend config
+  const chartData = isBackendConfig ? data : prepareChartData(data, type);
   const chartHeight = height || getRecommendedHeight(type);
+
+  // ✅ NUEVO: Determinar tipo de gráfico del backend config
+  const chartType = isBackendConfig 
+    ? ((config as ChartSpecificConfig).type || type)
+    : type;
 
   return (
     <div className={styles.chartContainer}>
-      {config.title && (
-        <h3 className={styles.chartTitle}>{config.title}</h3>
+      {(config as any).title && (
+        <h3 className={styles.chartTitle}>{(config as any).title}</h3>
       )}
       <div className={styles.chartWrapper}>
         <ResponsiveContainer width="100%" height={chartHeight}>
-          {renderChart(type, chartData, config)}
+          {isBackendConfig 
+            ? renderBackendChart(chartType, chartData, config as ChartSpecificConfig)
+            : renderChart(type, chartData, config as ChartConfig)
+          }
         </ResponsiveContainer>
       </div>
     </div>
@@ -267,5 +295,316 @@ function renderStackedBarChart(
         />
       ))}
     </BarChart>
+  );
+}
+
+// ============================================================================
+// ✅ NUEVO: Renderizado basado en configuración del backend
+// ============================================================================
+
+/**
+ * Renderiza gráfico basado en ChartSpecificConfig del backend
+ */
+function renderBackendChart(
+  type: string,
+  data: Record<string, any>[],
+  config: ChartSpecificConfig
+): React.ReactElement {
+  const normalizedType = type.toLowerCase();
+
+  switch (normalizedType) {
+    case 'donut':
+      return renderBackendDonutChart(data, config);
+    case 'pie':
+      return renderBackendPieChart(data, config);
+    case 'bar':
+      return renderBackendBarChart(data, config, false);
+    case 'horizontal_bar':
+      return renderBackendBarChart(data, config, true);
+    case 'line':
+      return renderBackendLineChart(data, config);
+    case 'area':
+      return renderBackendAreaChart(data, config);
+    case 'gauge':
+      return renderBackendGaugeChart(data, config);
+    default:
+      console.warn(`Tipo de gráfico no soportado: ${type}`);
+      return <div>Tipo de gráfico no soportado: {type}</div>;
+  }
+}
+
+/**
+ * Renderiza Donut Chart con configuración del backend
+ */
+function renderBackendDonutChart(
+  data: Record<string, any>[],
+  config: ChartSpecificConfig
+): React.ReactElement {
+  const dataKey = config.data_key || 'value';
+  const nameKey = config.name_key || 'name';
+  const colors = config.colors || CHART_COLOR_PALETTE;
+
+  return (
+    <PieChart>
+      <Pie
+        data={data}
+        dataKey={dataKey}
+        nameKey={nameKey}
+        cx="50%"
+        cy="50%"
+        innerRadius={60}
+        outerRadius={100}
+        label={(entry) => `${entry[nameKey]}: ${entry[dataKey]}`}
+        {...ANIMATION_CONFIG}
+      >
+        {data.map((entry, index) => (
+          <Cell
+            key={`cell-${index}`}
+            fill={colors[index % colors.length]}
+          />
+        ))}
+      </Pie>
+      <Tooltip />
+      <Legend {...LEGEND_CONFIG} />
+    </PieChart>
+  );
+}
+
+/**
+ * Renderiza Pie Chart con configuración del backend
+ */
+function renderBackendPieChart(
+  data: Record<string, any>[],
+  config: ChartSpecificConfig
+): React.ReactElement {
+  const dataKey = config.data_key || 'value';
+  const nameKey = config.name_key || 'name';
+  const colors = config.colors || CHART_COLOR_PALETTE;
+
+  return (
+    <PieChart>
+      <Pie
+        data={data}
+        dataKey={dataKey}
+        nameKey={nameKey}
+        cx="50%"
+        cy="50%"
+        outerRadius={100}
+        label={(entry) => `${entry[nameKey]}: ${entry[dataKey]}`}
+        {...ANIMATION_CONFIG}
+      >
+        {data.map((entry, index) => (
+          <Cell
+            key={`cell-${index}`}
+            fill={colors[index % colors.length]}
+          />
+        ))}
+      </Pie>
+      <Tooltip />
+      <Legend {...LEGEND_CONFIG} />
+    </PieChart>
+  );
+}
+
+/**
+ * Renderiza Bar Chart con configuración del backend
+ */
+function renderBackendBarChart(
+  data: Record<string, any>[],
+  config: ChartSpecificConfig,
+  horizontal: boolean
+): React.ReactElement {
+  const xAxis = config.x_axis || 'name';
+  const yAxes = config.y_axes || [];
+  const layout = horizontal ? 'horizontal' : 'vertical';
+
+  // Si no hay y_axes, usar y_axis o data_key
+  const bars = yAxes.length > 0 
+    ? yAxes 
+    : [{
+        key: config.y_axis || config.data_key || 'value',
+        color: config.color || CHART_COLOR_PALETTE[0],
+        label: config.label || 'Valor'
+      }];
+
+  return (
+    <BarChart
+      data={data}
+      layout={layout}
+      {...ANIMATION_CONFIG}
+    >
+      <CartesianGrid {...GRID_CONFIG} />
+      
+      {horizontal ? (
+        <>
+          <XAxis type="number" {...AXIS_CONFIG} />
+          <YAxis type="category" dataKey={xAxis} {...AXIS_CONFIG} />
+        </>
+      ) : (
+        <>
+          <XAxis dataKey={xAxis} {...AXIS_CONFIG} />
+          <YAxis {...AXIS_CONFIG} />
+        </>
+      )}
+      
+      <Tooltip />
+      <Legend {...LEGEND_CONFIG} />
+      
+      {bars.map((bar, index) => (
+        <Bar
+          key={bar.key}
+          dataKey={bar.key}
+          fill={bar.color}
+          name={bar.label}
+          radius={[8, 8, 0, 0]}
+        />
+      ))}
+    </BarChart>
+  );
+}
+
+/**
+ * Renderiza Line Chart con configuración del backend
+ */
+function renderBackendLineChart(
+  data: Record<string, any>[],
+  config: ChartSpecificConfig
+): React.ReactElement {
+  const xAxis = config.x_axis || 'name';
+  const yAxes = config.y_axes || [];
+
+  // Si no hay y_axes, usar y_axis o data_key
+  const lines = yAxes.length > 0 
+    ? yAxes 
+    : [{
+        key: config.y_axis || config.data_key || 'value',
+        color: config.color || CHART_COLOR_PALETTE[0],
+        label: config.label || 'Valor'
+      }];
+
+  return (
+    <LineChart data={data} {...ANIMATION_CONFIG}>
+      <CartesianGrid {...GRID_CONFIG} />
+      
+      <XAxis dataKey={xAxis} {...AXIS_CONFIG} />
+      <YAxis {...AXIS_CONFIG} />
+      
+      <Tooltip />
+      <Legend {...LEGEND_CONFIG} />
+      
+      {lines.map((line, index) => (
+        <Line
+          key={line.key}
+          type="monotone"
+          dataKey={line.key}
+          stroke={line.color}
+          strokeWidth={2}
+          name={line.label}
+          dot={{ r: 4 }}
+          activeDot={{ r: 6 }}
+        />
+      ))}
+    </LineChart>
+  );
+}
+
+/**
+ * Renderiza Area Chart con configuración del backend
+ */
+function renderBackendAreaChart(
+  data: Record<string, any>[],
+  config: ChartSpecificConfig
+): React.ReactElement {
+  const xAxis = config.x_axis || 'name';
+  const yAxes = config.y_axes || [];
+
+  // Si no hay y_axes, usar y_axis o data_key
+  const areas = yAxes.length > 0 
+    ? yAxes 
+    : [{
+        key: config.y_axis || config.data_key || 'value',
+        color: config.color || CHART_COLOR_PALETTE[0],
+        label: config.label || 'Valor',
+        fill: true
+      }];
+
+  return (
+    <LineChart data={data} {...ANIMATION_CONFIG}>
+      <CartesianGrid {...GRID_CONFIG} />
+      
+      <XAxis dataKey={xAxis} {...AXIS_CONFIG} />
+      <YAxis {...AXIS_CONFIG} />
+      
+      <Tooltip />
+      <Legend {...LEGEND_CONFIG} />
+      
+      {areas.map((area, index) => (
+        <Line
+          key={area.key}
+          type="monotone"
+          dataKey={area.key}
+          stroke={area.color}
+          strokeWidth={2}
+          name={area.label}
+          fill={area.fill ? area.color : 'none'}
+          fillOpacity={0.3}
+          dot={{ r: 4 }}
+          activeDot={{ r: 6 }}
+        />
+      ))}
+    </LineChart>
+  );
+}
+
+/**
+ * Renderiza Gauge Chart con configuración del backend
+ */
+function renderBackendGaugeChart(
+  data: Record<string, any>[],
+  config: ChartSpecificConfig
+): React.ReactElement {
+  const metrics = config.metrics || [];
+
+  if (metrics.length === 0) {
+    return <div>No hay métricas configuradas para el gauge</div>;
+  }
+
+  // Preparar datos para RadialBarChart
+  const gaugeData = metrics.map((metric, index) => {
+    const value = data[0]?.[metric.key] || 0;
+    return {
+      name: metric.label,
+      value: value,
+      fill: metric.color
+    };
+  });
+
+  return (
+    <RadialBarChart
+      width={400}
+      height={300}
+      cx="50%"
+      cy="50%"
+      innerRadius="10%"
+      outerRadius="80%"
+      data={gaugeData}
+      startAngle={180}
+      endAngle={0}
+    >
+      <RadialBar
+        minAngle={15}
+        label={{ position: 'insideStart', fill: '#fff' }}
+        background
+        clockWise
+        dataKey="value"
+      />
+      <Legend 
+        iconSize={10}
+        layout="vertical"
+        verticalAlign="middle"
+        align="right"
+      />
+      <Tooltip />
+    </RadialBarChart>
   );
 }

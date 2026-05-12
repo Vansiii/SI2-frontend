@@ -6,3 +6,4 @@ export { AudioUploader } from './AudioUploader';
 export { TranscriptionViewer } from './TranscriptionViewer';
 export { IntentEditor } from './IntentEditor';
 export { ConfigurationReview } from './ConfigurationReview';
+export { InterpretingAnimation } from './InterpretingAnimation';

@@ -1,5 +1,5 @@
 /**
- * Página principal del módulo de reportes
+ * Página principal del módulo de reportes con dashboard de gráficos
  */
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -10,20 +10,26 @@ import {
   BookTemplate,
   Building2,
   Globe,
+  List,
+  BarChart3,
 } from 'lucide-react';
 import { ReportCatalog } from '../components/catalog';
-// import { ManualReportBuilder } from '../components/manual/ManualReportBuilder';
+import { ReportsGraphDashboard } from '../components/dashboard/ReportsGraphDashboard';
+import { useAuth } from '../../auth/hooks/useAuth';
 import type { ReportScope, ReportCategory } from '../types';
+
+type ViewMode = 'graphs' | 'catalog';
 
 export function ReportsPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { userType } = useAuth();
   const state = location.state as { message?: string; error?: string } | null;
-  const [selectedScope, setSelectedScope] = useState<ReportScope>('TENANT');
-  const [selectedReport, setSelectedReport] = useState<{
-    category: ReportCategory;
-    reportType: string;
-  } | null>(null);
+  
+  // Determinar el scope inicial según el tipo de usuario
+  const initialScope: ReportScope = userType === 'saas_admin' ? 'SAAS' : 'TENANT';
+  const [selectedScope, setSelectedScope] = useState<ReportScope>(initialScope);
+  const [viewMode, setViewMode] = useState<ViewMode>('graphs');
   const [alertMessage, setAlertMessage] = useState<{ type: 'info' | 'error'; text: string } | null>(null);
 
   // Mostrar mensaje del state si existe
@@ -42,19 +48,10 @@ export function ReportsPage() {
   }, [state]);
 
   const handleSelectReport = (category: ReportCategory, reportType: string) => {
-    setSelectedReport({ category, reportType });
-    
-    // Scroll suave al panel de construcción
-    setTimeout(() => {
-      const element = document.getElementById('manual-report-builder');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
-  };
-
-  const handleCloseBuilder = () => {
-    setSelectedReport(null);
+    // Navegar a reportes manuales con el reporte seleccionado
+    navigate('/reports/manual', {
+      state: { category, reportType, scope: selectedScope }
+    });
   };
 
   return (
@@ -68,7 +65,10 @@ export function ReportsPage() {
                 Reportes Personalizables
               </h1>
               <p className="mt-1 text-sm text-gray-500">
-                Genera reportes manuales o por voz con configuración flexible
+                {viewMode === 'graphs' 
+                  ? 'Dashboard con gráficos de reportes principales'
+                  : 'Catálogo completo de reportes disponibles'
+                }
               </p>
             </div>
 
@@ -125,70 +125,80 @@ export function ReportsPage() {
           </div>
         )}
 
-        {/* Selector de Scope */}
+        {/* Selector de Scope y Toggle de Vista */}
         <div className="mb-6">
           <div className="bg-white rounded-lg shadow-sm p-4">
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Alcance del Reporte
-            </label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-sm font-medium text-gray-700">
+                Alcance del Reporte
+              </label>
+              
+              {/* Toggle entre Gráficos y Catálogo */}
               <button
-                onClick={() => setSelectedScope('TENANT')}
-                className={`flex items-center justify-center gap-3 px-6 py-4 rounded-lg border-2 transition-all ${
-                  selectedScope === 'TENANT'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                }`}
+                onClick={() => setViewMode(viewMode === 'graphs' ? 'catalog' : 'graphs')}
+                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
               >
+                {viewMode === 'graphs' ? (
+                  <>
+                    <List className="h-4 w-4 mr-1.5" />
+                    Ver Catálogo
+                  </>
+                ) : (
+                  <>
+                    <BarChart3 className="h-4 w-4 mr-1.5" />
+                    Ver Gráficos
+                  </>
+                )}
+              </button>
+            </div>
+            
+            {/* Mostrar scope según tipo de usuario */}
+            {userType === 'saas_admin' ? (
+              /* SaaS Admin: Solo puede ver reportes SAAS (administración de plataforma) */
+              <div className="flex items-center gap-3 px-6 py-4 rounded-lg border-2 border-purple-500 bg-purple-50 text-purple-700">
+                <Globe className="h-6 w-6" />
+                <div className="text-left">
+                  <div className="font-semibold">Reportes de Administración SaaS</div>
+                  <div className="text-xs opacity-75">
+                    Tenants, Usuarios, Planes, Suscripciones
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Usuario tenant: Solo puede ver reportes TENANT */
+              <div className="flex items-center gap-3 px-6 py-4 rounded-lg border-2 border-blue-500 bg-blue-50 text-blue-700">
                 <Building2 className="h-6 w-6" />
                 <div className="text-left">
-                  <div className="font-semibold">Tenant</div>
+                  <div className="font-semibold">Reportes de Tenant</div>
                   <div className="text-xs opacity-75">
                     Créditos, Clientes, Documentos
                   </div>
                 </div>
-              </button>
-
-              <button
-                onClick={() => setSelectedScope('SAAS')}
-                className={`flex items-center justify-center gap-3 px-6 py-4 rounded-lg border-2 transition-all ${
-                  selectedScope === 'SAAS'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <Globe className="h-6 w-6" />
-                <div className="text-left">
-                  <div className="font-semibold">SaaS</div>
-                  <div className="text-xs opacity-75">
-                    Tenants, Usuarios, Planes
-                  </div>
-                </div>
-              </button>
-            </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Catálogo de reportes */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex items-center gap-2 mb-6">
-            <FileText className="h-6 w-6 text-blue-600" />
-            <h2 className="text-lg font-semibold text-gray-900">
-              Catálogo de Reportes
-            </h2>
-          </div>
-
-          <ReportCatalog scope={selectedScope} onSelectReport={handleSelectReport} />
-        </div>
-
-        {/* Panel de Construcción Manual - TEMPORALMENTE DESHABILITADO */}
-        {/* <div id="manual-report-builder" className="mt-8">
-          <ManualReportBuilder
+        {/* Vista condicional: Gráficos o Catálogo */}
+        {viewMode === 'graphs' ? (
+          /* Vista principal: Dashboard con gráficos */
+          <ReportsGraphDashboard
             scope={selectedScope}
-            selectedReport={selectedReport}
-            onClose={handleCloseBuilder}
+            onSelectReport={handleSelectReport}
           />
-        </div> */}
+        ) : (
+          /* Vista secundaria: Catálogo completo */
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <FileText className="h-6 w-6 text-blue-600" />
+              <h2 className="text-lg font-semibold text-gray-900">
+                Catálogo de Reportes
+              </h2>
+            </div>
+
+            <ReportCatalog scope={selectedScope} onSelectReport={handleSelectReport} />
+          </div>
+        )}
       </div>
     </div>
   );

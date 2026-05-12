@@ -41,3 +41,148 @@
     font-size: 14px;
   }
 }
+
+/* ✅ NUEVO: Resumen estadístico */
+.summarySection {
+  margin-bottom: 24px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.summaryCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.summaryCard {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.summaryCard:hover {
+  border-color: #0088FE;
+  box-shadow: 0 2px 8px rgba(0, 136, 254, 0.1);
+}
+
+.summaryLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.summaryValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0088FE;
+}
+
+/* ✅ NUEVO: Paginación */
+.paginationSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.paginationInfo {
+  font-size: 14px;
+  color: #666666;
+  text-align: center;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.paginationButton {
+  padding: 10px 20px;
+  background-color: #ffffff;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  color: #333333;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background-color: #0088FE;
+  border-color: #0088FE;
+  color: #ffffff;
+}
+
+.paginationButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.paginationCurrent {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333333;
+  padding: 0 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .summaryCards {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
+  .summaryCard {
+    padding: 12px;
+  }
+
+  .summaryValue {
+    font-size: 20px;
+  }
+
+  .paginationControls {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .paginationButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .summaryCards {
+    grid-template-columns: 1fr;
+  }
+
+  .summaryValue {
+    font-size: 18px;
+  }
+
+  .paginationInfo {
+    font-size: 12px;
+  }
+
+  .paginationButton {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+}

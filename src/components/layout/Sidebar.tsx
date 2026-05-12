@@ -184,9 +184,16 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
     return hasPermission(item.permission);
   });
 
+  // Para SaaS Admin: solo mostrar Reportes y Usuarios de la sección Gestión
+  const saasGestionItems = userType === 'saas_admin' 
+    ? visibleItems.filter(item => 
+        item.to === '/reports' || item.to === '/users'
+      )
+    : [];
+
   // Agregar items SaaS si es superadmin
   const allItems = userType === 'saas_admin' 
-    ? [...saasMenuItems, ...visibleItems]
+    ? [...saasMenuItems, ...saasGestionItems]
     : visibleItems;
 
   // Si no hay items visibles, no mostrar sidebar
@@ -304,7 +311,7 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
           )}
 
           {/* Título de sección para gestión (solo si hay items visibles) */}
-          {visibleItems.length > 0 && (
+          {(userType === 'saas_admin' ? saasGestionItems : visibleItems).length > 0 && (
             <div className={userType === 'saas_admin' ? 'mt-6' : ''}>
               {isOpen && (
                 <h3 className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
@@ -312,7 +319,7 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
                 </h3>
               )}
               <div className="space-y-1">
-                {visibleItems.map((item) => (
+                {(userType === 'saas_admin' ? saasGestionItems : visibleItems).map((item) => (
                   <NavLink
                     key={item.to}
                     to={item.to}

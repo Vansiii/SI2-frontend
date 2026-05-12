@@ -6,4 +6,4 @@ export { ReportBuilderPage } from './ReportBuilderPage';
 export { VoiceReportPage } from './VoiceReportPage';
 export { TemplatesPage } from './TemplatesPage';
 export { HistoryPage } from './HistoryPage';
-export { ManualReportsPage } from './ManualReportsPage';
+export { ManualReportsIndependentPage } from './ManualReportsIndependentPage';

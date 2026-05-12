@@ -10,6 +10,7 @@ import {
   TranscriptionViewer,
   IntentEditor,
   ConfigurationReview,
+  InterpretingAnimation,
 } from '../components/voice';
 import { LoadingSpinner, ErrorAlert, SuccessAlert } from '../components/common';
 import { useVoiceReport } from '../hooks/useVoiceReport';
@@ -179,23 +180,23 @@ export function VoiceReportPage() {
           </div>
 
           {/* Botón de interpretar */}
-          {audioFile && (
+          {audioFile && !interpreting && (
             <div className="flex justify-end">
               <button
                 onClick={handleInterpret}
-                disabled={interpreting}
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                {interpreting ? (
-                  <>
-                    <LoadingSpinner />
-                    Interpretando...
-                  </>
-                ) : (
-                  'Interpretar Audio'
-                )}
+                Interpretar Audio
               </button>
             </div>
+          )}
+
+          {/* Animación de interpretación */}
+          {interpreting && (
+            <InterpretingAnimation 
+              message="Interpretando tu solicitud..."
+              showProgress={true}
+            />
           )}
         </div>
       )}
