@@ -4,7 +4,7 @@
  * Orquesta todos los componentes del sistema de reportes manuales.
  */
 
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, RefreshCw, AlertCircle, Info, ArrowLeft, Building, Globe } from 'lucide-react';
 import { ReportTypeSelector } from '../components/manual-independent/ReportTypeSelector';
@@ -57,24 +57,7 @@ export function ManualReportsIndependentPage() {
     setHasAppliedFilters(false);
   }, []);
   
-  const handleScopeChange = useCallback((scope: ReportScope) => {
-    setSelectedScope(scope);
-    // Resetear reporte si el tipo actual no está disponible en el nuevo scope
-    const availableTypes = scope === 'SAAS' 
-      ? ['audit', 'users', 'branches'] 
-      : ['clients', 'products', 'applications', 'audit', 'users', 'branches'];
-    
-    if (reportType && !availableTypes.includes(reportType)) {
-      setReportType(null);
-      setFilters({});
-      setHasAppliedFilters(false);
-    } else {
-      // Solo resetear filtros si el reporte sigue siendo válido
-      setFilters({});
-      setHasAppliedFilters(false);
-    }
-  }, [reportType]);
-  
+
   const handleFiltersChange = useCallback((newFilters: ReportFilters) => {
     setFilters(newFilters);
   }, []);
@@ -254,7 +237,6 @@ export function ManualReportsIndependentPage() {
                 3. Resultados del reporte
               </h2>
               <ExportButtons
-                data={data}
                 reportType={reportType!}
                 filters={filters}
               />

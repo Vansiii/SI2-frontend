@@ -591,13 +591,14 @@ function renderBackendGaugeChart(
       startAngle={180}
       endAngle={0}
     >
-      <RadialBar
-        minAngle={15}
-        label={{ position: 'insideStart' as any, fill: '#fff' }}
-        background={{ fill: '#eee' }}
-        clockWise
-        dataKey="value"
-      />
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      <RadialBar {...({
+        minAngle: 15,
+        label: { position: 'insideStart' as any, fill: '#fff' },
+        background: { fill: '#eee' },
+        clockWise: true,
+        dataKey: 'value',
+      } as any)} />
       <Legend 
         iconSize={10}
         layout="vertical"

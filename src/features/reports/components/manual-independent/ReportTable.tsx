@@ -4,7 +4,6 @@
  * Muestra los datos del reporte en formato tabular.
  */
 
-import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ReportType, ReportRow, Pagination } from '../../types/manualReports.types';
 import { formatCurrency, formatDate, formatBoolean, getBadgeColor } from '../../utils/manualReportFormatters';

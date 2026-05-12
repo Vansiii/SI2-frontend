@@ -4,7 +4,6 @@
  * Permite exportar reportes en diferentes formatos.
  */
 
-import React from 'react';
 import { Download, FileText, FileSpreadsheet, FileImage } from 'lucide-react';
 import type { ReportType, ReportFilters, ExportFormat } from '../../types/manualReports.types';
 import { useReportExport } from '../../hooks/useReportExport';

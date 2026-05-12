@@ -7,7 +7,6 @@ import type {
   ReportTemplate,
   CreateTemplateData,
   UpdateTemplateData,
-  PaginatedResponse,
 } from '../types';
 
 export const useTemplates = (autoLoad: boolean = true) => {

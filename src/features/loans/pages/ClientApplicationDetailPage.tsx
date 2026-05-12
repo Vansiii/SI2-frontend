@@ -221,7 +221,6 @@ export const ClientApplicationDetailPage: React.FC = () => {
                     ) : documents && documents.length > 0 ? (
                       <DocumentChecklist
                         documents={documents}
-                        applicationId={applicationId}
                         onDocumentUploaded={handleDocumentUploaded}
                       />
                     ) : (

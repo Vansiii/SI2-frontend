@@ -12,7 +12,7 @@ interface TemplateListProps {
   loading: boolean;
   onUse: (template: ReportTemplate) => void;
   onEdit: (template: ReportTemplate) => void;
-  onDelete: (templateId: number) => void;
+  onDelete: (templateId: string) => void;
   onCreateNew: () => void;
 }
 

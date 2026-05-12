@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { ReportCategoryCard } from './ReportCategoryCard';
 import { ReportTypeCard } from './ReportTypeCard';
-import type { ReportScope, ReportCategory, ReportDefinition } from '../../types';
+import type { ReportScope, ReportCategory } from '../../types';
 import { useReportCatalog } from '../../hooks';
 
 interface ReportCatalogProps {

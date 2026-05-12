@@ -203,7 +203,7 @@ export const useUpdateProduct = () => {
   
   return useMutation<CreditProduct, Error, { productId: number; updateData: UpdateProductData }>({
     mutationFn: updateProduct,
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       // Invalidar cache del producto específico y lista
       queryClient.invalidateQueries({ queryKey: ['products', variables.productId] });
       queryClient.invalidateQueries({ queryKey: ['products'] });

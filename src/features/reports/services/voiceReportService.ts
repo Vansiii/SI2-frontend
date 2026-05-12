@@ -3,7 +3,6 @@
  */
 import { apiClient } from '../../../utils/apiClient';
 import type {
-  VoiceInterpretRequest,
   VoiceInterpretResponse,
   VoiceReportRequest,
   PaginatedResponse,

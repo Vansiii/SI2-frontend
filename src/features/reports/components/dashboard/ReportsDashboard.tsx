@@ -1,7 +1,6 @@
 /**
  * Dashboard de reportes con acceso rápido a los 10 principales
  */
-import { useState } from 'react';
 import { BarChart3, List } from 'lucide-react';
 import { QuickReportCard } from './QuickReportCard';
 import type { ReportScope, ReportCategory } from '../../types';

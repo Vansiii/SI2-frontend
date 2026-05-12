@@ -3,7 +3,7 @@
  * Muestra todas las solicitudes de crédito con filtros avanzados y métricas.
  */
 
-import React, { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowRight,

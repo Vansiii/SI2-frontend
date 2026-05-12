@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '../../../components/ui/Card';
-import { Badge } from '../../../components/ui/Badge';
 import { LoadingState } from '../../../components/ui/LoadingState';
 import { ApplicationStatus } from '../components/ApplicationStatus';
 import { useMyApplications } from '../hooks/useTimeline';
@@ -10,9 +9,7 @@ import { es } from 'date-fns/locale';
 import { 
   FileText, 
   Clock, 
-  CheckCircle2, 
   AlertCircle, 
-  ChevronRight,
   Plus,
   DollarSign,
   Calendar,

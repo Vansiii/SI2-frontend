@@ -59,8 +59,6 @@ export function ReportBuilderPage() {
     previewReport,
     generateReport,
     downloadReport,
-    clearPreview,
-    clearGenerated,
   } = useReportGeneration();
 
   const [config, setConfig] = useState<ReportConfig>(

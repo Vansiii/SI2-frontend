@@ -4,7 +4,6 @@
  * @module AuditFilters
  */
 
-import React from 'react';
 import type { AuditFilters as AuditFiltersType } from '../../../types/manualReports.types';
 import { FilterSelect } from './FilterSelect';
 import { useFilterOptions } from '../../../hooks/useFilterOptions';

@@ -22,7 +22,7 @@ type Step = 'input' | 'transcription' | 'edit' | 'review' | 'generating';
 export function VoiceReportPage() {
   const navigate = useNavigate();
   const { interpretAudio, interpreting, interpretation, error: interpretError } = useVoiceReport();
-  const { generateReport, generating, error: generateError } = useReportGeneration();
+  const { generateReport, error: generateError } = useReportGeneration();
 
   const [step, setStep] = useState<Step>('input');
   const [inputMethod, setInputMethod] = useState<'record' | 'upload'>('record');
@@ -31,7 +31,7 @@ export function VoiceReportPage() {
   const [editedIntent, setEditedIntent] = useState<VoiceIntent | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const handleRecordingComplete = (blob: Blob, file: File) => {
+  const handleRecordingComplete = (_blob: Blob, file: File) => {
     setAudioFile(file);
   };
 
@@ -232,7 +232,6 @@ export function VoiceReportPage() {
             onChange={setEditedIntent}
             missingFields={interpretation?.missing_fields || []}
             unsupportedTerms={interpretation?.unsupported_terms || []}
-            availableColumns={editedIntent.columns || []}
           />
           <div className="flex justify-end space-x-3">
             <button

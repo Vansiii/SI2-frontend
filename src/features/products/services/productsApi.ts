@@ -20,7 +20,6 @@ import type {
   UpdateProductData,
   PaginatedResponse,
   CreditProductParameter,
-  CreditProductWithParameters,
   CreditProductFull,
   ProductRanges,
   ProductCalculationRequest,

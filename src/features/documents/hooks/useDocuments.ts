@@ -36,7 +36,7 @@ export const useUploadDocument = () => {
   return useMutation({
     mutationFn: ({ id, file }: { id: number; file: File }) =>
       documentApi.uploadDocument(id, file),
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: ['my-documents'] });
       queryClient.invalidateQueries({ queryKey: ['my-applications'] });
@@ -73,7 +73,7 @@ export const useReviewDocument = () => {
   return useMutation({
     mutationFn: ({ id, review }: { id: number; review: DocumentReviewRequest }) =>
       documentApi.reviewDocument(id, review),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: ['staff-documents'] });
       queryClient.invalidateQueries({ queryKey: ['my-documents'] });

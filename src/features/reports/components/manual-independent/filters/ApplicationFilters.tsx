@@ -4,7 +4,6 @@
  * @module ApplicationFilters
  */
 
-import React from 'react';
 import type { ApplicationFilters as ApplicationFiltersType } from '../../../types/manualReports.types';
 import { FilterSelect } from './FilterSelect';
 import { useFilterOptions } from '../../../hooks/useFilterOptions';

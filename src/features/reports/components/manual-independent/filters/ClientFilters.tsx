@@ -4,7 +4,6 @@
  * @module ClientFilters
  */
 
-import React from 'react';
 import type { ClientFilters as ClientFiltersType } from '../../../types/manualReports.types';
 
 interface Props {

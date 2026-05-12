@@ -5,9 +5,7 @@ import { useState, useEffect } from 'react';
 import { reportService } from '../services';
 import type {
   GeneratedReportList,
-  GeneratedReport,
   ReportHistoryFilters,
-  PaginatedResponse,
 } from '../types';
 
 export const useReportHistory = (

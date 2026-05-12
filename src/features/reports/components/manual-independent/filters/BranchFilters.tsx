@@ -4,7 +4,6 @@
  * @module BranchFilters
  */
 
-import React from 'react';
 import type { BranchFilters as BranchFiltersType } from '../../../types/manualReports.types';
 
 interface Props {

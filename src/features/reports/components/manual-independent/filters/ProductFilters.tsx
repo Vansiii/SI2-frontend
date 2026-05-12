@@ -4,7 +4,6 @@
  * @module ProductFilters
  */
 
-import React from 'react';
 import type { ProductFilters as ProductFiltersType } from '../../../types/manualReports.types';
 import { FilterSelect } from './FilterSelect';
 import { useFilterOptions } from '../../../hooks/useFilterOptions';

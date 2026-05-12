@@ -4,7 +4,6 @@
  * Permite al usuario seleccionar el tipo de reporte que desea generar.
  */
 
-import React from 'react';
 import { Users, Package, FileText, Shield, UserCheck, Building } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ReportType } from '../../types/manualReports.types';

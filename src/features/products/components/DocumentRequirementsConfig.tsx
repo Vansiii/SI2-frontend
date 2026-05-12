@@ -48,22 +48,6 @@ export function DocumentRequirementsConfig({
   console.log('DocumentTypes loading:', isLoading);
   console.log('DocumentTypes error:', queryError);
 
-  // Agregar documento
-  const handleAddDocument = (documentTypeId: number) => {
-    const documentType = documentTypes?.find(dt => dt.id === documentTypeId);
-    if (!documentType) return;
-
-    const newRequirement: CreateDocumentRequirementData = {
-      document_type: documentTypeId,
-      is_mandatory: true,
-      display_order: value.length,
-      allowed_formats: documentType.default_formats,
-      max_file_size_mb: documentType.default_max_size_mb,
-      max_validity_days: documentType.default_validity_days || undefined,
-    };
-
-    onChange([...value, newRequirement]);
-  };
 
   // Agregar múltiples documentos
   const handleAddMultipleDocuments = () => {

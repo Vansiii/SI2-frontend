@@ -1,4 +1,3 @@
-import React from 'react';
 import type { 
   ReportResults, 
   ReportConfig, 
@@ -36,7 +35,6 @@ export interface ReportResultsViewProps {
 
 export function ReportResultsView({
   results,
-  config,
   onDownload,
   downloading = false,
   downloadingFormat,
