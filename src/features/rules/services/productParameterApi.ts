@@ -6,8 +6,11 @@ export const productParameterApi = {
    * Listar todos los parámetros de productos
    */
   list: async (filters?: { rule_set?: number }): Promise<CreditProductParameter[]> => {
-    const params = filters ? { rule_set: filters.rule_set } : undefined;
-    return await apiClient.get<CreditProductParameter[]>('/loans/product-parameters/', params);
+    const params: Record<string, string | number | boolean> = {};
+    if (filters?.rule_set !== undefined) {
+      params.rule_set = filters.rule_set;
+    }
+    return await apiClient.get<CreditProductParameter[]>('/loans/product-parameters/', Object.keys(params).length > 0 ? params : undefined);
   },
 
   /**

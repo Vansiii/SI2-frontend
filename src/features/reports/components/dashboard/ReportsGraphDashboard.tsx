@@ -3,16 +3,15 @@
  * Muestra solo un gráfico representativo por reporte
  */
 import { useEffect, useState } from 'react';
-import { BarChart3, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
-import { reportService } from '../../services/reportService';
+import { BarChart3, AlertCircle, RefreshCw } from 'lucide-react';
 import { SingleReportChart } from './SingleReportChart';
-import type { ReportScope, ReportCategory, ReportPreviewResponse } from '../../types';
+import type { ReportScope, ReportCategory } from '../../types';
 import type { ReportType, ChartData } from '../../types/manualReports.types';
 import styles from './ReportsGraphDashboard.module.css';
 
 interface ReportsGraphDashboardProps {
   scope: ReportScope;
-  onSelectReport?: (reportType: ReportType) => void;
+  onSelectReport?: (category: ReportCategory, reportType: ReportType) => void;
 }
 
 interface GraphReport {
@@ -36,6 +35,16 @@ const GRAPH_REPORTS_SAAS: Array<{ reportType: ReportType; name: string }> = [
   { reportType: 'audit', name: 'Bitácora de Auditoría' },
   { reportType: 'users', name: 'Usuarios del Sistema' },
 ];
+
+// Mapeo de ReportType a ReportCategory
+const REPORT_TYPE_TO_CATEGORY: Record<ReportType, ReportCategory> = {
+  applications: 'CREDITS' as ReportCategory,
+  audit: 'USERS' as ReportCategory,
+  users: 'USERS' as ReportCategory,
+  clients: 'CUSTOMERS' as ReportCategory,
+  products: 'CREDITS' as ReportCategory,
+  branches: 'TENANTS' as ReportCategory
+};
 
 export function ReportsGraphDashboard({
   scope,
@@ -137,7 +146,7 @@ export function ReportsGraphDashboard({
               <h3 className={styles.cardTitle}>{report.name}</h3>
               {onSelectReport && (
                 <button
-                  onClick={() => onSelectReport(report.reportType)}
+                  onClick={() => onSelectReport(REPORT_TYPE_TO_CATEGORY[report.reportType] as ReportCategory, report.reportType)}
                   className={styles.detailButton}
                 >
                   Ver Detalle

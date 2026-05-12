@@ -44,7 +44,7 @@ export function TemplateForm({ template, config, onSave, onCancel }: TemplateFor
       scope: config.scope,
       category: config.category,
       report_type: config.report_type,
-      config,
+      config_json: config,
     });
   };
 
@@ -104,11 +104,11 @@ export function TemplateForm({ template, config, onSave, onCancel }: TemplateFor
           </div>
           <div>
             <dt className="font-medium text-gray-500">Formato:</dt>
-            <dd className="text-gray-900">{config.format.toUpperCase()}</dd>
+            <dd className="text-gray-900">{config.format?.toUpperCase() || 'N/A'}</dd>
           </div>
           <div>
             <dt className="font-medium text-gray-500">Columnas:</dt>
-            <dd className="text-gray-900">{config.columns.length} seleccionadas</dd>
+            <dd className="text-gray-900">{config.columns?.length || 0} seleccionadas</dd>
           </div>
           {config.filters && config.filters.length > 0 && (
             <div>

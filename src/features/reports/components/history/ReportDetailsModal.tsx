@@ -2,14 +2,14 @@
  * Modal de detalles de reporte generado
  */
 import { X, FileText, Calendar, User, Clock, Database, Download } from 'lucide-react';
-import type { GeneratedReport } from '../../types';
+import type { GeneratedReportList } from '../../types';
 import { ReportStatusBadge } from './ReportStatusBadge';
 
 interface ReportDetailsModalProps {
-  report: GeneratedReport;
+  report: GeneratedReportList;
   isOpen: boolean;
   onClose: () => void;
-  onDownload: (report: GeneratedReport) => void;
+  onDownload: (report: GeneratedReportList) => void;
 }
 
 export function ReportDetailsModal({

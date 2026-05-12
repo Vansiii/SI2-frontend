@@ -5,6 +5,7 @@ interface CardProps {
   className?: string;
   hover?: boolean;
   onClick?: () => void;
+  style?: React.CSSProperties;
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -12,6 +13,7 @@ export const Card: React.FC<CardProps> = ({
   className = '',
   hover = false,
   onClick,
+  style,
 }) => {
   return (
     <div
@@ -25,6 +27,7 @@ export const Card: React.FC<CardProps> = ({
       onClick={onClick}
       style={{
         backgroundColor: 'var(--tenant-surface, #FFFFFF)',
+        ...style,
       }}
     >
       {children}

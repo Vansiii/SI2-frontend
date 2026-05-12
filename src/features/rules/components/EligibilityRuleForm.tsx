@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/Dialog';
+import { Dialog, DialogContent, DialogTitle } from '../../../components/ui/Dialog';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Label } from '../../../components/ui/Label';
-import { ShieldCheck, TrendingDown, DollarSign, Briefcase, Calendar, CheckSquare, XCircle, Info, ChevronRight, Layers } from 'lucide-react';
+import { Shield, UserCheck, Calendar, TrendingDown, CheckSquare, Save, X } from 'lucide-react';
 import type { EligibilityRule, EligibilityRuleWrite } from '../types/eligibilityRule.types';
 import { CIC_CATEGORIES } from '../types/eligibilityRule.types';
 import { useRuleSets } from '../hooks/useRuleSets';

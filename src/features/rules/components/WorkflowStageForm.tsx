@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/Dialog';
+import { Dialog, DialogContent, DialogTitle } from '../../../components/ui/Dialog';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Label } from '../../../components/ui/Label';
-import { GitBranch, Clock, Users, Zap, AlertTriangle, CheckCircle, ChevronRight, Info, Layers, ArrowRight, MessageSquare } from 'lucide-react';
+import { GitBranch, Clock, Users, Zap, ChevronRight, Layers, MessageSquare, ArrowRight } from 'lucide-react';
 import type { WorkflowStageDefinition, WorkflowStageWrite } from '../types/workflowStage.types';
 import { useRuleSets } from '../hooks/useRuleSets';
 import type { TenantRuleSet } from '../types/ruleSet.types';

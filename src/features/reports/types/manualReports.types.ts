@@ -30,6 +30,7 @@ export interface BaseFilters {
   date_to?: string;
   page?: number;
   page_size?: number;
+  scope?: 'SAAS' | 'TENANT';
 }
 
 export interface ClientFilters extends BaseFilters {

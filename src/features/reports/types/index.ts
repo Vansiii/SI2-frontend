@@ -686,7 +686,10 @@ export interface ReportPreviewWithChart {
 /**
  * Extender ReportResults para incluir nuevos campos
  */
-export interface ReportResultsExtended extends ReportResults {
+/**
+ * Extender ReportResults para incluir nuevos campos
+ */
+export interface ReportResultsExtended extends Omit<ReportResults, 'chart_config'> {
   chart_config?: ChartSpecificConfig;
   summary?: ReportSummary;
   pagination?: Pagination;

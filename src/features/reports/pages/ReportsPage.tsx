@@ -28,7 +28,7 @@ export function ReportsPage() {
   
   // Determinar el scope inicial según el tipo de usuario
   const initialScope: ReportScope = userType === 'saas_admin' ? 'SAAS' : 'TENANT';
-  const [selectedScope, setSelectedScope] = useState<ReportScope>(initialScope);
+  const [selectedScope] = useState<ReportScope>(initialScope);
   const [viewMode, setViewMode] = useState<ViewMode>('graphs');
   const [alertMessage, setAlertMessage] = useState<{ type: 'info' | 'error'; text: string } | null>(null);
 

@@ -34,23 +34,6 @@ import {
   formatDateTime,
 } from '../components/CreditApplicationComponents';
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-function getRiskBadgeColor(risk?: string | null): string {
-  switch (risk) {
-    case 'LOW':
-      return 'emerald';
-    case 'MEDIUM':
-      return 'amber';
-    case 'HIGH':
-      return 'orange';
-    case 'VERY_HIGH':
-      return 'rose';
-    default:
-      return 'slate';
-  }
-}
-
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export function IncomingApplicationsPage() {
@@ -402,18 +385,28 @@ function IncomingApplicationCard({ application, onView }: IncomingApplicationCar
         {/* Status icons */}
         <div className="flex items-center gap-2">
           {application.identity_verification_status === 'APPROVED' && (
-            <ShieldCheck className="h-4 w-4 text-emerald-500" title="Identidad verificada" />
+            <span title="Identidad verificada">
+              <ShieldCheck className="h-4 w-4 text-emerald-500" />
+            </span>
           )}
           {(application.status === 'SUBMITTED' || application.status === 'IN_REVIEW') && (
-            <Clock className="h-4 w-4 text-amber-500" title="Requiere atención" />
+            <span title="Requiere atención">
+              <Clock className="h-4 w-4 text-amber-500" />
+            </span>
           )}
           {(application.status === 'APPROVED' || application.status === 'DISBURSED') && (
-            <CheckCircle2 className="h-4 w-4 text-emerald-500" title="Aprobada" />
+            <span title="Aprobada">
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            </span>
           )}
           {(application.status === 'REJECTED' || application.status === 'CANCELLED') && (
-            <XCircle className="h-4 w-4 text-rose-400" title="Cerrada" />
+            <span title="Cerrada">
+              <XCircle className="h-4 w-4 text-rose-400" />
+            </span>
           )}
-          <BarChart3 className="h-4 w-4 text-slate-400" title="Ver detalle" />
+          <span title="Ver detalle">
+            <BarChart3 className="h-4 w-4 text-slate-400" />
+          </span>
         </div>
       </div>
     </article>

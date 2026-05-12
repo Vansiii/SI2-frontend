@@ -1,6 +1,5 @@
 import React from 'react';
 import { Card, CardContent } from '../../../components/ui/Card';
-import { Badge } from '../../../components/ui/Badge';
 import { RuleSetStatusBadge } from './RuleSetStatusBadge';
 import { 
   Edit, 
@@ -18,7 +17,6 @@ import {
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { TenantRuleSet } from '../types/ruleSet.types';
-import { motion } from 'framer-motion';
 
 interface RuleSetCardProps {
   ruleSet: TenantRuleSet;

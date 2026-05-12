@@ -1,4 +1,3 @@
-import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   History, 
@@ -9,7 +8,6 @@ import {
   Calendar,
   AlertCircle,
   CheckCircle,
-  ArrowRight,
   Shield,
   Clock,
   Layers

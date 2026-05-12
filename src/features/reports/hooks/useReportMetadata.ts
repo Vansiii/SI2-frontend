@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { reportService } from '../services/reportService';
-import type { ReportScope, ReportMetadata } from '../types';
+import type { ReportScope } from '../types';
 
 /**
  * Hook para cargar metadatos enriquecidos de un reporte
@@ -19,6 +19,6 @@ export const useReportMetadata = (
     queryFn: () => reportService.getReportMetadata(reportType!, scope),
     enabled: !!reportType,
     staleTime: 0, // ✅ Sin caché - siempre obtener datos frescos del backend
-    cacheTime: 0, // ✅ No guardar en caché
+    gcTime: 0, // ✅ No guardar en caché
   });
 };

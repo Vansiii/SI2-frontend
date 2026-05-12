@@ -2,13 +2,13 @@
  * Tabla de historial de reportes
  */
 import { Download, Eye, Calendar, FileText } from 'lucide-react';
-import type { GeneratedReport } from '../../types';
+import type { GeneratedReportList } from '../../types';
 import { ReportStatusBadge } from './ReportStatusBadge';
 
 interface ReportHistoryTableProps {
-  reports: GeneratedReport[];
-  onDownload: (report: GeneratedReport) => void;
-  onViewDetails: (report: GeneratedReport) => void;
+  reports: GeneratedReportList[];
+  onDownload: (report: GeneratedReportList) => void;
+  onViewDetails: (report: GeneratedReportList) => void;
 }
 
 export function ReportHistoryTable({ reports, onDownload, onViewDetails }: ReportHistoryTableProps) {

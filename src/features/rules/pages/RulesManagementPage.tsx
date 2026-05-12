@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { MainLayout } from '../../../components/layout/MainLayout';
+import { useState, useMemo } from 'react';
+
 import { 
   Sliders, 
   Shield, 
@@ -7,20 +7,19 @@ import {
   FileText, 
   GitBranch, 
   Gauge,
-  ChevronRight,
   Activity,
   CheckCircle2,
   AlertCircle,
   Database
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { RuleSetListPage } from './RuleSetListPage';
 import { EligibilityRuleListPage } from './EligibilityRuleListPage';
 import { ProductParameterListPage } from './ProductParameterListPage';
 import { DocumentRequirementListPage } from './DocumentRequirementListPage';
 import { WorkflowStageListPage } from './WorkflowStageListPage';
 import { DecisionThresholdListPage } from './DecisionThresholdListPage';
-import { DocumentTypeListPage } from '../../catalogs/pages/DocumentTypeListPage';
+
 import { CatalogsManagementPage } from '../../catalogs/pages/CatalogsManagementPage';
 import { useRuleSets } from '../hooks/useRuleSets';
 import { useDecisionThresholds } from '../hooks/useDecisionThresholds';

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
-import { Plus, Gauge, Edit, Trash2, CheckCircle, AlertCircle, XCircle, DollarSign, TrendingUp, Info, Shield, ChevronRight } from 'lucide-react';
+import { Plus, Gauge, Edit, Trash2, CheckCircle, XCircle, DollarSign, TrendingUp, Info, Shield } from 'lucide-react';
 import { useDecisionThresholds } from '../hooks/useDecisionThresholds';
 import { Badge } from '../../../components/ui/Badge';
 import { DecisionThresholdForm } from '../components/DecisionThresholdForm';
@@ -134,7 +134,7 @@ export const DecisionThresholdListPage: React.FC<DecisionThresholdListPageProps>
           </motion.div>
         ) : (
           <div className="grid gap-6">
-            {thresholds.map((threshold, index) => (
+            {thresholds.map((threshold: DecisionThreshold, index: number) => (
               <motion.div
                 key={threshold.id}
                 initial={{ opacity: 0, y: 20 }}

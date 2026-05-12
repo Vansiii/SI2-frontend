@@ -5,10 +5,10 @@ export { ApplicationStatus, ApplicationStatusCard } from './ApplicationStatus';
 export { DocumentSummaryCard } from './DocumentSummaryCard';
 
 // Existing components
-export { default as ApproveApplicationModal } from './ApproveApplicationModal';
-export { default as CommentList } from './CommentList';
-export { default as DisburseApplicationModal } from './DisburseApplicationModal';
-export { default as DocumentList } from './DocumentList';
-export { default as RejectApplicationModal } from './RejectApplicationModal';
-export { default as ReviewApplicationModal } from './ReviewApplicationModal';
-export { default as SubmitApplicationModal } from './SubmitApplicationModal';
+export { ApproveApplicationModal } from './ApproveApplicationModal';
+export { CommentList } from './CommentList';
+export { DisburseApplicationModal } from './DisburseApplicationModal';
+export { DocumentList } from './DocumentList';
+export { RejectApplicationModal } from './RejectApplicationModal';
+export { ReviewApplicationModal } from './ReviewApplicationModal';
+export { SubmitApplicationModal } from './SubmitApplicationModal';

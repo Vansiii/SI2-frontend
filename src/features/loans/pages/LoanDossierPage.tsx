@@ -227,7 +227,7 @@ export function LoanDossierPage() {
                 subtitle="Archivos y evidencias cargadas por el cliente para validación."
                 action={<FileText className="h-5 w-5 text-slate-400" />}
               >
-                <ApplicationDocuments documents={application.documents} />
+                <ApplicationDocuments documents={application.documents || []} />
               </SectionCard>
 
               {/* Auditoría de Cambios y Timeline */}
@@ -236,7 +236,7 @@ export function LoanDossierPage() {
                 subtitle="Historial completo de estados y acciones realizadas sobre el expediente."
                 action={<History className="h-5 w-5 text-slate-400" />}
               >
-                <ApplicationTimeline events={application.timeline} />
+                <ApplicationTimeline events={application.timeline || []} />
               </SectionCard>
             </div>
 
@@ -252,7 +252,7 @@ export function LoanDossierPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
                     <span className="text-xs font-medium text-slate-500 uppercase">Estado</span>
-                    <IdentityStatusBadge status={application.identity_verification_status} label={application.identity_verification_display} />
+                    <IdentityStatusBadge status={application.identity_verification_status || undefined} label={application.identity_verification_display || undefined} />
                   </div>
                   
                   {application.identity_verification_details ? (
@@ -314,7 +314,7 @@ export function LoanDossierPage() {
                 title="Comentarios" 
                 subtitle="Notas de analistas."
               >
-                <ApplicationComments comments={application.comments} />
+                <ApplicationComments comments={application.comments || []} />
               </SectionCard>
 
               {/* Resumen de Decisión (Si existe) */}
@@ -354,7 +354,7 @@ function DataPoint({ icon, label, value }: { icon: React.ReactNode, label: strin
   return (
     <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 transition hover:bg-white hover:shadow-md group">
       <div className="mt-1 text-slate-400 group-hover:text-blue-600 transition-colors">
-        {React.cloneElement(icon as React.ReactElement, { className: 'h-5 w-5' })}
+        {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: 'h-5 w-5' })}
       </div>
       <div>
         <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</dt>

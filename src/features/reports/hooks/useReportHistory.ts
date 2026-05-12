@@ -14,7 +14,7 @@ export const useReportHistory = (
   autoLoad: boolean = true,
   initialFilters?: ReportHistoryFilters
 ) => {
-  const [reports, setReports] = useState<GeneratedReport[]>([]);
+  const [reports, setReports] = useState<GeneratedReportList[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<ReportHistoryFilters>(

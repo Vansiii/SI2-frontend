@@ -84,7 +84,7 @@ export function ReportBuilderPage() {
 
   // Inicializar columnas cuando se carga la definición
   useEffect(() => {
-    if (definition && config.columns.length === 0) {
+    if (definition && (config.columns?.length || 0) === 0) {
       setConfig((prev) => ({
         ...prev,
         columns: definition.available_columns.slice(0, 5), // Primeras 5 columnas por defecto

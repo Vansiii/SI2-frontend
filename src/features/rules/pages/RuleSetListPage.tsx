@@ -5,7 +5,7 @@ import { Input } from '../../../components/ui/Input';
 import { Label } from '../../../components/ui/Label';
 import { RuleSetCard } from '../components/RuleSetCard';
 import { RuleSetForm } from '../components/RuleSetForm';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/Dialog';
+import { Dialog, DialogContent, DialogTitle, DialogFooter } from '../../../components/ui/Dialog';
 import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
 import { 
   useRuleSets, 
@@ -32,7 +32,7 @@ interface RuleSetListPageProps {
   embedded?: boolean;
 }
 
-export const RuleSetListPage: React.FC<RuleSetListPageProps> = ({ embedded = false }) => {
+export const RuleSetListPage: React.FC<RuleSetListPageProps> = ({}) => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<FilterType>('all');
   const [formOpen, setFormOpen] = useState(false);

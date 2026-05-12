@@ -125,7 +125,7 @@ export const EligibilityRuleListPage: React.FC<EligibilityRuleListPageProps> = (
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {rules.map((rule, index) => (
+            {rules.map((rule: EligibilityRule, index: number) => (
               <motion.div
                 key={rule.id}
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -196,7 +196,7 @@ export const EligibilityRuleListPage: React.FC<EligibilityRuleListPageProps> = (
                           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Categorías CIC Permitidas</span>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          {rule.allowed_cic_categories.map((cat) => (
+                          {rule.allowed_cic_categories.map((cat: string) => (
                             <Badge key={cat} variant="secondary" className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-slate-100 text-slate-600 border-none">
                               {cat}
                             </Badge>

@@ -7,15 +7,15 @@ import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { ReportHistory, ReportDetailsModal } from '../components/history';
 import { ErrorAlert } from '../components/common';
 import { useReportHistory } from '../hooks/useReportHistory';
-import type { GeneratedReport } from '../types';
+import type { GeneratedReportList } from '../types';
 
 export function HistoryPage() {
   const navigate = useNavigate();
   const { reports, loading, download, refetch, error } = useReportHistory();
-  const [selectedReport, setSelectedReport] = useState<GeneratedReport | null>(null);
+  const [selectedReport, setSelectedReport] = useState<GeneratedReportList | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleDownload = async (report: GeneratedReport) => {
+  const handleDownload = async (report: GeneratedReportList) => {
     try {
       await download(report.id);
     } catch (err) {
@@ -23,7 +23,7 @@ export function HistoryPage() {
     }
   };
 
-  const handleViewDetails = (report: GeneratedReport) => {
+  const handleViewDetails = (report: GeneratedReportList) => {
     setSelectedReport(report);
     setIsModalOpen(true);
   };

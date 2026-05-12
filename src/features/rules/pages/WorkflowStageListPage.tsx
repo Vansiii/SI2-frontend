@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
-import { Plus, GitBranch, Edit, Trash2, Clock, Users, Zap, AlertTriangle, CheckCircle, XCircle, ArrowRight, ChevronRight } from 'lucide-react';
+import { Plus, GitBranch, Edit, Trash2, Clock, Users, Zap, AlertTriangle, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
 import { useWorkflowStages } from '../hooks/useWorkflowStages';
 import { Badge } from '../../../components/ui/Badge';
 import { WorkflowStageForm } from '../components/WorkflowStageForm';
@@ -122,7 +122,7 @@ export const WorkflowStageListPage: React.FC<WorkflowStageListPageProps> = ({ em
           <div className="space-y-4 relative">
             <div className="absolute left-10 top-10 bottom-10 w-0.5 bg-slate-100 hidden md:block" />
 
-            {stages.sort((a,b) => a.stage_order - b.stage_order).map((stage, index) => (
+            {stages.sort((a: WorkflowStageDefinition, b: WorkflowStageDefinition) => a.stage_order - b.stage_order).map((stage: WorkflowStageDefinition, index: number) => (
               <motion.div
                 key={stage.id}
                 initial={{ opacity: 0, x: -20 }}
