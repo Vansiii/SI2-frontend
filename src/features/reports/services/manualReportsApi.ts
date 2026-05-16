@@ -14,7 +14,7 @@ import type {
 
 // Configuración de Axios
 const apiClient: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -58,7 +58,7 @@ export const manualReportsApi = {
     reportType: ReportType,
     filters: ReportFilters
   ): Promise<ReportData> {
-    const response = await apiClient.get(`/api/reports/manual/${reportType}/`, {
+    const response = await apiClient.get(`/reports/manual/${reportType}/`, {
       params: filters,
     });
     return response.data;
@@ -72,7 +72,7 @@ export const manualReportsApi = {
     filters: ReportFilters
   ): Promise<Blob> {
     const response = await apiClient.post(
-      '/api/reports/manual/export/csv/',
+      '/reports/manual/export/csv/',
       { report_type: reportType, filters },
       { responseType: 'blob' }
     );
@@ -87,7 +87,7 @@ export const manualReportsApi = {
     filters: ReportFilters
   ): Promise<Blob> {
     const response = await apiClient.post(
-      '/api/reports/manual/export/xlsx/',
+      '/reports/manual/export/xlsx/',
       { report_type: reportType, filters },
       { responseType: 'blob' }
     );
@@ -102,7 +102,7 @@ export const manualReportsApi = {
     filters: ReportFilters
   ): Promise<Blob> {
     const response = await apiClient.post(
-      '/api/reports/manual/export/pdf/',
+      '/reports/manual/export/pdf/',
       {
         report_type: reportType,
         filters,
@@ -117,7 +117,7 @@ export const manualReportsApi = {
    * Obtiene la lista de tipos de reportes disponibles
    */
   async getAvailableReports(): Promise<string[]> {
-    const response = await apiClient.get('/api/reports/manual/available/');
+    const response = await apiClient.get('/reports/manual/available/');
     return response.data.report_types;
   },
 
@@ -125,7 +125,7 @@ export const manualReportsApi = {
    * Obtiene las opciones disponibles para los filtros
    */
   async getFilterOptions(): Promise<any> {
-    const response = await apiClient.get('/api/reports/manual-filter-options/');
+    const response = await apiClient.get('/reports/manual-filter-options/');
     return response.data;
   },
 };

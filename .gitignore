@@ -50,6 +50,9 @@ coverage
 *.swp
 *.swo
 *~
+.agents/
+.kiro/
+skills-lock.json
 
 # OS files
 .DS_Store
