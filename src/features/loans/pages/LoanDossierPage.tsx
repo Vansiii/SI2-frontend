@@ -142,6 +142,13 @@ export function LoanDossierPage() {
           </div>
           <div className="flex items-center gap-2">
             <button 
+              onClick={() => navigate(`/documents/loan/${applicationId}`)}
+              className="hidden items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:inline-flex"
+            >
+              <FileText className="h-4 w-4" />
+              Ver Documentos
+            </button>
+            <button 
               onClick={() => window.print()}
               className="hidden items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:inline-flex"
             >
@@ -227,7 +234,10 @@ export function LoanDossierPage() {
                 subtitle="Archivos y evidencias cargadas por el cliente para validación."
                 action={<FileText className="h-5 w-5 text-slate-400" />}
               >
-                <ApplicationDocuments documents={application.documents} />
+                <ApplicationDocuments 
+                  documents={application.documents} 
+                  applicationId={application.id}
+                />
               </SectionCard>
 
               {/* Auditoría de Cambios y Timeline */}

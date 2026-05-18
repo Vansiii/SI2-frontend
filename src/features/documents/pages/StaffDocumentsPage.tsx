@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '../../../components/ui/Card';
 import { LoadingState } from '../../../components/ui/LoadingState';
 import { DocumentCard } from '../components/DocumentCard';
 import { DocumentReviewDialog } from '../components/DocumentReviewDialog';
 import { useStaffDocuments } from '../hooks/useDocuments';
 import { documentApi } from '../services/documentApi';
-import { FileText, AlertCircle, Filter, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { FileText, AlertCircle, Filter, CheckCircle, XCircle, Clock, Search, X } from 'lucide-react';
 import type { LoanApplicationDocumentRequirement } from '../types/document.types';
 
 type FilterType = 'all' | 'uploaded' | 'under_review' | 'approved' | 'rejected';
@@ -15,14 +16,35 @@ interface StaffDocumentsPageProps {
 }
 
 export const StaffDocumentsPage: React.FC<StaffDocumentsPageProps> = ({ embedded = false }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [filter, setFilter] = useState<FilterType>('uploaded');
   const [selectedDocument, setSelectedDocument] = useState<LoanApplicationDocumentRequirement | null>(null);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [applicationFilter, setApplicationFilter] = useState<string>(
+    searchParams.get('loan_application') || ''
+  );
 
   const statusFilter = filter === 'all' ? undefined : filter.toUpperCase();
+  const loanApplicationFilter = applicationFilter ? parseInt(applicationFilter) : undefined;
+  
   const { data: documents, isLoading, error, refetch } = useStaffDocuments({
     status: statusFilter,
+    loan_application: loanApplicationFilter,
   });
+
+  const handleApplicationFilterChange = (value: string) => {
+    setApplicationFilter(value);
+    if (value) {
+      setSearchParams({ loan_application: value });
+    } else {
+      setSearchParams({});
+    }
+  };
+
+  const clearApplicationFilter = () => {
+    setApplicationFilter('');
+    setSearchParams({});
+  };
 
   const handleReviewClick = (documentId: number) => {
     const doc = documents?.find(d => d.id === documentId);
@@ -130,7 +152,39 @@ export const StaffDocumentsPage: React.FC<StaffDocumentsPageProps> = ({ embedded
         </div>
 
         {/* Filtros */}
-        <div className="mb-6">
+        <div className="mb-6 space-y-4">
+          {/* Filtro por solicitud */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Search className="h-4 w-4" />
+              <span className="font-medium">Filtrar por solicitud:</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="Número de solicitud..."
+                value={applicationFilter}
+                onChange={(e) => handleApplicationFilterChange(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              {applicationFilter && (
+                <button
+                  onClick={clearApplicationFilter}
+                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Limpiar filtro"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            {applicationFilter && (
+              <div className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                Mostrando solicitud #{applicationFilter}
+              </div>
+            )}
+          </div>
+
+          {/* Filtros de estado */}
           <div className="inline-flex items-center gap-1 bg-slate-100/50 p-1.5 rounded-full border border-slate-200 overflow-x-auto max-w-full hide-scrollbar">
             <button
               onClick={() => setFilter('all')}
@@ -212,6 +266,7 @@ export const StaffDocumentsPage: React.FC<StaffDocumentsPageProps> = ({ embedded
                   onDownload={handleDownload}
                   onReview={handleReviewClick}
                   showActions={true}
+                  showApplicationInfo={true}
                 />
               </div>
             ))}

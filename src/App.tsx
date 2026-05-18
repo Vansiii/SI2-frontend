@@ -200,6 +200,11 @@ const StaffDocumentsPage = lazy(() =>
     default: module.StaffDocumentsPage,
   }))
 );
+const LoanDocumentsPage = lazy(() =>
+  import('./features/documents/pages/LoanDocumentsPage').then((module) => ({
+    default: module.LoanDocumentsPage,
+  }))
+);
 
 // Importar Rule pages (CU-09)
 const RulesManagementPage = lazy(() =>
@@ -682,6 +687,15 @@ function App() {
                   <PermissionGuard permission="loans.review_loan_documents">
                     <DocumentManagementPage />
                   </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            {/* Ruta para documentos de una solicitud específica */}
+            <Route
+              path="/documents/loan/:id"
+              element={
+                <ProtectedRoute>
+                  <LoanDocumentsPage />
                 </ProtectedRoute>
               }
             />

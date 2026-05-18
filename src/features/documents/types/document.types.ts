@@ -55,6 +55,11 @@ export interface LoanApplicationDocumentRequirement {
   reviewed_by_name: string;
   rejection_reason: string;
   notes: string;
+  // Información de la solicitud (para staff)
+  loan_application_client_name?: string;
+  loan_application_product_name?: string;
+  loan_application_number?: string;
+  loan_application_status?: string;
   // Historial
   review_history: DocumentReviewHistory[];
   created_at: string;

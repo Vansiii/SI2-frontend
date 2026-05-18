@@ -247,7 +247,19 @@ export function ApplicationComments({ comments }: { comments: LoanApplicationCom
   );
 }
 
-export function ApplicationDocuments({ documents }: { documents: LoanApplicationDocument[] }): React.ReactNode {
+export function ApplicationDocuments({ 
+  documents, 
+  applicationId 
+}: { 
+  documents: LoanApplicationDocument[];
+  applicationId?: number;
+}): React.ReactNode {
+  // Si tenemos applicationId, mostrar el checklist completo de documentos
+  if (applicationId) {
+    return <ApplicationDocumentsChecklist applicationId={applicationId} />;
+  }
+
+  // Fallback al comportamiento anterior si no hay applicationId
   if (!documents.length) {
     return <EmptyState title="Sin documentos" description="La solicitud no tiene archivos cargados todavía." />;
   }
@@ -272,6 +284,29 @@ export function ApplicationDocuments({ documents }: { documents: LoanApplication
       ))}
     </div>
   );
+}
+
+// Nuevo componente que usa el checklist de documentos filtrado por solicitud
+function ApplicationDocumentsChecklist({ applicationId }: { applicationId: number }): React.ReactNode {
+  // Importar dinámicamente para evitar dependencias circulares
+  const [DocumentsSummaryCardComponent, setDocumentsSummaryCardComponent] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    // Cargar el componente DocumentsSummaryCard dinámicamente
+    import('../../documents/components/DocumentsSummaryCard').then((module) => {
+      setDocumentsSummaryCardComponent(() => module.DocumentsSummaryCard);
+    });
+  }, [applicationId]);
+
+  if (!DocumentsSummaryCardComponent) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+      </div>
+    );
+  }
+
+  return <DocumentsSummaryCardComponent applicationId={applicationId} />;
 }
 
 export function ApplicationHeader({

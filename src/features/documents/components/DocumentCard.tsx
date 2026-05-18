@@ -9,7 +9,9 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
-  Eye
+  Eye,
+  User,
+  Building
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -21,6 +23,7 @@ interface DocumentCardProps {
   onDownload?: (signedUrl: string) => void;
   onReview?: (documentId: number) => void;
   showActions?: boolean;
+  showApplicationInfo?: boolean; // Nueva prop para mostrar info de solicitud
   className?: string;
 }
 
@@ -30,6 +33,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
   onDownload,
   onReview,
   showActions = true,
+  showApplicationInfo = false,
   className = '',
 }) => {
   const getStatusIcon = () => {
@@ -78,6 +82,33 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
                   <p className="text-sm text-gray-600 mb-2">
                     {document.description}
                   </p>
+                )}
+                
+                {/* Información de la solicitud (para staff) */}
+                {showApplicationInfo && (document as any).loan_application_client_name && (
+                  <div className="mb-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <User className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-900">
+                        {(document as any).loan_application_client_name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-blue-700">
+                      <div className="flex items-center gap-1">
+                        <Building className="h-3 w-3" />
+                        <span>{(document as any).loan_application_product_name || 'N/D'}</span>
+                      </div>
+                      <span>#{(document as any).loan_application_number || document.loan_application}</span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        (document as any).loan_application_status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                        (document as any).loan_application_status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                        (document as any).loan_application_status === 'IN_REVIEW' ? 'bg-blue-100 text-blue-800' :
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {(document as any).loan_application_status || 'N/D'}
+                      </span>
+                    </div>
+                  </div>
                 )}
               </div>
               
