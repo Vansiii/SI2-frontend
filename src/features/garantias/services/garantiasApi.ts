@@ -30,13 +30,24 @@ const unwrap = <T>(payload: { success?: boolean; [key: string]: any }, key: stri
 export async function getCollaterals(
   filters: CollateralFilters = {}
 ): Promise<PaginatedResponse<CollateralListItem>> {
-  return apiClient.get<PaginatedResponse<CollateralListItem>>('/garantias/', {
+  const params: Record<string, string | number | boolean> = {
     page: filters.page || 1,
     page_size: filters.page_size || 20,
-    status: filters.status || undefined,
-    collateral_type: filters.collateral_type || undefined,
-    loan_application: filters.loan_application || undefined,
-  });
+  };
+
+  if (filters.status) {
+    params.status = filters.status;
+  }
+
+  if (filters.collateral_type) {
+    params.collateral_type = filters.collateral_type;
+  }
+
+  if (filters.loan_application !== undefined && filters.loan_application !== '') {
+    params.loan_application = filters.loan_application;
+  }
+
+  return apiClient.get<PaginatedResponse<CollateralListItem>>('/garantias/', params);
 }
 
 export async function getCollateralById(collateralId: number): Promise<Collateral> {
@@ -182,12 +193,20 @@ export async function approveCollateralValuation(valuationId: number): Promise<C
 export async function getGuarantors(
   filters: GuarantorFilters = {}
 ): Promise<PaginatedResponse<GuarantorListItem>> {
-  return apiClient.get<PaginatedResponse<GuarantorListItem>>('/garantias/guarantors/', {
+  const params: Record<string, string | number | boolean> = {
     page: filters.page || 1,
     page_size: filters.page_size || 20,
-    status: filters.status || undefined,
-    loan_application: filters.loan_application || undefined,
-  });
+  };
+
+  if (filters.status) {
+    params.status = filters.status;
+  }
+
+  if (filters.loan_application !== undefined && filters.loan_application !== '') {
+    params.loan_application = filters.loan_application;
+  }
+
+  return apiClient.get<PaginatedResponse<GuarantorListItem>>('/garantias/guarantors/', params);
 }
 
 export async function getGuarantorById(guarantorId: number): Promise<Guarantor> {
