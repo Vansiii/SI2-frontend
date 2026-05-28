@@ -294,6 +294,38 @@ const ManualReportsIndependentPage = lazy(() =>
   }))
 );
 
+// Importar Garantias pages
+const CollateralListPage = lazy(() =>
+  import('./features/garantias/pages/CollateralListPage').then((module) => ({
+    default: module.CollateralListPage,
+  }))
+);
+const CollateralDetailPage = lazy(() =>
+  import('./features/garantias/pages/CollateralDetailPage').then((module) => ({
+    default: module.CollateralDetailPage,
+  }))
+);
+const CollateralFormPage = lazy(() =>
+  import('./features/garantias/pages/CollateralFormPage').then((module) => ({
+    default: module.CollateralFormPage,
+  }))
+);
+const GuarantorListPage = lazy(() =>
+  import('./features/garantias/pages/GuarantorListPage').then((module) => ({
+    default: module.GuarantorListPage,
+  }))
+);
+const GuarantorDetailPage = lazy(() =>
+  import('./features/garantias/pages/GuarantorDetailPage').then((module) => ({
+    default: module.GuarantorDetailPage,
+  }))
+);
+const GuarantorFormPage = lazy(() =>
+  import('./features/garantias/pages/GuarantorFormPage').then((module) => ({
+    default: module.GuarantorFormPage,
+  }))
+);
+
 function RouteFallback() {
   return (
     <div className="min-h-screen flex items-center justify-center text-slate-500">
@@ -692,6 +724,88 @@ function App() {
                 <ProtectedRoute>
                   <PermissionGuard permission="loans.review_loan_documents">
                     <StaffDocumentsPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Garantías */}
+            <Route
+              path="/garantias"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="collaterals.view">
+                    <CollateralListPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/garantias/new"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="collaterals.create">
+                    <CollateralFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/garantias/guarantors"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="guarantors.view">
+                    <GuarantorListPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/garantias/guarantors/new"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="guarantors.create">
+                    <GuarantorFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/garantias/guarantors/:guarantorId/edit"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="guarantors.edit">
+                    <GuarantorFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/garantias/guarantors/:guarantorId"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="guarantors.view">
+                    <GuarantorDetailPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/garantias/:collateralId/edit"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="collaterals.edit">
+                    <CollateralFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/garantias/:collateralId"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="collaterals.view">
+                    <CollateralDetailPage />
                   </PermissionGuard>
                 </ProtectedRoute>
               }
