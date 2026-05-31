@@ -326,6 +326,33 @@ const GuarantorFormPage = lazy(() =>
   }))
 );
 
+// Importar Contracts pages
+const ContractListPage = lazy(() =>
+  import('./features/contracts/pages/ContractListPage').then((module) => ({
+    default: module.ContractListPage,
+  }))
+);
+const ContractDetailPage = lazy(() =>
+  import('./features/contracts/pages/ContractDetailPage').then((module) => ({
+    default: module.ContractDetailPage,
+  }))
+);
+const ContractTemplatePage = lazy(() =>
+  import('./features/contracts/pages/ContractTemplatePage').then((module) => ({
+    default: module.ContractTemplatePage,
+  }))
+);
+const ContractTemplateFormPage = lazy(() =>
+  import('./features/contracts/pages/ContractTemplateFormPage').then((module) => ({
+    default: module.ContractTemplateFormPage,
+  }))
+);
+const ContractTemplatePreviewPage = lazy(() =>
+  import('./features/contracts/pages/ContractTemplatePreviewPage').then((module) => ({
+    default: module.ContractTemplatePreviewPage,
+  }))
+);
+
 function RouteFallback() {
   return (
     <div className="min-h-screen flex items-center justify-center text-slate-500">
@@ -1062,6 +1089,68 @@ function App() {
                 <ProtectedRoute>
                   <PermissionGuard permission="reports.generate_report">
                     <ManualReportsIndependentPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Contratos */}
+            <Route
+              path="/contracts"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="contracts.view">
+                    <ContractListPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/contracts/:id"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="contracts.view">
+                    <ContractDetailPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/contracts/templates"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="contract_templates.view">
+                    <ContractTemplatePage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/contracts/templates/create"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="contract_templates.create">
+                    <ContractTemplateFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/contracts/templates/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="contract_templates.edit">
+                    <ContractTemplateFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/contracts/templates/:id/preview"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="contract_templates.view">
+                    <ContractTemplatePreviewPage />
                   </PermissionGuard>
                 </ProtectedRoute>
               }
