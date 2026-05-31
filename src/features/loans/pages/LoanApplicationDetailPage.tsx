@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { Fragment, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, MessageSquare, Send, ShieldAlert } from 'lucide-react';
@@ -246,7 +246,7 @@ export default function LoanApplicationDetailPage() {
                   const isPast = stage.stage_order < (application.current_workflow_stage?.stage_order ?? 999);
                   
                   return (
-                    <React.Fragment key={stage.id}>
+                    <Fragment key={stage.id}>
                       <div className="flex items-center gap-3 flex-1 justify-center md:justify-start">
                         <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                           isCurrent 
@@ -269,7 +269,7 @@ export default function LoanApplicationDetailPage() {
                       {index < arr.length - 1 && (
                         <div className="hidden md:block h-0.5 bg-slate-100 w-8 mx-2" />
                       )}
-                    </React.Fragment>
+                    </Fragment>
                   );
                 })}
             </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, Plus, Edit2, Trash2, Eye, Copy, CheckCircle } from 'lucide-react';
+import { FileText, Plus, Edit2, Trash2, Eye, CheckCircle } from 'lucide-react';
 import { fetchTemplates, deleteTemplate, setDefaultTemplate } from '../services/contractsApi';
 import type { ContractTemplate } from '../types';
 import { LoadingState } from '../../../components/ui/LoadingState';

@@ -18,13 +18,14 @@ import {
 } from 'lucide-react';
 import type { WorkflowStageDefinition } from '../types/workflowStage.types';
 
-interface StageNodeData {
+interface StageNodeData extends Record<string, unknown> {
   stage: WorkflowStageDefinition;
   onEdit?: (stage: WorkflowStageDefinition) => void;
   onDelete?: (id: number) => void;
 }
 
-type StageNodeProps = NodeProps<StageNodeData>;
+type StageNodeType = import('@xyflow/react').Node<StageNodeData>;
+type StageNodeProps = NodeProps<StageNodeType>;
 
 const STAGE_ICONS: Record<string, React.ElementType> = {
   DRAFT: FileText,
