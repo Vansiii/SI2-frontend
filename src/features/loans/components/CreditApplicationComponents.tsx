@@ -6,11 +6,11 @@
 
 import React, { type ReactNode } from 'react';
 import type {
-  LoanApplicationExtended as LoanApplication,
+  LoanApplication,
   LoanApplicationComment,
   LoanApplicationDocument,
   LoanApplicationTimelineEvent,
-} from '../types/loan.types';
+} from '../services/loansApi';
 import {
   formatApplicationNumber,
   getDocumentsStatusColor,

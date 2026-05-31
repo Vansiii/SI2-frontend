@@ -17,12 +17,20 @@ import {
   ShieldCheck,
   XCircle,
 } from 'lucide-react';
-import loansApi, {
-  formatApplicationNumber,
-  type LoanApplicationFilters,
-} from '../services/loansApi';
-import type { LoanApplication } from '../types/loan.types';
-import { LoanApplicationStatusLabels } from '../types/loan.types';
+import loansApi, { formatApplicationNumber } from '../services/loansApi';
+import type { LoanApplicationListItem, LoanApplicationFilters } from '../services/loansApi';
+
+const LoanApplicationStatusLabels: Record<string, string> = {
+  DRAFT: 'Borrador',
+  SUBMITTED: 'Enviada',
+  IN_REVIEW: 'En revisión',
+  OBSERVED: 'Observada',
+  UNDER_REVIEW: 'En revisión',
+  APPROVED: 'Aprobada',
+  REJECTED: 'Rechazada',
+  DISBURSED: 'Desembolsada',
+  CANCELLED: 'Cancelada',
+};
 import {
   Badge,
   CreditApplicationStatusBadge,
@@ -39,7 +47,7 @@ import {
 export function IncomingApplicationsPage() {
   const navigate = useNavigate();
 
-  const [items, setItems] = useState<LoanApplication[]>([]);
+  const [items, setItems] = useState<LoanApplicationListItem[]>([]);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -325,7 +333,7 @@ export function IncomingApplicationsPage() {
 // ─── IncomingApplicationCard ─────────────────────────────────────────────────
 
 interface IncomingApplicationCardProps {
-  application: LoanApplication;
+  application: LoanApplicationListItem;
   onView: () => void;
 }
 
@@ -422,7 +430,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function getUrgencyLevel(application: LoanApplication): 'high' | 'normal' {
+function getUrgencyLevel(application: LoanApplicationListItem): 'high' | 'normal' {
   if (application.status === 'SUBMITTED') return 'high';
   return 'normal';
 }

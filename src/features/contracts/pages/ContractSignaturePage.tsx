@@ -2,7 +2,7 @@
  * Página dedicada para firmar un contrato
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, FileText, Shield, CheckCircle } from 'lucide-react';
 import { useContract } from '../hooks/useContract';
@@ -17,7 +17,7 @@ export function ContractSignaturePage() {
   const { signContract, loading: signing, error: signError } = useSignContract();
 
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [pin, setPin] = useState('');
+  const [_pin, _setPin] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
 
   const getDeviceInfo = () => {

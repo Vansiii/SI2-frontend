@@ -102,6 +102,8 @@ export interface CreditSummary {
   total_paid: string;
   principal_paid: string;
   interest_paid: string;
+  fees_paid: string;
+  penalty_paid: string;
   annual_interest_rate: string;
   term_periods: number;
   payment_frequency: string;

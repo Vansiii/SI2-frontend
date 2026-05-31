@@ -17,7 +17,7 @@ interface Props {
 
 export const GenerateContractButton: React.FC<Props> = ({
   loanApplicationId,
-  loanApplicationNumber,
+  loanApplicationNumber: _loanApplicationNumber,
   disabled = false,
   className = '',
 }) => {

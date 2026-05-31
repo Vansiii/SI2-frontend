@@ -5,7 +5,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { contractsApi } from '../services/contractsApi';
 import type { AmortizationScheduleItem, PaymentSummary } from '../types';
-import { ApiError } from '../../../utils/errorHandler';
 
 export const useAmortizationSchedule = (contractId?: number) => {
   const [schedule, setSchedule] = useState<AmortizationScheduleItem[]>([]);
@@ -22,7 +21,7 @@ export const useAmortizationSchedule = (contractId?: number) => {
       const data = await contractsApi.getAmortizationSchedule(contractId);
       setSchedule(data);
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : 'Error al cargar la tabla de amortización';
+      const message = err instanceof Error ? err.message : 'Error al cargar la tabla de amortización';
       setError(message);
     } finally {
       setLoading(false);
@@ -58,7 +57,7 @@ export const usePaymentSummary = (contractId?: number) => {
       const data = await contractsApi.getPaymentSummary(contractId);
       setSummary(data);
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : 'Error al cargar el resumen de pagos';
+      const message = err instanceof Error ? err.message : 'Error al cargar el resumen de pagos';
       setError(message);
     } finally {
       setLoading(false);

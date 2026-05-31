@@ -25,7 +25,12 @@ import type {
 export async function getActiveCredits(
   filters: ActiveCreditFilters = {}
 ): Promise<{ results: ActiveCreditListItem[]; count: number }> {
-  return apiClient.get('/loans/active-credits/', filters);
+  const query = new URLSearchParams();
+  if (filters.status) query.append('status', filters.status);
+  if (filters.search) query.append('search', filters.search);
+  if (filters.product_id) query.append('product_id', String(filters.product_id));
+  const qs = query.toString();
+  return apiClient.get(`/loans/active-credits/${qs ? `?${qs}` : ''}`);
 }
 
 export async function getActiveCredit(id: number): Promise<ActiveCreditDetail> {

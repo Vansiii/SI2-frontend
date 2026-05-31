@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Receipt, FileText, Download, ExternalLink, Calendar, CreditCard, Hash, User, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import { X, Receipt, Download, ExternalLink, Calendar, CreditCard, Hash, User, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 import { getPayment, formatCurrency, formatDate, getPaymentStatusColor } from '../services/activeCreditApi';
 import type { PaymentDetail } from '../types/activeCredit.types';
 

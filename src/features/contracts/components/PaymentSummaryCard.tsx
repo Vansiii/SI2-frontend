@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { DollarSign, CheckCircle, Clock, AlertCircle, Calendar } from 'lucide-react';
+import { CheckCircle, Clock, AlertCircle, Calendar } from 'lucide-react';
 import type { PaymentSummary } from '../types';
 
 interface Props {

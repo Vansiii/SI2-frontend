@@ -21,7 +21,7 @@ import {
   Wallet 
 } from 'lucide-react';
 import loansApi from '../services/loansApi';
-import type { LoanApplication } from '../types/loan.types';
+import type { LoanApplication } from '../services/loansApi';
 import { LoanApplicationStatusLabels, RiskLevelLabels, EmploymentTypeLabels } from '../types/loan.types';
 
 // Tipo temporal para IdentityVerification (debería estar en types)
@@ -38,22 +38,6 @@ interface IdentityVerification {
   raw_response?: any;
 }
 
-// Extensión temporal de LoanApplication con campos adicionales
-interface LoanApplicationExtended extends LoanApplication {
-  identity_verification_id?: number;
-  identity_verification_details?: {
-    document_type: string;
-    document_number: string;
-    full_name: string;
-    date_of_birth?: string;
-    decision: string;
-    provider: string;
-    completed_at?: string;
-  };
-  approved_by_name?: string;
-  reviewed_by_name?: string;
-  comments?: any[];
-}
 import { 
   X,
   FileCheck,
@@ -76,7 +60,7 @@ export function LoanDossierPage() {
   const { id } = useParams<{ id: string }>();
   const applicationId = Number(id);
 
-  const [application, setApplication] = useState<LoanApplicationExtended | null>(null);
+  const [application, setApplication] = useState<LoanApplication | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -252,7 +236,7 @@ export function LoanDossierPage() {
                   <DataPoint icon={<Wallet />} label="Monto Solicitado" value={formatCurrency(application.requested_amount)} />
                   <DataPoint icon={<History />} label="Plazo Solicitado" value={`${application.term_months} meses`} />
                   <DataPoint icon={<Scale />} label="DTI (Deuda/Ingreso)" value={application.debt_to_income_ratio || 'N/D'} />
-                  <DataPoint icon={<User />} label="Tipo de Empleo" value={application.employment_type ? EmploymentTypeLabels[application.employment_type] : 'N/D'} />
+                  <DataPoint icon={<User />} label="Tipo de Empleo" value={application.employment_type ? EmploymentTypeLabels[application.employment_type as keyof typeof EmploymentTypeLabels] : 'N/D'} />
                 </div>
                 <div className="mt-8 border-t border-slate-100 pt-6">
                   <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Descripción Laboral</h4>

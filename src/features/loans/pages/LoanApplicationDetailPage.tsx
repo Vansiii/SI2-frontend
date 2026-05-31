@@ -212,7 +212,7 @@ export default function LoanApplicationDetailPage() {
     setError(null);
 
     try {
-      await addLoanApplicationComment(application.id, commentText.trim(), isInternalComment);
+      await addLoanApplicationComment(application.id, { comment: commentText.trim(), is_internal: isInternalComment });
       setCommentText('');
       await loadApplication();
     } catch (commentError) {
