@@ -176,6 +176,9 @@ const LoanDossierPage = lazy(() =>
     default: module.LoanDossierPage,
   }))
 );
+const CreditEvaluationPage = lazy(
+  () => import('./features/loans/pages/CreditEvaluationPage')
+);
 
 // Importar Client Loan pages (CU-07: Timeline para clientes)
 const MyApplicationsPage = lazy(() =>
@@ -335,6 +338,11 @@ const ContractListPage = lazy(() =>
 const ContractDetailPage = lazy(() =>
   import('./features/contracts/pages/ContractDetailPage').then((module) => ({
     default: module.ContractDetailPage,
+  }))
+);
+const ContractSignaturePage = lazy(() =>
+  import('./features/contracts/pages/ContractSignaturePage').then((module) => ({
+    default: module.ContractSignaturePage,
   }))
 );
 const ContractTemplatePage = lazy(() =>
@@ -669,6 +677,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <LoanDossierPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/loans/:id/evaluation"
+              element={
+                <ProtectedRoute>
+                  <CreditEvaluationPage />
                 </ProtectedRoute>
               }
             />
@@ -1106,11 +1122,29 @@ function App() {
               }
             />
             <Route
+              path="/my-contracts"
+              element={
+                <ProtectedRoute>
+                  <ContractListPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/contracts/:id"
               element={
                 <ProtectedRoute>
                   <PermissionGuard permission="contracts.view">
                     <ContractDetailPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/contracts/:id/sign"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="contracts.sign">
+                    <ContractSignaturePage />
                   </PermissionGuard>
                 </ProtectedRoute>
               }

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { FileText, ArrowLeft, Save, Eye, Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { fetchTemplate, createTemplate, updateTemplate } from '../services/contractsApi';
-import type { ContractTemplate } from '../types';
 import { LoadingState } from '../../../components/ui/LoadingState';
 import { apiClient } from '../../../utils/apiClient';
 
@@ -31,7 +30,7 @@ export function ContractTemplateFormPage() {
   const [formData, setFormData] = useState<TemplateFormData>({
     name: '',
     code: '',
-    product: null,
+    product: 0,
     template_content: '',
     description: '',
     version: '1.0',
@@ -233,7 +232,7 @@ ${signatures.join('\n')}
       setFormData({
         name: data.name,
         code: data.code,
-        product: data.product,
+        product: data.product ?? 0,
         template_content: data.template_content,
         description: data.description,
         version: data.version,
@@ -296,7 +295,7 @@ ${signatures.join('\n')}
       const checked = (e.target as HTMLInputElement).checked;
       setFormData((prev) => ({ ...prev, [name]: checked }));
     } else if (name === 'product') {
-      setFormData((prev) => ({ ...prev, [name]: value ? parseInt(value, 10) : null }));
+      setFormData((prev) => ({ ...prev, [name]: value ? parseInt(value, 10) : 0 }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -850,7 +849,7 @@ ${signatures.join('\n')}
                       name="dateFormat"
                       value="left"
                       checked={signatureOptions.dateFormat === 'left'}
-                      onChange={(e) => setSignatureOptions(prev => ({ ...prev, dateFormat: 'left' }))}
+                      onChange={() => setSignatureOptions(prev => ({ ...prev, dateFormat: 'left' }))}
                       className="h-3 w-3"
                     />
                     Izquierda
@@ -861,7 +860,7 @@ ${signatures.join('\n')}
                       name="dateFormat"
                       value="center"
                       checked={signatureOptions.dateFormat === 'center'}
-                      onChange={(e) => setSignatureOptions(prev => ({ ...prev, dateFormat: 'center' }))}
+                      onChange={() => setSignatureOptions(prev => ({ ...prev, dateFormat: 'center' }))}
                       className="h-3 w-3"
                     />
                     Centro
@@ -872,7 +871,7 @@ ${signatures.join('\n')}
                       name="dateFormat"
                       value="right"
                       checked={signatureOptions.dateFormat === 'right'}
-                      onChange={(e) => setSignatureOptions(prev => ({ ...prev, dateFormat: 'right' }))}
+                      onChange={() => setSignatureOptions(prev => ({ ...prev, dateFormat: 'right' }))}
                       className="h-3 w-3"
                     />
                     Derecha

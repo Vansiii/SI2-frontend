@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { Fragment, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, MessageSquare, Send, ShieldAlert } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, Brain, CheckCircle2, MessageSquare, Send, ShieldAlert, FileText } from 'lucide-react';
 import {
   addLoanApplicationComment,
   changeLoanApplicationStatus,
@@ -20,6 +20,7 @@ import {
   SectionCard,
   formatDateTime,
 } from '../components/CreditApplicationComponents';
+import { contractsApi } from '../../contracts/services/contractsApi';
 
 type ActionFormValues = {
   new_status: LoanApplicationStatus | '';
@@ -48,6 +49,8 @@ export default function LoanApplicationDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
   const [isInternalComment, setIsInternalComment] = useState(true);
+  const [generatingContract, setGeneratingContract] = useState(false);
+  const [contractGenerated, setContractGenerated] = useState(false);
 
   const {
     register,
@@ -122,6 +125,36 @@ export default function LoanApplicationDetailPage() {
     () => application?.status === 'DRAFT' || application?.status === 'OBSERVED',
     [application]
   );
+
+  const canGenerateContract = useMemo(
+    () => application?.status === 'APPROVED' && !contractGenerated,
+    [application, contractGenerated]
+  );
+
+  async function handleGenerateContract() {
+    if (!application) {
+      return;
+    }
+
+    setGeneratingContract(true);
+    setError(null);
+
+    try {
+      const contract = await contractsApi.generateFromApplication({
+        loan_application_id: application.id,
+      });
+      
+      setContractGenerated(true);
+      alert(`¡Contrato generado exitosamente!\n\nNúmero: ${contract.contract_number}\nEstado: ${contract.status_display}`);
+      
+      // Navegar al detalle del contrato
+      navigate(`/contracts/${contract.id}`);
+    } catch (generateError) {
+      setError(generateError instanceof Error ? generateError.message : 'No fue posible generar el contrato');
+    } finally {
+      setGeneratingContract(false);
+    }
+  }
 
   async function handleSubmitApplication() {
     if (!application) {
@@ -246,7 +279,7 @@ export default function LoanApplicationDetailPage() {
                   const isPast = stage.stage_order < (application.current_workflow_stage?.stage_order ?? 999);
                   
                   return (
-                    <React.Fragment key={stage.id}>
+                    <Fragment key={stage.id}>
                       <div className="flex items-center gap-3 flex-1 justify-center md:justify-start">
                         <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                           isCurrent 
@@ -269,7 +302,7 @@ export default function LoanApplicationDetailPage() {
                       {index < arr.length - 1 && (
                         <div className="hidden md:block h-0.5 bg-slate-100 w-8 mx-2" />
                       )}
-                    </React.Fragment>
+                    </Fragment>
                   );
                 })}
             </div>
@@ -362,6 +395,13 @@ export default function LoanApplicationDetailPage() {
                           </div>
                         )}
                       </dl>
+                      <Link
+                        to={`/loans/${application.id}/evaluation`}
+                        className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-blue-600 hover:text-blue-800"
+                      >
+                        <Brain className="h-3 w-3" />
+                        Ver evaluación completa
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -390,6 +430,107 @@ export default function LoanApplicationDetailPage() {
             >
               <ApplicationDocuments documents={documents} />
             </SectionCard>
+
+            {/* Sección de Contrato */}
+            {application.contract && (
+              <SectionCard
+                title="Contrato de Crédito"
+                subtitle="Contrato generado para esta solicitud aprobada."
+                action={<FileText className="h-4 w-4 text-slate-400" />}
+              >
+                <div className="rounded-2xl border border-slate-200 bg-white p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h4 className="text-lg font-semibold text-slate-900">{application.contract.contract_number}</h4>
+                      <p className="text-sm text-slate-500 mt-1">
+                        Generado el {formatDateTime(application.contract.created_at)}
+                      </p>
+                    </div>
+                    <CreditApplicationStatusBadge 
+                      status={application.contract.status as any} 
+                      label={application.contract.status_display} 
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <dt className="text-xs text-slate-500">Monto</dt>
+                      <dd className="text-sm font-semibold text-slate-900">
+                        Bs. {parseFloat(application.contract.principal_amount).toLocaleString('es-BO', { minimumFractionDigits: 2 })}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-slate-500">Plazo</dt>
+                      <dd className="text-sm font-semibold text-slate-900">{application.contract.term_months} meses</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-slate-500">Tasa</dt>
+                      <dd className="text-sm font-semibold text-slate-900">{application.contract.interest_rate}% anual</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-slate-500">Cuota Mensual</dt>
+                      <dd className="text-sm font-semibold text-slate-900">
+                        Bs. {parseFloat(application.contract.monthly_payment).toLocaleString('es-BO', { minimumFractionDigits: 2 })}
+                      </dd>
+                    </div>
+                  </div>
+
+                  {/* Estado de firmas */}
+                  <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-slate-700">Estado de Firmas</span>
+                      {application.contract.all_signatures_complete ? (
+                        <span className="inline-flex items-center text-xs text-green-700">
+                          <CheckCircle2 className="w-4 h-4 mr-1" />
+                          Completas
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center text-xs text-yellow-700">
+                          <ShieldAlert className="w-4 h-4 mr-1" />
+                          {application.contract.pending_signatures.length} pendiente(s)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Botones de acción */}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/contracts/${application.contract!.id}`)}
+                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                    >
+                      <FileText className="h-4 w-4" />
+                      Ver Detalle
+                    </button>
+                    {application.contract.pdf_url && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            const blob = await contractsApi.downloadPDF(application.contract!.id);
+                            const url = window.URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = `contrato-${application.contract!.contract_number}.pdf`;
+                            document.body.appendChild(link);
+                            link.click();
+                            link.remove();
+                            window.URL.revokeObjectURL(url);
+                          } catch (err) {
+                            alert('Error al descargar el PDF');
+                          }
+                        }}
+                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                      >
+                        <ArrowLeft className="h-4 w-4 rotate-90" />
+                        Descargar PDF
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </SectionCard>
+            )}
           </div>
 
           <div className="space-y-6">
@@ -410,6 +551,31 @@ export default function LoanApplicationDetailPage() {
                     <Send className="h-4 w-4" />
                     {saving ? 'Enviando...' : 'Enviar solicitud'}
                   </button>
+                ) : null}
+
+                {canGenerateContract ? (
+                  <button
+                    type="button"
+                    onClick={handleGenerateContract}
+                    disabled={generatingContract}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:from-emerald-700 hover:to-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <FileText className="h-4 w-4" />
+                    {generatingContract ? 'Generando contrato...' : '🔥 Generar Contrato'}
+                  </button>
+                ) : null}
+
+                {application.status === 'APPROVED' && contractGenerated ? (
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center">
+                    <p className="text-sm font-semibold text-emerald-700">✅ Contrato ya generado</p>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/contracts')}
+                      className="mt-2 text-xs text-emerald-600 hover:text-emerald-800 underline"
+                    >
+                      Ver contratos
+                    </button>
+                  </div>
                 ) : null}
 
                 <form onSubmit={handleSubmit(handleAction)} className="space-y-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">

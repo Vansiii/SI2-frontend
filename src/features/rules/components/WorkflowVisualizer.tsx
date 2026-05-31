@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -15,7 +15,6 @@ import '@xyflow/react/dist/style.css';
 import dagre from 'dagre';
 import { WorkflowStageNode } from './WorkflowStageNode';
 import type { WorkflowStageDefinition } from '../types/workflowStage.types';
-import { Maximize2, ZoomIn, ZoomOut, Minimize2 } from 'lucide-react';
 
 interface WorkflowVisualizerProps {
   stages: WorkflowStageDefinition[];
@@ -24,7 +23,7 @@ interface WorkflowVisualizerProps {
 }
 
 // Extender los tipos de @xyflow/react con nuestros datos
-interface StageNodeData {
+interface StageNodeData extends Record<string, unknown> {
   stage: WorkflowStageDefinition;
   onEdit?: (stage: WorkflowStageDefinition) => void;
   onDelete?: (id: number) => void;
@@ -33,7 +32,7 @@ interface StageNodeData {
 type FlowNode = Node<StageNodeData>;
 type FlowEdge = Edge;
 
-const nodeTypes = {
+const nodeTypes: Record<string, React.ComponentType<any>> = {
   stageNode: WorkflowStageNode,
 };
 

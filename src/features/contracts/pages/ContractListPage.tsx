@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, Plus, Filter, Download, Eye } from 'lucide-react';
+import { FileText, Plus, Filter } from 'lucide-react';
 import { fetchContracts } from '../services/contractsApi';
 import type { Contract, ContractStatus } from '../types';
 import { ContractCard } from '../components/ContractCard';
