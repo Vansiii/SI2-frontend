@@ -402,7 +402,7 @@ export function ContractDetailPage() {
       {/* Modal de Firma */}
       {showSignatureModal && (
         <ContractSignatureModal
-          contractId={contract.id}
+          contract={contract}
           onClose={() => setShowSignatureModal(false)}
           onSuccess={handleSignatureComplete}
         />

@@ -6,6 +6,7 @@ export interface Contract {
   id: number;
   contract_number: string;
   status: ContractStatus;
+  status_display: string;
   loan_application: {
     id: number;
     application_number: string;
