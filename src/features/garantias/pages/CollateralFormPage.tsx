@@ -8,8 +8,8 @@ import {
   updateCollateral,
 } from '../services/garantiasApi';
 import type { CollateralCreatePayload, CollateralUpdatePayload } from '../types';
-import { getLoanApplications } from '../../loans/services/loansApi';
-import type { LoanApplicationListItem } from '../../loans/services/loansApi';
+import { loansApi } from '../../loans/services/loansApi';
+import type { LoanApplication } from '../../loans/types/loan.types';
 
 const emptyForm: CollateralCreatePayload = {
   loan_application: 0,
@@ -44,7 +44,7 @@ export function CollateralFormPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState<CollateralCreatePayload>(emptyForm);
   const [isActive, setIsActive] = useState(true);
-  const [loanApplications, setLoanApplications] = useState<LoanApplicationListItem[]>([]);
+  const [loanApplications, setLoanApplications] = useState<LoanApplication[]>([]);
   const [loadingApplications, setLoadingApplications] = useState(false);
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export function CollateralFormPage() {
     async function fetchApplications() {
       try {
         setLoadingApplications(true);
-        const response = await getLoanApplications({ page_size: 100, ordering: '-created_at' });
+        const response = await loansApi.listApplications({ page_size: 100, ordering: '-created_at' });
         setLoanApplications(response.results || []);
       } catch (err) {
         console.error('Error al cargar solicitudes de crédito:', err);
@@ -231,7 +231,7 @@ export function CollateralFormPage() {
                 <option value="">Selecciona una solicitud...</option>
                 {loanApplications.map((app) => (
                   <option key={app.id} value={app.id}>
-                    Solicitud #{app.id} - {app.client_name} ({app.product_name}) - {app.status_display}
+                    Solicitud #{app.application_number} - {app.client?.full_name || 'Sin cliente'} ({app.product?.name || 'Sin producto'}) - {app.status_display}
                   </option>
                 ))}
                 {formData.loan_application !== 0 && !loanApplications.some((app) => app.id === formData.loan_application) && (

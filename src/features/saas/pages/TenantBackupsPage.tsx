@@ -20,11 +20,13 @@ import {
   RotateCcw,
   FileArchive,
   Database,
+  Calendar,
 } from 'lucide-react';
 import { BackupStatsWidget } from '../components/BackupStatsWidget';
 import { CreateBackupModal } from '../components/CreateBackupModal';
 import { BackupDetailModal } from '../components/BackupDetailModal';
 import { RestoreBackupModal } from '../components/RestoreBackupModal';
+import { AutomaticBackupModal } from '../../backups/components/AutomaticBackupModal';
 import { backupsApi } from '../services/backupsApi';
 import type { Backup } from '../types/backup.types';
 import { LoadingState } from '../../../components/ui/LoadingState';
@@ -38,6 +40,7 @@ export function TenantBackupsPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
+  const [automaticBackupModalOpen, setAutomaticBackupModalOpen] = useState(false);
   const [selectedBackup, setSelectedBackup] = useState<Backup | null>(null);
   const [downloading, setDownloading] = useState<number | null>(null);
 
@@ -47,7 +50,7 @@ export function TenantBackupsPage() {
     }
   }, [tenantId]);
 
-  // Auto-refresh cada 30 segundos si hay backups en progreso
+  // Auto-refresh cada 30 segundos si hay backups en progreso o modal automático abierto
   useEffect(() => {
     if (!autoRefresh || !tenantId) return;
 
@@ -55,14 +58,15 @@ export function TenantBackupsPage() {
       (b) => b.status === 'pending' || b.status === 'running'
     );
 
-    if (hasRunning) {
+    // Refrescar si hay backups corriendo O si el modal de automáticos está abierto
+    if (hasRunning || automaticBackupModalOpen) {
       const interval = setInterval(() => {
         loadBackups();
-      }, 30000); // 30 segundos
+      }, 10000); // 10 segundos para más responsividad
 
       return () => clearInterval(interval);
     }
-  }, [autoRefresh, backups, tenantId]);
+  }, [autoRefresh, backups, tenantId, automaticBackupModalOpen]);
 
   const loadBackups = async () => {
     if (!tenantId) return;
@@ -230,6 +234,13 @@ export function TenantBackupsPage() {
             >
               <RefreshCw className="h-4 w-4 group-hover:rotate-180 transition-transform duration-500" />
               Actualizar
+            </button>
+            <button
+              onClick={() => setAutomaticBackupModalOpen(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-purple-200 text-purple-700 hover:text-purple-800 hover:border-purple-300 hover:bg-purple-50 rounded-xl transition-all font-medium text-sm shadow-sm hover:shadow active:scale-95 group"
+            >
+              <Calendar className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
+              Backups Automáticos
             </button>
             <button
               onClick={() => setCreateModalOpen(true)}
@@ -437,6 +448,16 @@ export function TenantBackupsPage() {
             backup={selectedBackup}
             tenantId={parseInt(tenantId)}
             onSuccess={handleRestoreSuccess}
+          />
+
+          <AutomaticBackupModal
+            open={automaticBackupModalOpen}
+            onClose={() => {
+              setAutomaticBackupModalOpen(false);
+              loadBackups(); // Recargar backups al cerrar el modal
+            }}
+            tenantId={parseInt(tenantId)}
+            tenantName={getTenantName()}
           />
         </>
       )}
