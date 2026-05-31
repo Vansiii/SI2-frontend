@@ -233,7 +233,8 @@ export interface LoanApplicationExtended extends LoanApplication {
   identity_verification_display?: string;
   documents_status_display?: string;
   employment_type_display?: string;
-  branch?: {
+  branch_name?: string;
+  branch_detail?: {
     id: number;
     name: string;
     code: string;

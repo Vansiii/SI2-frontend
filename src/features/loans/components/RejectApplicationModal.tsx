@@ -2,9 +2,9 @@
  * Modal para rechazar solicitud de crédito
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { rejectLoanApplication, type RejectLoanApplicationData } from '../services/loansApi';
+import { rejectLoanApplication, getRejectionReasons, type RejectLoanApplicationData, type RejectionReason } from '../services/loansApi';
 
 interface FormData {
   rejection_reason: string;
@@ -16,23 +16,12 @@ interface RejectApplicationModalProps {
   onSuccess: () => void;
 }
 
-const COMMON_REJECTION_REASONS = [
-  'Ingresos insuficientes para el monto solicitado',
-  'Historial crediticio negativo',
-  'Documentación incompleta o inconsistente',
-  'Ratio deuda/ingreso muy alto',
-  'No cumple con las políticas de crédito',
-  'Información falsa o fraudulenta',
-  'Cliente en centrales de riesgo',
-  'Capacidad de pago insuficiente',
-  'Garantías inadecuadas',
-  'Otro motivo (especificar)',
-];
-
 export function RejectApplicationModal({ applicationId, onClose, onSuccess }: RejectApplicationModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedReason, setSelectedReason] = useState('');
+  const [reasons, setReasons] = useState<RejectionReason[]>([]);
+  const [loadingReasons, setLoadingReasons] = useState(true);
 
   const {
     register,
@@ -44,13 +33,25 @@ export function RejectApplicationModal({ applicationId, onClose, onSuccess }: Re
 
   const watchedReason = watch('rejection_reason');
 
-  const handleReasonSelect = (reason: string) => {
-    setSelectedReason(reason);
-    if (reason !== 'Otro motivo (especificar)') {
-      setValue('rejection_reason', reason);
-    } else {
-      setValue('rejection_reason', '');
+  // Cargar motivos de rechazo del backend
+  useEffect(() => {
+    async function loadReasons() {
+      try {
+        const data = await getRejectionReasons();
+        setReasons(data);
+      } catch (err) {
+        console.error('Error loading rejection reasons:', err);
+        setError('Error al cargar los motivos de rechazo');
+      } finally {
+        setLoadingReasons(false);
+      }
     }
+    loadReasons();
+  }, []);
+
+  const handleReasonSelect = (reason: RejectionReason) => {
+    setSelectedReason(reason.code);
+    setValue('rejection_reason', reason.code);
   };
 
   const onSubmit = async (data: FormData) => {
@@ -90,69 +91,81 @@ export function RejectApplicationModal({ applicationId, onClose, onSuccess }: Re
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Motivos Comunes */}
+            {/* Motivos de Rechazo */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                Motivos Comunes de Rechazo
+                Motivo de Rechazo *
               </label>
-              <div className="space-y-2">
-                {COMMON_REJECTION_REASONS.map((reason, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => handleReasonSelect(reason)}
-                    className={`w-full text-left px-4 py-3 border rounded-lg transition-colors ${
-                      selectedReason === reason
-                        ? 'border-red-500 bg-red-50 text-red-900'
-                        : 'border-gray-300 hover:border-gray-400 text-gray-700'
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                        selectedReason === reason
-                          ? 'border-red-500 bg-red-500'
-                          : 'border-gray-300'
-                      }`}>
-                        {selectedReason === reason && (
-                          <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
-                        )}
+              
+              {loadingReasons ? (
+                <div className="flex items-center justify-center py-8">
+                  <svg className="animate-spin h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span className="ml-2 text-gray-500">Cargando motivos...</span>
+                </div>
+              ) : reasons.length === 0 ? (
+                <div className="text-center py-4 text-gray-500">
+                  No hay motivos de rechazo disponibles
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {reasons.map((reason) => (
+                    <button
+                      key={reason.id}
+                      type="button"
+                      onClick={() => handleReasonSelect(reason)}
+                      className={`w-full text-left px-4 py-3 border rounded-lg transition-colors ${
+                        selectedReason === reason.code
+                          ? 'border-red-500 bg-red-50 text-red-900'
+                          : 'border-gray-300 hover:border-gray-400 text-gray-700'
+                      }`}
+                    >
+                      <div className="flex items-start">
+                        <div className={`w-4 h-4 rounded-full border-2 mr-3 mt-0.5 flex-shrink-0 ${
+                          selectedReason === reason.code
+                            ? 'border-red-500 bg-red-500'
+                            : 'border-gray-300'
+                        }`}>
+                          {selectedReason === reason.code && (
+                            <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium">{reason.name}</div>
+                          {reason.description && (
+                            <div className="text-xs text-gray-500 mt-1">{reason.description}</div>
+                          )}
+                          {reason.category_display && (
+                            <div className="text-xs text-gray-400 mt-1">
+                              Categoría: {reason.category_display}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <span className="text-sm">{reason}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Motivo Detallado */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Motivo de Rechazo Detallado *
-              </label>
-              <textarea
-                {...register('rejection_reason')}
-                rows={5}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                placeholder={
-                  selectedReason === 'Otro motivo (especificar)'
-                    ? 'Especifica el motivo del rechazo...'
-                    : 'Puedes agregar detalles adicionales al motivo seleccionado...'
-                }
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              <input
+                type="hidden"
+                {...register('rejection_reason', { 
+                  required: 'Debes seleccionar un motivo de rechazo' 
+                })}
               />
-              <p className="mt-1 text-xs text-gray-500">
-                Mínimo 10 caracteres. Sé específico para ayudar al cliente a entender el rechazo.
-              </p>
               {errors.rejection_reason && (
-                <p className="mt-1 text-sm text-red-600">{errors.rejection_reason.message}</p>
+                <p className="mt-2 text-sm text-red-600">{errors.rejection_reason.message}</p>
               )}
             </div>
 
-            {/* Vista previa del motivo */}
-            {watchedReason && watchedReason.length >= 10 && (
+            {/* Motivo seleccionado */}
+            {selectedReason && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <h4 className="font-medium text-red-900 mb-2">Vista Previa del Motivo</h4>
-                <p className="text-sm text-red-800 bg-white rounded p-3 border">
-                  {watchedReason}
+                <h4 className="font-medium text-red-900 mb-2">Motivo Seleccionado</h4>
+                <p className="text-sm text-red-800">
+                  {reasons.find(r => r.code === selectedReason)?.name}
                 </p>
               </div>
             )}

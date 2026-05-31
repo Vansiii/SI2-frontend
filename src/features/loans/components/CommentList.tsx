@@ -40,8 +40,7 @@ export function CommentList({ applicationId, comments, onCommentAdded }: Comment
       
       await addLoanApplicationComment(
         applicationId,
-        data.comment,
-        data.is_internal
+        { comment: data.comment, is_internal: data.is_internal }
       );
       
       // Limpiar formulario

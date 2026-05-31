@@ -5,7 +5,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { contractsApi } from '../services/contractsApi';
 import type { Contract, ContractCreateRequest } from '../types';
-import { ApiError } from '../../../utils/errorHandler';
 
 export const useContract = (id?: number) => {
   const [contract, setContract] = useState<Contract | null>(null);
@@ -22,7 +21,7 @@ export const useContract = (id?: number) => {
       const data = await contractsApi.get(id);
       setContract(data);
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : 'Error al cargar el contrato';
+      const message = err instanceof Error ? err.message : 'Error al cargar el contrato';
       setError(message);
     } finally {
       setLoading(false);
@@ -62,7 +61,7 @@ export const useContractList = (filters?: {
       setContracts(data.results);
       setCount(data.count);
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : 'Error al cargar los contratos';
+      const message = err instanceof Error ? err.message : 'Error al cargar los contratos';
       setError(message);
     } finally {
       setLoading(false);
@@ -94,7 +93,7 @@ export const useGenerateContract = () => {
       const contract = await contractsApi.generateFromApplication(data);
       return contract;
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : 'Error al generar el contrato';
+      const message = err instanceof Error ? err.message : 'Error al generar el contrato';
       setError(message);
       return null;
     } finally {
@@ -121,7 +120,7 @@ export const usePublishContract = () => {
       const contract = await contractsApi.publish(id);
       return contract;
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : 'Error al publicar el contrato';
+      const message = err instanceof Error ? err.message : 'Error al publicar el contrato';
       setError(message);
       return null;
     } finally {
@@ -148,7 +147,7 @@ export const useCancelContract = () => {
       const contract = await contractsApi.cancel(id, reason);
       return contract;
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : 'Error al cancelar el contrato';
+      const message = err instanceof Error ? err.message : 'Error al cancelar el contrato';
       setError(message);
       return null;
     } finally {

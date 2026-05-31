@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { FileText, Send, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { FileText, Send, CheckCircle, XCircle } from 'lucide-react';
 import type { Contract } from '../types';
 
 interface Props {
@@ -47,7 +47,7 @@ export const ContractTimeline: React.FC<Props> = ({ contract }) => {
   }
 
   // Eventos: Firmas
-  contract.signatures.forEach((signature, index) => {
+  contract.signatures.forEach((signature, _index) => {
     events.push({
       id: `signature-${signature.id}`,
       title: `Firma ${signature.signer_type_display}`,

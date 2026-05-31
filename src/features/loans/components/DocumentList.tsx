@@ -62,9 +62,7 @@ export function DocumentList({ applicationId, documents, onDocumentUploaded }: D
       
       await uploadLoanApplicationDocument(
         applicationId,
-        selectedFile,
-        documentType,
-        description
+        { file: selectedFile, notes: description }
       );
       
       // Limpiar formulario

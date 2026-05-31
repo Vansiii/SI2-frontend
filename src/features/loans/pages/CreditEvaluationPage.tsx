@@ -5,7 +5,7 @@
  * incluyendo score IA, score buró, sub-scores y decisión automática.
  */
 
-import { useEffect, useState } from 'react';
+import { Component, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -121,8 +121,13 @@ export default function CreditEvaluationPage() {
   }
 
   const isEvaluated =
-    evaluation && 'score_weighted' in evaluation && evaluation.score_weighted !== null;
-  const scoreWeighted = isEvaluated ? evaluation.score_weighted : null;
+    !!evaluation &&
+    typeof evaluation === 'object' &&
+    'score_weighted' in evaluation &&
+    evaluation.score_weighted !== null &&
+    evaluation.score_weighted !== undefined;
+  const scoreWeighted = isEvaluated ? (evaluation as EvaluationData).score_weighted : null;
+  const evalData = isEvaluated ? (evaluation as EvaluationData) : null;
 
   return (
     <div className="min-h-screen bg-[#fcfcfd] pb-20">
@@ -146,7 +151,7 @@ export default function CreditEvaluationPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {application && (
+            {application?.status && (
               <CreditApplicationStatusBadge
                 status={application.status}
                 label={application.status_display}
@@ -169,7 +174,8 @@ export default function CreditEvaluationPage() {
       </nav>
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {error && (
+        <ErrorBoundary>
+          {error && (
           <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
             {error}
           </div>
@@ -215,9 +221,9 @@ export default function CreditEvaluationPage() {
                   <div className="mt-3 flex items-baseline gap-3">
                     <span
                       className={`text-6xl font-black tracking-tight ${
-                        scoreWeighted! >= 700
+                        (scoreWeighted ?? 0) >= 700
                           ? 'text-emerald-600'
-                          : scoreWeighted! >= 500
+                          : (scoreWeighted ?? 0) >= 500
                             ? 'text-amber-600'
                             : 'text-rose-600'
                       }`}
@@ -227,26 +233,26 @@ export default function CreditEvaluationPage() {
                     <span className="text-lg text-slate-400">/ 1000</span>
                   </div>
                   <div className="mt-4 flex items-center gap-2">
-                    <DecisionBadge decision={evaluation.auto_decision} />
+                    <DecisionBadge decision={evalData?.auto_decision ?? null} />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
                   <MiniScoreCard
                     label="Score IA"
-                    value={evaluation.score_ia}
+                    value={evalData?.score_ia}
                     max={1000}
                     icon={<Brain className="h-4 w-4" />}
                   />
                   <MiniScoreCard
                     label="Score Buró"
-                    value={evaluation.score_bureau}
+                    value={evalData?.score_bureau}
                     max={999}
                     icon={<Building2 className="h-4 w-4" />}
                   />
                   <MiniScoreCard
                     label="Nivel de Riesgo"
-                    value={evaluation.risk_level_display ?? evaluation.risk_level ?? 'N/D'}
+                    value={evalData?.risk_level_display ?? evalData?.risk_level ?? 'N/D'}
                     icon={<ShieldAlert className="h-4 w-4" />}
                   />
                 </div>
@@ -254,7 +260,7 @@ export default function CreditEvaluationPage() {
             </div>
 
             {/* Sub-scores */}
-            {evaluation.sub_scores && (
+            {evalData?.sub_scores && (
               <SectionCard
                 title="Factores de Evaluación"
                 subtitle="Desglose por factor del score crediticio."
@@ -263,24 +269,24 @@ export default function CreditEvaluationPage() {
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <FactorCard
                     label="Capacidad de Pago"
-                    value={evaluation.sub_scores.payment_capacity}
+                    value={evalData.sub_scores.payment_capacity}
                   />
                   <FactorCard
                     label="Estabilidad Laboral"
-                    value={evaluation.sub_scores.employment_stability}
+                    value={evalData.sub_scores.employment_stability}
                   />
                   <FactorCard
                     label="Historial Crediticio"
-                    value={evaluation.sub_scores.credit_history}
+                    value={evalData.sub_scores.credit_history}
                   />
                   <FactorCard
                     label="Carga de Deuda"
-                    value={evaluation.sub_scores.debt_burden}
+                    value={evalData.sub_scores.debt_burden}
                   />
-                  {evaluation.sub_scores.demographic !== null && (
+                  {evalData.sub_scores.demographic !== null && (
                     <FactorCard
                       label="Perfil Demográfico"
-                      value={evaluation.sub_scores.demographic}
+                      value={evalData.sub_scores.demographic}
                     />
                   )}
                 </div>
@@ -298,59 +304,59 @@ export default function CreditEvaluationPage() {
                   icon={<Calculator className="h-4 w-4" />}
                   label="DTI (Deuda/Ingreso)"
                   value={
-                    evaluation.debt_to_income_ratio
-                      ? `${evaluation.debt_to_income_ratio}%`
+                    evalData?.debt_to_income_ratio
+                      ? `${evalData.debt_to_income_ratio}%`
                       : 'N/D'
                   }
                 />
-                {'evaluation_time_ms' in evaluation && (
+                {evalData && 'evaluation_time_ms' in evalData && (
                   <DetailItem
                     icon={<Clock className="h-4 w-4" />}
                     label="Tiempo de Evaluación"
                     value={
-                      (evaluation as CreditEvaluationDetail).evaluation_time_ms !== null
-                        ? `${(evaluation as CreditEvaluationDetail).evaluation_time_ms}ms`
+                      (evalData as CreditEvaluationDetail).evaluation_time_ms !== null
+                        ? `${(evalData as CreditEvaluationDetail).evaluation_time_ms}ms`
                         : 'N/D'
                     }
                   />
                 )}
-                {'recommended_amount' in evaluation && (
+                {'recommended_amount' in (evalData ?? {}) && (
                   <DetailItem
                     icon={<TrendingUp className="h-4 w-4" />}
                     label="Monto Recomendado"
                     value={
-                      (evaluation as CreditEvaluationDetail).recommended_amount
+                      (evalData as CreditEvaluationDetail).recommended_amount
                         ? formatCurrency(
-                            (evaluation as CreditEvaluationDetail).recommended_amount!
+                            (evalData as CreditEvaluationDetail).recommended_amount!
                           )
                         : 'N/D'
                     }
                   />
                 )}
-                {'model_version' in evaluation && (
+                {'model_version' in (evalData ?? {}) && (
                   <DetailItem
                     icon={<Brain className="h-4 w-4" />}
                     label="Versión del Modelo"
                     value={
-                      (evaluation as CreditEvaluationDetail).model_version || 'N/D'
+                      (evalData as CreditEvaluationDetail).model_version || 'N/D'
                     }
                   />
                 )}
-                {evaluation.evaluated_at && (
+                {evalData?.evaluated_at && (
                   <DetailItem
                     icon={<Clock className="h-4 w-4" />}
                     label="Evaluado el"
-                    value={formatDateTime(evaluation.evaluated_at)}
+                    value={formatDateTime(evalData.evaluated_at)}
                   />
                 )}
-                {'max_affordable_payment' in evaluation && (
+                {'max_affordable_payment' in (evalData ?? {}) && (
                   <DetailItem
                     icon={<TrendingUp className="h-4 w-4" />}
                     label="Cuota Máxima Asequible"
                     value={
-                      (evaluation as CreditEvaluationDetail).max_affordable_payment
+                      (evalData as CreditEvaluationDetail).max_affordable_payment
                         ? formatCurrency(
-                            (evaluation as CreditEvaluationDetail).max_affordable_payment!
+                            (evalData as CreditEvaluationDetail).max_affordable_payment!
                           )
                         : 'N/D'
                     }
@@ -358,52 +364,52 @@ export default function CreditEvaluationPage() {
                 )}
               </div>
 
-              {evaluation.auto_decision_reason && (
+              {evalData?.auto_decision_reason && (
                 <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <p className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-400">
                     Razón de Decisión
                   </p>
                   <p className="text-sm text-slate-700">
-                    {evaluation.auto_decision_reason}
+                    {evalData.auto_decision_reason}
                   </p>
                 </div>
               )}
             </SectionCard>
 
             {/* Buró */}
-            {evaluation.bureau_query && (
+            {evalData?.bureau_query && (
               <SectionCard
                 title="Consulta a Buró de Crédito"
-                subtitle={`Proveedor: ${evaluation.bureau_query.provider ?? 'N/D'}`}
+                subtitle={`Proveedor: ${evalData.bureau_query.provider ?? 'N/D'}`}
                 action={<Building2 className="h-5 w-5 text-slate-400" />}
               >
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <DetailItem
                     label="Score Externo"
                     value={
-                      evaluation.bureau_query.score_external !== null
-                        ? String(evaluation.bureau_query.score_external)
+                      evalData.bureau_query.score_external !== null
+                        ? String(evalData.bureau_query.score_external)
                         : 'N/D'
                     }
                   />
                   <DetailItem
                     label="Deuda Total"
                     value={
-                      evaluation.bureau_query.debt_total
-                        ? formatCurrency(evaluation.bureau_query.debt_total)
+                      evalData.bureau_query.debt_total
+                        ? formatCurrency(evalData.bureau_query.debt_total)
                         : 'N/D'
                     }
                   />
                   <DetailItem
                     label="Categoría CIC"
-                    value={evaluation.bureau_query.cic_category || 'N/D'}
+                    value={evalData.bureau_query.cic_category || 'N/D'}
                   />
                   <DetailItem
                     label="Tiene Moras"
                     value={
-                      evaluation.bureau_query.has_defaults === true
+                      evalData.bureau_query.has_defaults === true
                         ? 'Sí'
-                        : evaluation.bureau_query.has_defaults === false
+                        : evalData.bureau_query.has_defaults === false
                           ? 'No'
                           : 'N/D'
                     }
@@ -413,6 +419,7 @@ export default function CreditEvaluationPage() {
             )}
           </div>
         )}
+        </ErrorBoundary>
       </main>
     </div>
   );
@@ -554,4 +561,53 @@ function DetailItem({
       <p className="text-sm font-bold text-slate-900">{value}</p>
     </div>
   );
+}
+
+// ─── Error Boundary ─────────────────────────────────────────────
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  errorMsg: string;
+}
+
+class ErrorBoundary extends Component<
+  { children: React.ReactNode },
+  ErrorBoundaryState
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, errorMsg: '' };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, errorMsg: error.message || 'Error inesperado' };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('[CreditEvaluationPage] Error boundary caught:', error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="rounded-3xl border border-rose-200 bg-white p-8 text-center shadow-sm">
+          <ShieldAlert className="mx-auto h-14 w-14 text-rose-500" />
+          <h2 className="mt-4 text-xl font-bold text-slate-900">
+            Error al renderizar evaluación
+          </h2>
+          <p className="mt-2 text-sm text-slate-500">
+            {this.state.errorMsg || 'Ocurrió un error inesperado al mostrar los resultados.'}
+          </p>
+          <button
+            onClick={() => this.setState({ hasError: false, errorMsg: '' })}
+            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+          >
+            Reintentar
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
 }

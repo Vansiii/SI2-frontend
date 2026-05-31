@@ -5,7 +5,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { contractsApi } from '../services/contractsApi';
 import type { ContractSignRequest, SignatureStatus } from '../types';
-import { ApiError } from '../../../utils/errorHandler';
 
 export const useContractSignature = (contractId?: number) => {
   const [signatureStatus, setSignatureStatus] = useState<SignatureStatus | null>(null);
@@ -22,7 +21,7 @@ export const useContractSignature = (contractId?: number) => {
       const data = await contractsApi.getSignatureStatus(contractId);
       setSignatureStatus(data);
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : 'Error al cargar el estado de firmas';
+      const message = err instanceof Error ? err.message : 'Error al cargar el estado de firmas';
       setError(message);
     } finally {
       setLoading(false);
@@ -58,7 +57,7 @@ export const useSignContract = () => {
       await contractsApi.sign(contractId, data);
       return true;
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : 'Error al firmar el contrato';
+      const message = err instanceof Error ? err.message : 'Error al firmar el contrato';
       setError(message);
       return false;
     } finally {

@@ -2,7 +2,7 @@
  * Modal para aprobar solicitud de crédito
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { approveLoanApplication, calculateMonthlyPayment, type ApproveLoanApplicationData, type LoanApplication } from '../services/loansApi';
 
@@ -23,6 +23,8 @@ interface ApproveApplicationModalProps {
 export function ApproveApplicationModal({ applicationId, application, onClose, onSuccess }: ApproveApplicationModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [amountError, setAmountError] = useState<string | null>(null);
+  const [termError, setTermError] = useState<string | null>(null);
 
   const {
     register,
@@ -38,6 +40,58 @@ export function ApproveApplicationModal({ applicationId, application, onClose, o
   });
 
   const watchedValues = watch();
+
+  // Funciones de validación de límites
+  const validateAmount = (value: string): string | null => {
+    if (!value || !application.product) return null;
+    
+    const amount = parseFloat(value);
+    const minAmount = parseFloat(application.product.min_amount || '0');
+    const maxAmount = parseFloat(application.product.max_amount || '0');
+    
+    if (isNaN(amount)) return null;
+    
+    if (amount < minAmount) {
+      return `El monto mínimo permitido es $${minAmount.toLocaleString()}`;
+    }
+    if (amount > maxAmount) {
+      return `El monto máximo permitido es $${maxAmount.toLocaleString()}`;
+    }
+    return null;
+  };
+
+  const validateTerm = (value: number): string | null => {
+    if (!value || !application.product) return null;
+    
+    const minTerm = application.product.min_term_months || 0;
+    const maxTerm = application.product.max_term_months || 0;
+    
+    if (value < minTerm) {
+      return `El plazo mínimo permitido es ${minTerm} meses`;
+    }
+    if (value > maxTerm) {
+      return `El plazo máximo permitido es ${maxTerm} meses`;
+    }
+    return null;
+  };
+
+  // Validar en tiempo real cuando cambian los valores
+  useEffect(() => {
+    if (watchedValues.approved_amount) {
+      const error = validateAmount(watchedValues.approved_amount);
+      setAmountError(error);
+    }
+  }, [watchedValues.approved_amount, application.product]);
+
+  useEffect(() => {
+    if (watchedValues.approved_term_months) {
+      const error = validateTerm(watchedValues.approved_term_months);
+      setTermError(error);
+    }
+  }, [watchedValues.approved_term_months, application.product]);
+
+  // Verificar si hay errores de validación
+  const hasValidationErrors = amountError !== null || termError !== null;
 
   // Calcular cuota mensual estimada
   const calculateEstimatedPayment = () => {
@@ -159,6 +213,9 @@ export function ApproveApplicationModal({ applicationId, application, onClose, o
                     Rango del producto: ${application.product.min_amount} - ${application.product.max_amount}
                   </p>
                 )}
+                {amountError && (
+                  <p className="mt-1 text-sm text-red-600 font-medium">{amountError}</p>
+                )}
                 {errors.approved_amount && (
                   <p className="mt-1 text-sm text-red-600">{errors.approved_amount.message}</p>
                 )}
@@ -181,6 +238,9 @@ export function ApproveApplicationModal({ applicationId, application, onClose, o
                   <p className="mt-1 text-xs text-gray-500">
                     Rango del producto: {application.product.min_term_months} - {application.product.max_term_months} meses
                   </p>
+                )}
+                {termError && (
+                  <p className="mt-1 text-sm text-red-600 font-medium">{termError}</p>
                 )}
                 {errors.approved_term_months && (
                   <p className="mt-1 text-sm text-red-600">{errors.approved_term_months.message}</p>
@@ -276,8 +336,8 @@ export function ApproveApplicationModal({ applicationId, application, onClose, o
               </button>
               <button
                 type="submit"
-                disabled={loading}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center"
+                disabled={loading || hasValidationErrors}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
               >
                 {loading ? (
                   <>
@@ -287,6 +347,8 @@ export function ApproveApplicationModal({ applicationId, application, onClose, o
                     </svg>
                     Aprobando...
                   </>
+                ) : hasValidationErrors ? (
+                  'Corrige los errores para continuar'
                 ) : (
                   'Aprobar Solicitud'
                 )}
