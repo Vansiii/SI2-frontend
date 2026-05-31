@@ -551,15 +551,108 @@ export async function disburseLoanApplication(
   return changeLoanApplicationStatus(id, buildStatusPayload('DISBURSED', { reason: data.notes }));
 }
 
+export type AutoDecision = 'APPROVE' | 'REJECT' | 'MANUAL_REVIEW' | 'ESCALATE' | null;
+
+export interface SubScores {
+  payment_capacity: number | null;
+  employment_stability: number | null;
+  credit_history: number | null;
+  debt_burden: number | null;
+  demographic: number | null;
+}
+
+export interface BureauQuerySummary {
+  id?: number;
+  provider: string | null;
+  status: string | null;
+  score_external: number | null;
+  debt_total: string | null;
+  has_defaults: boolean | null;
+  cic_category: string | null;
+  queried_at?: string | null;
+  response_time_ms?: number | null;
+}
+
+export interface CreditEvaluationResult {
+  evaluation_id: number;
+  score_ia: number | null;
+  score_bureau: number | null;
+  score_weighted: number | null;
+  risk_level: string | null;
+  risk_level_display: string | null;
+  debt_to_income_ratio: string | null;
+  auto_decision: AutoDecision;
+  auto_decision_reason: string;
+  evaluated_at: string | null;
+  application: LoanApplication;
+  sub_scores: SubScores | null;
+  bureau_query: BureauQuerySummary | null;
+}
+
+export interface CreditEvaluationDetail {
+  id: number;
+  status: string;
+  score_ia: number | null;
+  score_bureau: number | null;
+  score_weighted: number | null;
+  risk_level: string | null;
+  risk_level_display: string | null;
+  debt_to_income_ratio: string | null;
+  auto_decision: AutoDecision;
+  auto_decision_reason: string;
+  eligibility_check_passed: boolean | null;
+  bureau_check_passed: boolean | null;
+  dti_calculated: string | null;
+  recommended_amount: string | null;
+  max_affordable_payment: string | null;
+  sub_scores: SubScores | null;
+  model_version: string;
+  features_used: Record<string, number>;
+  evaluated_at: string | null;
+  evaluation_time_ms: number | null;
+  error_message: string | null;
+  bureau_query: BureauQuerySummary | null;
+}
+
+export async function calculateLoanApplicationScore(
+  id: number
+): Promise<CreditEvaluationResult> {
+  return apiClient.post<CreditEvaluationResult>(
+    `${CREDIT_APPLICATIONS_ENDPOINT}${id}/calculate-score/`,
+    {}
+  );
+}
+
+export async function getLoanApplicationEvaluation(
+  id: number
+): Promise<CreditEvaluationDetail> {
+  return apiClient.get<CreditEvaluationDetail>(
+    `${CREDIT_APPLICATIONS_ENDPOINT}${id}/evaluation/`
+  );
+}
+
 export async function calculateLoanScore(id: number): Promise<{
   credit_score?: number;
   risk_level?: string;
   debt_to_income_ratio?: number;
 }> {
-  const application = await getLoanApplication(id);
-  return {
-    credit_score: application.credit_score ?? undefined,
-    risk_level: application.risk_level ?? undefined,
-    debt_to_income_ratio: application.debt_to_income_ratio ? Number(application.debt_to_income_ratio) : undefined,
-  };
+  try {
+    const evaluation = await calculateLoanApplicationScore(id);
+    return {
+      credit_score: evaluation.score_weighted ?? undefined,
+      risk_level: evaluation.risk_level ?? undefined,
+      debt_to_income_ratio: evaluation.debt_to_income_ratio
+        ? Number(evaluation.debt_to_income_ratio)
+        : undefined,
+    };
+  } catch {
+    const application = await getLoanApplication(id);
+    return {
+      credit_score: application.credit_score ?? undefined,
+      risk_level: application.risk_level ?? undefined,
+      debt_to_income_ratio: application.debt_to_income_ratio
+        ? Number(application.debt_to_income_ratio)
+        : undefined,
+    };
+  }
 }

@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, MessageSquare, Send, ShieldAlert } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, Brain, CheckCircle2, MessageSquare, Send, ShieldAlert } from 'lucide-react';
 import {
   addLoanApplicationComment,
   changeLoanApplicationStatus,
@@ -362,6 +362,13 @@ export default function LoanApplicationDetailPage() {
                           </div>
                         )}
                       </dl>
+                      <Link
+                        to={`/loans/${application.id}/evaluation`}
+                        className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-blue-600 hover:text-blue-800"
+                      >
+                        <Brain className="h-3 w-3" />
+                        Ver evaluación completa
+                      </Link>
                     </div>
                   )}
                 </div>

@@ -176,6 +176,9 @@ const LoanDossierPage = lazy(() =>
     default: module.LoanDossierPage,
   }))
 );
+const CreditEvaluationPage = lazy(
+  () => import('./features/loans/pages/CreditEvaluationPage')
+);
 
 // Importar Client Loan pages (CU-07: Timeline para clientes)
 const MyApplicationsPage = lazy(() =>
@@ -669,6 +672,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <LoanDossierPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/loans/:id/evaluation"
+              element={
+                <ProtectedRoute>
+                  <CreditEvaluationPage />
                 </ProtectedRoute>
               }
             />
