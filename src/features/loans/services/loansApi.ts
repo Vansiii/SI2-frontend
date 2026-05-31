@@ -251,6 +251,18 @@ export interface RejectLoanApplicationData {
   notes?: string;
 }
 
+export interface RejectionReason {
+  id: number;
+  code: string;
+  name: string;
+  description: string;
+  category: string;
+  category_display: string;
+  is_active: boolean;
+  display_order: number;
+  requires_notes: boolean;
+}
+
 export interface ReviewLoanApplicationData {
   credit_score?: number;
   risk_level?: string;
@@ -544,6 +556,11 @@ export async function rejectLoanApplication(
   return changeLoanApplicationStatus(id, buildStatusPayload('REJECTED', { reason: data.rejection_reason }));
 }
 
+export async function getRejectionReasons(): Promise<RejectionReason[]> {
+  const response = await apiClient.get<RejectionReason[]>('/api/loans/rejection-reasons/');
+  return response.data;
+}
+
 export async function disburseLoanApplication(
   id: number,
   data: { notes?: string }
@@ -562,4 +579,108 @@ export async function calculateLoanScore(id: number): Promise<{
     risk_level: application.risk_level ?? undefined,
     debt_to_income_ratio: application.debt_to_income_ratio ? Number(application.debt_to_income_ratio) : undefined,
   };
+}
+
+
+// ============================================================================
+// APPROVAL QUEUE - SP3-99
+// ============================================================================
+
+export interface WorkflowStageExecution {
+  id: number;
+  workflow_execution: number;
+  stage_definition: {
+    id: number;
+    stage_name: string;
+    stage_code: string;
+    stage_order: number;
+    requires_manual_approval: boolean;
+    time_limit_hours: number | null;
+  };
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'SKIPPED' | 'FAILED';
+  assigned_to: {
+    id: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+  } | null;
+  entered_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+  sla_deadline: string | null;
+  time_remaining_hours: number | null;
+  is_overdue: boolean;
+  loan_application: {
+    id: number;
+    application_number: string;
+    client: LoanApplicationClient;
+    product: LoanApplicationProduct;
+    requested_amount: string;
+    term_months: number;
+    status: LoanApplicationStatus;
+    credit_score: number | null;
+    risk_level: string | null;
+  };
+}
+
+export interface ApprovalQueueMetrics {
+  total_pending: number;
+  overdue_count: number;
+  total_decisions_30d: number;
+  approved_count_30d: number;
+  rejected_count_30d: number;
+  approval_rate: number;
+  avg_decision_time_hours: number;
+}
+
+export interface ApprovalQueueResponse {
+  results: WorkflowStageExecution[];
+  total_count: number;
+  urgent_count: number;
+  normal_count: number;
+  low_priority_count: number;
+  metrics: ApprovalQueueMetrics;
+}
+
+export interface ApprovalQueueFilters {
+  priority?: 'urgent' | 'normal' | 'low';
+}
+
+/**
+ * Obtiene la cola de aprobaciones del usuario actual
+ */
+export async function getApprovalQueue(filters?: ApprovalQueueFilters): Promise<ApprovalQueueResponse> {
+  const response = await apiClient.get<ApprovalQueueResponse>('/api/loans/approvals/queue/', {
+    params: filters
+  });
+  return response.data;
+}
+
+/**
+ * Obtiene las métricas de la cola de aprobaciones
+ */
+export async function getApprovalQueueMetrics(): Promise<ApprovalQueueMetrics> {
+  const response = await apiClient.get<ApprovalQueueMetrics>('/api/loans/approvals/queue/metrics/');
+  return response.data;
+}
+
+/**
+ * Obtiene las solicitudes vencidas (SLA excedido)
+ */
+export async function getOverdueApplications(): Promise<{ results: WorkflowStageExecution[]; total_count: number }> {
+  const response = await apiClient.get<{ results: WorkflowStageExecution[]; total_count: number }>(
+    '/api/loans/approvals/queue/overdue/'
+  );
+  return response.data;
+}
+
+/**
+ * Asigna una etapa a un usuario
+ */
+export async function assignStageToUser(stageExecutionId: number, userId: number): Promise<WorkflowStageExecution> {
+  const response = await apiClient.post<WorkflowStageExecution>('/api/loans/approvals/queue/assign/', {
+    stage_execution_id: stageExecutionId,
+    user_id: userId
+  });
+  return response.data;
 }

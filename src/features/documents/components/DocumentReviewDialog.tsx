@@ -65,29 +65,38 @@ export const DocumentReviewDialog: React.FC<DocumentReviewDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h2 className="text-xl font-semibold text-gray-900 mb-1">
+      <div 
+        className="relative bg-white rounded-lg shadow-2xl w-full mx-4 flex flex-col"
+        style={{ 
+          maxWidth: '900px',
+          maxHeight: '90vh',
+          zIndex: 60 
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header - Fixed at top */}
+        <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 bg-white rounded-t-lg">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-xl font-semibold text-gray-900 mb-1 truncate">
                 Revisar Documento
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 truncate">
                 {document.document_name}
               </p>
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100"
+              type="button"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
         </div>
 
-        {/* Body */}
-        <div className="px-6 py-4">
+        {/* Body - Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-6 py-4" style={{ minHeight: 0 }}>
           {/* Información del documento */}
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">
@@ -126,7 +135,7 @@ export const DocumentReviewDialog: React.FC<DocumentReviewDialogProps> = ({
               </h3>
               
               <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start justify-between gap-4 mb-4">
                   <div className="flex items-start gap-3 flex-1">
                     <FileText className="h-5 w-5 text-gray-600 mt-0.5" />
                     <div>
@@ -163,6 +172,61 @@ export const DocumentReviewDialog: React.FC<DocumentReviewDialogProps> = ({
                     Descargar
                   </button>
                 </div>
+
+                {/* Visor de imagen/documento */}
+                {document.signed_url && (
+                  <div className="mt-4">
+                    {document.file_resource_detail.mime_type.startsWith('image/') ? (
+                      <div className="relative bg-gray-100 rounded-lg overflow-hidden">
+                        <img
+                          src={document.signed_url}
+                          alt={document.file_resource_detail.original_filename}
+                          className="w-full h-auto max-h-[500px] object-contain"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const errorDiv = target.nextElementSibling as HTMLElement;
+                            if (errorDiv) errorDiv.style.display = 'flex';
+                          }}
+                        />
+                        <div 
+                          className="hidden items-center justify-center p-8 text-center"
+                          style={{ minHeight: '200px' }}
+                        >
+                          <div>
+                            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                            <p className="text-sm text-gray-600">
+                              No se pudo cargar la imagen
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Usa el botón "Descargar" para ver el archivo
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : document.file_resource_detail.mime_type === 'application/pdf' ? (
+                      <div className="relative bg-gray-100 rounded-lg overflow-hidden" style={{ height: '500px' }}>
+                        <iframe
+                          src={document.signed_url}
+                          className="w-full h-full"
+                          title={document.file_resource_detail.original_filename}
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center p-8 bg-gray-100 rounded-lg text-center">
+                        <div>
+                          <FileText className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                          <p className="text-sm text-gray-600 mb-2">
+                            Vista previa no disponible para este tipo de archivo
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Usa el botón "Descargar" para ver el archivo
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -218,7 +282,12 @@ export const DocumentReviewDialog: React.FC<DocumentReviewDialogProps> = ({
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
               <button
-                onClick={() => setAction('APPROVED')}
+                type="button"
+                onClick={() => {
+                  console.log('Acción seleccionada: APPROVED');
+                  setAction('APPROVED');
+                  setValidationError(null);
+                }}
                 className={`
                   p-4 rounded-lg border-2 transition-all duration-200
                   ${action === 'APPROVED'
@@ -234,7 +303,12 @@ export const DocumentReviewDialog: React.FC<DocumentReviewDialogProps> = ({
               </button>
 
               <button
-                onClick={() => setAction('REJECTED')}
+                type="button"
+                onClick={() => {
+                  console.log('Acción seleccionada: REJECTED');
+                  setAction('REJECTED');
+                  setValidationError(null);
+                }}
                 className={`
                   p-4 rounded-lg border-2 transition-all duration-200
                   ${action === 'REJECTED'
@@ -250,7 +324,12 @@ export const DocumentReviewDialog: React.FC<DocumentReviewDialogProps> = ({
               </button>
 
               <button
-                onClick={() => setAction('REQUESTED_REUPLOAD')}
+                type="button"
+                onClick={() => {
+                  console.log('Acción seleccionada: REQUESTED_REUPLOAD');
+                  setAction('REQUESTED_REUPLOAD');
+                  setValidationError(null);
+                }}
                 className={`
                   p-4 rounded-lg border-2 transition-all duration-200
                   ${action === 'REQUESTED_REUPLOAD'
@@ -297,12 +376,13 @@ export const DocumentReviewDialog: React.FC<DocumentReviewDialogProps> = ({
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-lg sticky bottom-0">
+        {/* Footer - Fixed at bottom */}
+        <div className="flex-shrink-0 px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-lg">
           <div className="flex items-center justify-end gap-3">
             <button
               onClick={onClose}
               disabled={reviewMutation.isPending}
+              type="button"
               className="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancelar
@@ -310,11 +390,19 @@ export const DocumentReviewDialog: React.FC<DocumentReviewDialogProps> = ({
             <button
               onClick={handleReview}
               disabled={!action || reviewMutation.isPending}
-              className="px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              type="button"
+              className={`
+                px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                ${!action || reviewMutation.isPending
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:shadow-lg'
+                }
+              `}
               style={{
                 backgroundColor: 'var(--tenant-primary, #2563EB)',
                 color: 'var(--tenant-on-primary, #FFFFFF)',
               }}
+              title={!action ? 'Selecciona una acción primero' : ''}
             >
               {reviewMutation.isPending ? (
                 <>
@@ -322,7 +410,10 @@ export const DocumentReviewDialog: React.FC<DocumentReviewDialogProps> = ({
                   Procesando...
                 </>
               ) : (
-                'Confirmar Revisión'
+                <>
+                  Confirmar Revisión
+                  {!action && <span className="ml-2 text-xs">(Selecciona una acción)</span>}
+                </>
               )}
             </button>
           </div>
