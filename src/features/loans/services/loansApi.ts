@@ -185,6 +185,8 @@ export interface LoanApplication extends LoanApplicationListItem {
     completed_at: string | null;
     created_at: string;
   } | null;
+  current_workflow_stage?: any;
+  product_workflow_stages?: any[];
 }
 
 export type CreditApplication = LoanApplication;
