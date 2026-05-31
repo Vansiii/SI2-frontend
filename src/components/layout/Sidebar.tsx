@@ -1,8 +1,8 @@
 import { NavLink } from 'react-router-dom';
-import { 
-  Users, 
-  Shield, 
-  Building2, 
+import {
+  Users,
+  Shield,
+  Building2,
   Building,
   Home,
   LayoutDashboard,
@@ -21,6 +21,7 @@ import {
   Inbox,
   BarChart3,
   FileSignature,
+  Receipt,
 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useAuth } from '../../features/auth/hooks/useAuth';
@@ -84,6 +85,18 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
       icon: <Inbox className="h-5 w-5" />,
       label: 'Solicitudes Entrantes',
       // Remove or relax permission for testing visibility
+    },
+    {
+      to: '/active-credits',
+      icon: <CreditCard className="h-5 w-5" />,
+      label: 'Créditos Activos',
+      permission: 'active_credits.view',
+    },
+    {
+      to: '/payments',
+      icon: <Receipt className="h-5 w-5" />,
+      label: 'Pagos',
+      permission: 'payments.view',
     },
     {
       to: '/admin/documents',

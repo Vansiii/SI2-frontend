@@ -176,9 +176,12 @@ const LoanDossierPage = lazy(() =>
     default: module.LoanDossierPage,
   }))
 );
-const CreditEvaluationPage = lazy(
-  () => import('./features/loans/pages/CreditEvaluationPage')
-);
+const CreditEvaluationPage = lazy(() => import('./features/loans/pages/CreditEvaluationPage'));
+
+// SP3: Créditos Activos y Pagos
+const ActiveCreditListPage = lazy(() => import('./features/loans/pages/ActiveCreditListPage'));
+const ActiveCreditDetailPage = lazy(() => import('./features/loans/pages/ActiveCreditDetailPage'));
+const PaymentHistoryPage = lazy(() => import('./features/loans/pages/PaymentHistoryPage'));
 
 // Importar Client Loan pages (CU-07: Timeline para clientes)
 const MyApplicationsPage = lazy(() =>
@@ -726,6 +729,40 @@ function App() {
                 <ProtectedRoute>
                   <PermissionGuard permission="loans.edit">
                     <LoanApplicationFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* SP3: Créditos Activos */}
+            <Route
+              path="/active-credits"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="active_credits.view">
+                    <ActiveCreditListPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/active-credits/:id"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="active_credits.view">
+                    <ActiveCreditDetailPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* SP3: Historial de Pagos */}
+            <Route
+              path="/payments"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="payments.view">
+                    <PaymentHistoryPage />
                   </PermissionGuard>
                 </ProtectedRoute>
               }
