@@ -4,7 +4,6 @@
 import React from 'react';
 import {
   Box,
-  Button,
   Card,
   CardContent,
   Chip,
@@ -21,7 +20,7 @@ import {
   Assessment as AssessmentIcon,
 } from '@mui/icons-material';
 import type { BackupScheduleConfig } from '../types/backup.types';
-import { formatDateTime, formatTime } from '../types/backup.types';
+import { formatDateTime } from '../types/backup.types';
 
 interface BackupScheduleCardProps {
   config: BackupScheduleConfig;
@@ -51,7 +50,7 @@ export const BackupScheduleCard: React.FC<BackupScheduleCardProps> = ({
       <CardContent>
         <Grid container spacing={2}>
           {/* Header */}
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Typography variant="h6">{config.tenant_name}</Typography>
@@ -92,14 +91,14 @@ export const BackupScheduleCard: React.FC<BackupScheduleCardProps> = ({
           </Grid>
 
           {/* Configuración */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Typography variant="body2" color="text.secondary" gutterBottom>
               📅 Frecuencia
             </Typography>
             <Typography variant="body1">{config.schedule_description}</Typography>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Typography variant="body2" color="text.secondary" gutterBottom>
               💾 Tipo
             </Typography>
@@ -108,7 +107,7 @@ export const BackupScheduleCard: React.FC<BackupScheduleCardProps> = ({
             </Typography>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Typography variant="body2" color="text.secondary" gutterBottom>
               📦 Retención
             </Typography>
@@ -117,7 +116,7 @@ export const BackupScheduleCard: React.FC<BackupScheduleCardProps> = ({
             </Typography>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Typography variant="body2" color="text.secondary" gutterBottom>
               📧 Notificaciones
             </Typography>
@@ -129,7 +128,7 @@ export const BackupScheduleCard: React.FC<BackupScheduleCardProps> = ({
           </Grid>
 
           {/* Ejecuciones */}
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Box
               sx={{
                 display: 'flex',
@@ -158,7 +157,7 @@ export const BackupScheduleCard: React.FC<BackupScheduleCardProps> = ({
           </Grid>
 
           {/* Estadísticas */}
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Box sx={{ display: 'flex', gap: 3 }}>
               <Box>
                 <Typography variant="body2" color="text.secondary">
@@ -197,7 +196,7 @@ export const BackupScheduleCard: React.FC<BackupScheduleCardProps> = ({
           </Grid>
 
           {/* Toggle */}
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Switch checked={config.is_enabled} onChange={handleToggle} disabled={isLoading} />
               <Typography variant="body2">

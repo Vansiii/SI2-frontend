@@ -36,12 +36,12 @@ export const BackupSchedulePage: React.FC = () => {
     if (!user) return undefined;
     
     // Si es superadmin SaaS, no tiene tenant específico
-    if (user.profile?.user_type === 'saas_admin') {
+    if ((user as any).profile?.user_type === 'saas_admin') {
       return undefined;
     }
     
     // Obtener tenant desde la membresía activa
-    const activeMembership = user.institution_memberships?.find(m => m.is_active);
+    const activeMembership = (user as any).institution_memberships?.find((m: any) => m.is_active);
     return activeMembership?.institution?.id;
   };
   
@@ -88,12 +88,12 @@ export const BackupSchedulePage: React.FC = () => {
   }, []);
 
   // Crear configuración
-  const handleCreate = async (data: BackupScheduleConfigCreate) => {
+  const handleCreate = async (data: BackupScheduleConfigCreate | BackupScheduleConfigUpdate) => {
     try {
       setIsSubmitting(true);
       setError(null);
 
-      await backupsApi.createSchedule(data);
+      await backupsApi.createSchedule(data as BackupScheduleConfigCreate);
       setSuccess('Configuración creada exitosamente');
       setIsCreateDialogOpen(false);
       await loadData();
@@ -263,7 +263,7 @@ export const BackupSchedulePage: React.FC = () => {
               />
               <Typography variant="body2">{schedulerStatus.message}</Typography>
             </Box>
-            <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+            <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
               {schedulerStatus.info}
             </Typography>
           </Alert>
