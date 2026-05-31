@@ -294,6 +294,65 @@ const ManualReportsIndependentPage = lazy(() =>
   }))
 );
 
+// Importar Garantias pages
+const CollateralListPage = lazy(() =>
+  import('./features/garantias/pages/CollateralListPage').then((module) => ({
+    default: module.CollateralListPage,
+  }))
+);
+const CollateralDetailPage = lazy(() =>
+  import('./features/garantias/pages/CollateralDetailPage').then((module) => ({
+    default: module.CollateralDetailPage,
+  }))
+);
+const CollateralFormPage = lazy(() =>
+  import('./features/garantias/pages/CollateralFormPage').then((module) => ({
+    default: module.CollateralFormPage,
+  }))
+);
+const GuarantorListPage = lazy(() =>
+  import('./features/garantias/pages/GuarantorListPage').then((module) => ({
+    default: module.GuarantorListPage,
+  }))
+);
+const GuarantorDetailPage = lazy(() =>
+  import('./features/garantias/pages/GuarantorDetailPage').then((module) => ({
+    default: module.GuarantorDetailPage,
+  }))
+);
+const GuarantorFormPage = lazy(() =>
+  import('./features/garantias/pages/GuarantorFormPage').then((module) => ({
+    default: module.GuarantorFormPage,
+  }))
+);
+
+// Importar Contracts pages
+const ContractListPage = lazy(() =>
+  import('./features/contracts/pages/ContractListPage').then((module) => ({
+    default: module.ContractListPage,
+  }))
+);
+const ContractDetailPage = lazy(() =>
+  import('./features/contracts/pages/ContractDetailPage').then((module) => ({
+    default: module.ContractDetailPage,
+  }))
+);
+const ContractTemplatePage = lazy(() =>
+  import('./features/contracts/pages/ContractTemplatePage').then((module) => ({
+    default: module.ContractTemplatePage,
+  }))
+);
+const ContractTemplateFormPage = lazy(() =>
+  import('./features/contracts/pages/ContractTemplateFormPage').then((module) => ({
+    default: module.ContractTemplateFormPage,
+  }))
+);
+const ContractTemplatePreviewPage = lazy(() =>
+  import('./features/contracts/pages/ContractTemplatePreviewPage').then((module) => ({
+    default: module.ContractTemplatePreviewPage,
+  }))
+);
+
 function RouteFallback() {
   return (
     <div className="min-h-screen flex items-center justify-center text-slate-500">
@@ -697,6 +756,88 @@ function App() {
               }
             />
 
+            {/* Rutas de Garantías */}
+            <Route
+              path="/garantias"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="collaterals.view">
+                    <CollateralListPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/garantias/new"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="collaterals.create">
+                    <CollateralFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/garantias/guarantors"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="guarantors.view">
+                    <GuarantorListPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/garantias/guarantors/new"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="guarantors.create">
+                    <GuarantorFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/garantias/guarantors/:guarantorId/edit"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="guarantors.edit">
+                    <GuarantorFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/garantias/guarantors/:guarantorId"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="guarantors.view">
+                    <GuarantorDetailPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/garantias/:collateralId/edit"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="collaterals.edit">
+                    <CollateralFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/garantias/:collateralId"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="collaterals.view">
+                    <CollateralDetailPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+
             {/* Rutas de Administración de Reglas (CU-09) - Administradores configuran reglas en WEB */}
             <Route
               path="/admin/credit-rules"
@@ -948,6 +1089,68 @@ function App() {
                 <ProtectedRoute>
                   <PermissionGuard permission="reports.generate_report">
                     <ManualReportsIndependentPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Contratos */}
+            <Route
+              path="/contracts"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="contracts.view">
+                    <ContractListPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/contracts/:id"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="contracts.view">
+                    <ContractDetailPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/contracts/templates"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="contract_templates.view">
+                    <ContractTemplatePage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/contracts/templates/create"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="contract_templates.create">
+                    <ContractTemplateFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/contracts/templates/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="contract_templates.edit">
+                    <ContractTemplateFormPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/contracts/templates/:id/preview"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="contract_templates.view">
+                    <ContractTemplatePreviewPage />
                   </PermissionGuard>
                 </ProtectedRoute>
               }

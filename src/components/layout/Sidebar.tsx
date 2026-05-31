@@ -16,9 +16,11 @@ import {
   Palette,
   HardDrive,
   FileCheck,
+  ShieldCheck,
   Sliders,
   Inbox,
   BarChart3,
+  FileSignature,
 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useAuth } from '../../features/auth/hooks/useAuth';
@@ -88,6 +90,18 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
       icon: <FileCheck className="h-5 w-5" />,
       label: 'Expedientes y Documentos',
       permission: 'loans.review_loan_documents',
+    },
+    {
+      to: '/garantias',
+      icon: <ShieldCheck className="h-5 w-5" />,
+      label: 'Garantías',
+      permission: 'collaterals.view',
+    },
+    {
+      to: '/contracts',
+      icon: <FileSignature className="h-5 w-5" />,
+      label: 'Contratos',
+      permission: 'contracts.view',
     },
     {
       to: '/admin/credit-rules',
