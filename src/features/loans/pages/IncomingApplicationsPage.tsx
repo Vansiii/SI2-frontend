@@ -17,12 +17,12 @@ import {
   ShieldCheck,
   XCircle,
 } from 'lucide-react';
-import {
-  getLoanApplications,
+import loansApi, {
   formatApplicationNumber,
   type LoanApplicationFilters,
-  type LoanApplicationListItem,
 } from '../services/loansApi';
+import type { LoanApplication } from '../types/loan.types';
+import { LoanApplicationStatusLabels } from '../types/loan.types';
 import {
   Badge,
   CreditApplicationStatusBadge,
@@ -39,7 +39,7 @@ import {
 export function IncomingApplicationsPage() {
   const navigate = useNavigate();
 
-  const [items, setItems] = useState<LoanApplicationListItem[]>([]);
+  const [items, setItems] = useState<LoanApplication[]>([]);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +61,7 @@ export function IncomingApplicationsPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await getLoanApplications(filters);
+      const response = await loansApi.listApplications(filters);
       setItems(response.results || []);
       setCount(response.count || 0);
     } catch (err) {
@@ -325,7 +325,7 @@ export function IncomingApplicationsPage() {
 // ─── IncomingApplicationCard ─────────────────────────────────────────────────
 
 interface IncomingApplicationCardProps {
-  application: LoanApplicationListItem;
+  application: LoanApplication;
   onView: () => void;
 }
 
@@ -349,7 +349,7 @@ function IncomingApplicationCard({ application, onView }: IncomingApplicationCar
             {application.application_number}
           </div>
         </div>
-        <CreditApplicationStatusBadge status={application.status} label={application.status_display} />
+        <CreditApplicationStatusBadge status={application.status} label={LoanApplicationStatusLabels[application.status]} />
       </div>
 
       {/* Body */}
@@ -422,7 +422,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function getUrgencyLevel(application: LoanApplicationListItem): 'high' | 'normal' {
+function getUrgencyLevel(application: LoanApplication): 'high' | 'normal' {
   if (application.status === 'SUBMITTED') return 'high';
   return 'normal';
 }

@@ -1,3 +1,67 @@
+# SI2 Frontend - React + TypeScript + Vite
+
+Sistema de Información para Instituciones Financieras - Frontend Web
+
+## 📋 Módulos Implementados
+
+### ✅ Contratos
+- Generación de contratos desde plantillas
+- Vista previa y descarga de contratos
+- Integración con préstamos
+- **Documentación**: [INTEGRACION_CONTRATOS_PRESTAMOS.md](./INTEGRACION_CONTRATOS_PRESTAMOS.md)
+
+### ✅ Préstamos (Loans)
+- Gestión completa de solicitudes de crédito
+- Timeline y seguimiento
+- Gestión documental
+- Administración de reglas y parámetros
+- **Documentación**: [INTEGRACION_PRESTAMOS.md](./INTEGRACION_PRESTAMOS.md)
+
+## 🚀 Inicio Rápido
+
+### Instalación
+
+```bash
+npm install
+```
+
+### Desarrollo
+
+```bash
+npm run dev
+```
+
+### Build
+
+```bash
+npm run build
+```
+
+## 📁 Estructura del Proyecto
+
+```
+src/
+├── features/
+│   ├── contracts/          # Módulo de contratos
+│   │   ├── types/
+│   │   ├── services/
+│   │   ├── components/
+│   │   └── pages/
+│   └── loans/              # Módulo de préstamos ✨ NUEVO
+│       ├── types/          # Tipos TypeScript
+│       └── services/       # API service
+├── lib/                    # Utilidades y configuración
+└── ...
+```
+
+## 🔗 Enlaces Útiles
+
+- **Backend API**: `/api/`
+- **Documentación de Contratos**: [INTEGRACION_CONTRATOS_PRESTAMOS.md](./INTEGRACION_CONTRATOS_PRESTAMOS.md)
+- **Documentación de Préstamos**: [INTEGRACION_PRESTAMOS.md](./INTEGRACION_PRESTAMOS.md)
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

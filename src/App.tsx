@@ -340,6 +340,11 @@ const ContractDetailPage = lazy(() =>
     default: module.ContractDetailPage,
   }))
 );
+const ContractSignaturePage = lazy(() =>
+  import('./features/contracts/pages/ContractSignaturePage').then((module) => ({
+    default: module.ContractSignaturePage,
+  }))
+);
 const ContractTemplatePage = lazy(() =>
   import('./features/contracts/pages/ContractTemplatePage').then((module) => ({
     default: module.ContractTemplatePage,
@@ -1117,11 +1122,29 @@ function App() {
               }
             />
             <Route
+              path="/my-contracts"
+              element={
+                <ProtectedRoute>
+                  <ContractListPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/contracts/:id"
               element={
                 <ProtectedRoute>
                   <PermissionGuard permission="contracts.view">
                     <ContractDetailPage />
+                  </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/contracts/:id/sign"
+              element={
+                <ProtectedRoute>
+                  <PermissionGuard permission="contracts.sign">
+                    <ContractSignaturePage />
                   </PermissionGuard>
                 </ProtectedRoute>
               }

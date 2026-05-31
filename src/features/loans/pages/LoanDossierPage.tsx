@@ -20,12 +20,40 @@ import {
   User, 
   Wallet 
 } from 'lucide-react';
-import { 
-  getLoanApplication, 
-  getIdentityVerification,
-  type LoanApplication,
-  type IdentityVerification
-} from '../services/loansApi';
+import loansApi from '../services/loansApi';
+import type { LoanApplication } from '../types/loan.types';
+import { LoanApplicationStatusLabels, RiskLevelLabels, EmploymentTypeLabels } from '../types/loan.types';
+
+// Tipo temporal para IdentityVerification (debería estar en types)
+interface IdentityVerification {
+  id: number;
+  full_name: string;
+  document_type: string;
+  document_number: string;
+  country: string;
+  date_of_birth?: string;
+  decision: string;
+  provider: string;
+  completed_at?: string;
+  raw_response?: any;
+}
+
+// Extensión temporal de LoanApplication con campos adicionales
+interface LoanApplicationExtended extends LoanApplication {
+  identity_verification_id?: number;
+  identity_verification_details?: {
+    document_type: string;
+    document_number: string;
+    full_name: string;
+    date_of_birth?: string;
+    decision: string;
+    provider: string;
+    completed_at?: string;
+  };
+  approved_by_name?: string;
+  reviewed_by_name?: string;
+  comments?: any[];
+}
 import { 
   X,
   FileCheck,
@@ -48,7 +76,7 @@ export function LoanDossierPage() {
   const { id } = useParams<{ id: string }>();
   const applicationId = Number(id);
 
-  const [application, setApplication] = useState<LoanApplication | null>(null);
+  const [application, setApplication] = useState<LoanApplicationExtended | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -65,7 +93,7 @@ export function LoanDossierPage() {
   async function loadDossier() {
     setLoading(true);
     try {
-      const data = await getLoanApplication(applicationId);
+      const data = await loansApi.getApplication(applicationId);
       setApplication(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar el expediente');
@@ -83,8 +111,13 @@ export function LoanDossierPage() {
     setIsKYCModalOpen(true);
     setLoadingKYC(true);
     try {
-      const data = await getIdentityVerification(application.identity_verification_id);
-      setKycData(data);
+      // TODO: Implementar endpoint para obtener detalles de verificación de identidad
+      // const data = await loansApi.getIdentityVerification(application.identity_verification_id);
+      // setKycData(data);
+      
+      // Por ahora, mostrar datos mock o de application.identity_verification_details
+      console.warn('getIdentityVerification endpoint not implemented yet');
+      setKycData(null);
     } catch (err) {
       console.error('Error loading KYC report:', err);
     } finally {
@@ -167,7 +200,7 @@ export function LoanDossierPage() {
                 <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">
                   Expediente: {application.client_name}
                 </h2>
-                <CreditApplicationStatusBadge status={application.status} label={application.status_display} />
+                <CreditApplicationStatusBadge status={application.status} label={LoanApplicationStatusLabels[application.status]} />
               </div>
               <p className="text-lg text-slate-500">
                 {application.product_name} · Solicitado el {formatDateTime(application.created_at)}
@@ -189,7 +222,7 @@ export function LoanDossierPage() {
                     'bg-rose-500'
                   }`} />
                   <p className="text-xl font-bold text-slate-900">
-                    {application.risk_level_display || application.risk_level || 'Pendiente'}
+                    {application.risk_level ? RiskLevelLabels[application.risk_level] : 'Pendiente'}
                   </p>
                 </div>
               </div>
@@ -219,7 +252,7 @@ export function LoanDossierPage() {
                   <DataPoint icon={<Wallet />} label="Monto Solicitado" value={formatCurrency(application.requested_amount)} />
                   <DataPoint icon={<History />} label="Plazo Solicitado" value={`${application.term_months} meses`} />
                   <DataPoint icon={<Scale />} label="DTI (Deuda/Ingreso)" value={application.debt_to_income_ratio || 'N/D'} />
-                  <DataPoint icon={<User />} label="Tipo de Empleo" value={application.employment_type_display || application.employment_type || 'N/D'} />
+                  <DataPoint icon={<User />} label="Tipo de Empleo" value={application.employment_type ? EmploymentTypeLabels[application.employment_type] : 'N/D'} />
                 </div>
                 <div className="mt-8 border-t border-slate-100 pt-6">
                   <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Descripción Laboral</h4>
@@ -260,7 +293,7 @@ export function LoanDossierPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
                     <span className="text-xs font-medium text-slate-500 uppercase">Estado</span>
-                    <IdentityStatusBadge status={application.identity_verification_status || undefined} label={application.identity_verification_display || undefined} />
+                    <IdentityStatusBadge status={application.identity_verification_status || undefined} />
                   </div>
                   
                   {application.identity_verification_details ? (

@@ -1,497 +1,445 @@
 /**
- * Servicio API para gestión de solicitudes de crédito CU-11.
+ * API Service para el módulo de Préstamos (Loans)
+ * Integración con el backend Django REST Framework
  */
 
-import { apiClient } from '@/utils/apiClient';
+import axios from 'axios';
+import type { AxiosInstance } from 'axios';
+import type {
+  LoanApplication,
+  LoanApplicationDocumentRequirement,
+  TimelineEvent,
+  DocumentType,
+  TenantRuleSet,
+  EligibilityRule,
+  CreditProductParameter,
+  CreateLoanApplicationDto,
+  UpdateLoanApplicationDto,
+  SubmitLoanApplicationDto,
+  ChangeStatusDto,
+  ReviewLoanApplicationDto,
+  ApproveLoanApplicationDto,
+  RejectLoanApplicationDto,
+  UploadDocumentDto,
+  ReviewDocumentDto,
+  LoanApplicationFilters,
+  PaginatedResponse,
+} from '../types/loan.types';
 
-export type LoanApplicationStatus =
-  | 'DRAFT'
-  | 'SUBMITTED'
-  | 'IN_REVIEW'
-  | 'OBSERVED'
-  | 'APPROVED'
-  | 'REJECTED'
-  | 'DISBURSED'
-  | 'CANCELLED';
+// Configuración de Axios
+const apiClient: AxiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
-export type IdentityVerificationStatus =
-  | 'PENDING'
-  | 'IN_PROGRESS'
-  | 'APPROVED'
-  | 'DECLINED'
-  | 'MANUAL_REVIEW'
-  | 'EXPIRED'
-  | 'ERROR';
-
-export interface IdentityVerification {
-  id: number;
-  user: any;
-  institution_name: string;
-  credit_application_number: string;
-  status: IdentityVerificationStatus;
-  decision: string;
-  document_type: string;
-  document_number: string;
-  full_name: string;
-  date_of_birth: string;
-  country: string;
-  error_message?: string;
-  raw_response?: any;
-  completed_at: string;
-  created_at: string;
-}
-
-export type DocumentsStatus = 'PENDING' | 'INCOMPLETE' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'COMPLETE';
-
-export interface LoanApplicationDocument {
-  id: number;
-  document_type: string;
-  file: string;
-  file_url?: string | null;
-  file_name: string;
-  file_size: number;
-  description: string;
-  uploaded_by: number;
-  uploaded_by_name?: string | null;
-  is_verified: boolean;
-  verified_by?: number | null;
-  verified_at?: string | null;
-  created_at: string;
-}
-
-export interface LoanApplicationComment {
-  id: number;
-  user: number;
-  user_name: string;
-  user_email?: string | null;
-  comment: string;
-  is_internal: boolean;
-  created_at: string;
-  updated_at?: string;
-}
-
-export interface LoanApplicationTimelineEvent {
-  id: number;
-  previous_status: LoanApplicationStatus | null;
-  new_status: LoanApplicationStatus;
-  title: string;
-  description: string;
-  actor: number | null;
-  actor_name?: string | null;
-  actor_role?: string | null;
-  is_visible_to_borrower: boolean;
-  metadata?: Record<string, unknown> | null;
-  created_at: string;
-}
-
-export interface LoanApplicationClient {
-  id: number;
-  full_name?: string;
-  document_number?: string;
-  email?: string;
-  user?: {
-    id?: number;
-    first_name?: string;
-    last_name?: string;
-    email?: string;
-  };
-}
-
-export interface LoanApplicationProduct {
-  id: number;
-  name: string;
-  product_type?: string;
-  min_amount?: string;
-  max_amount?: string;
-  min_term_months?: number;
-  max_term_months?: number;
-  interest_rate?: string;
-}
-
-export interface LoanApplicationBranch {
-  id: number;
-  name?: string;
-  code?: string;
-}
-
-export interface LoanApplicationListItem {
-  id: number;
-  application_number: string;
-  client_name: string;
-  product_name: string;
-  requested_amount: string;
-  term_months: number;
-  status: LoanApplicationStatus;
-  status_display: string;
-  submitted_at?: string | null;
-  identity_verification_status?: IdentityVerificationStatus | null;
-  assigned_to?: number | null;
-  assigned_to_name?: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface LoanApplication extends LoanApplicationListItem {
-  client?: LoanApplicationClient;
-  product?: LoanApplicationProduct;
-  branch?: LoanApplicationBranch | null;
-  purpose?: string;
-  monthly_income?: string | null;
-  employment_type?: string | null;
-  employment_type_display?: string | null;
-  employment_description?: string | null;
-  additional_data?: Record<string, unknown> | null;
-  identity_verification_display?: string | null;
-  documents_status?: DocumentsStatus | null;
-  documents_status_display?: string | null;
-  credit_score?: number | null;
-  risk_level?: 'LOW' | 'MEDIUM' | 'HIGH' | 'VERY_HIGH' | null;
-  risk_level_display?: string | null;
-  debt_to_income_ratio?: string | null;
-  approved_amount?: string | null;
-  approved_term_months?: number | null;
-  approved_interest_rate?: string | null;
-  monthly_payment?: string | null;
-  reviewed_by?: number | null;
-  reviewed_by_name?: string | null;
-  approved_by?: number | null;
-  approved_by_name?: string | null;
-  created_by?: number | null;
-  created_by_name?: string | null;
-  updated_by?: number | null;
-  updated_by_name?: string | null;
-  notes?: string | null;
-  internal_notes?: string | null;
-  observation_reason?: string | null;
-  rejection_reason?: string | null;
-  reviewed_at?: string | null;
-  approved_at?: string | null;
-  rejected_at?: string | null;
-  disbursed_at?: string | null;
-  timeline?: LoanApplicationTimelineEvent[];
-  comments?: LoanApplicationComment[];
-  documents?: LoanApplicationDocument[];
-  identity_verification_id?: number | null;
-  identity_verification_details?: {
-    id: number;
-    status: string;
-    decision: string;
-    document_type: string;
-    document_number: string;
-    full_name: string;
-    date_of_birth: string | null;
-    country: string;
-    provider: string;
-    completed_at: string | null;
-    created_at: string;
-  } | null;
-  current_workflow_stage?: any;
-  product_workflow_stages?: any[];
-}
-
-export type CreditApplication = LoanApplication;
-
-export interface LoanApplicationListResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: LoanApplicationListItem[];
-}
-
-export interface CreateLoanApplicationData {
-  product_id: number;
-  requested_amount: string;
-  term_months: number;
-  purpose: string;
-  monthly_income?: string | null;
-  employment_type?: string | null;
-  employment_description?: string;
-  branch_id?: number | null;
-  additional_data?: Record<string, unknown>;
-}
-
-export interface UpdateLoanApplicationData {
-  product_id?: number;
-  requested_amount?: string;
-  term_months?: number;
-  purpose?: string;
-  monthly_income?: string | null;
-  employment_type?: string | null;
-  employment_description?: string;
-  branch_id?: number | null;
-  additional_data?: Record<string, unknown>;
-}
-
-export interface ChangeLoanApplicationStatusData {
-  new_status: Exclude<LoanApplicationStatus, 'DRAFT'>;
-  reason?: string;
-  approved_amount?: string | null;
-  approved_term_months?: number | null;
-  approved_interest_rate?: string | null;
-}
-
-export interface AddLoanApplicationCommentData {
-  comment: string;
-  is_internal?: boolean;
-}
-
-export interface ApproveLoanApplicationData {
-  approved_amount?: string;
-  approved_term_months?: number;
-  approved_interest_rate?: string;
-  notes?: string;
-}
-
-export interface DisburseLoanApplicationData {
-  notes?: string;
-}
-
-export interface RejectLoanApplicationData {
-  rejection_reason: string;
-  notes?: string;
-}
-
-export interface ReviewLoanApplicationData {
-  credit_score?: number;
-  risk_level?: string;
-  notes?: string;
-}
-
-export interface LoanApplicationFilters {
-  search?: string;
-  status?: LoanApplicationStatus | '';
-  branch_id?: number | '';
-  product_id?: number | '';
-  identity_verification_status?: IdentityVerificationStatus | '';
-  ordering?: string;
-  page?: number;
-  page_size?: number;
-}
-
-const CREDIT_APPLICATIONS_ENDPOINT = '/loans/credit-applications/';
-
-function buildQueryString(filters: LoanApplicationFilters = {}): string {
-  const params = new URLSearchParams();
-
-  Object.entries(filters).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      params.append(key, String(value));
+// Interceptor para agregar token de autenticación
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-  });
-
-  const query = params.toString();
-  return query ? `?${query}` : '';
-}
-
-function normalizeListResponse(
-  response: LoanApplicationListResponse | LoanApplicationListItem[]
-): LoanApplicationListResponse {
-  if (Array.isArray(response)) {
-    return {
-      count: response.length,
-      next: null,
-      previous: null,
-      results: response,
-    };
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
+);
 
-  return response;
-}
-
-function buildStatusPayload(
-  status: ChangeLoanApplicationStatusData['new_status'],
-  data: Record<string, unknown> = {}
-): ChangeLoanApplicationStatusData {
-  const payload: ChangeLoanApplicationStatusData = { new_status: status };
-
-  if (typeof data.reason === 'string') {
-    payload.reason = data.reason;
-  }
-  if (typeof data.approved_amount === 'string') {
-    payload.approved_amount = data.approved_amount;
-  }
-  if (typeof data.approved_term_months === 'number') {
-    payload.approved_term_months = data.approved_term_months;
-  }
-  if (typeof data.approved_interest_rate === 'string') {
-    payload.approved_interest_rate = data.approved_interest_rate;
-  }
-
-  return payload;
-}
-
-export async function getLoanApplications(
-  filters: LoanApplicationFilters = {}
-): Promise<LoanApplicationListResponse> {
-  const response = await apiClient.get<LoanApplicationListResponse | LoanApplicationListItem[]>(
-    `${CREDIT_APPLICATIONS_ENDPOINT}${buildQueryString(filters)}`
-  );
-
-  return normalizeListResponse(response);
-}
-
-export async function getLoanApplication(id: number): Promise<LoanApplication> {
-  return apiClient.get<LoanApplication>(`${CREDIT_APPLICATIONS_ENDPOINT}${id}/`);
-}
-
-export async function getIdentityVerification(id: number): Promise<IdentityVerification> {
-  return apiClient.get<IdentityVerification>(`/identity-verifications/${id}/`);
-}
-
-export async function createLoanApplication(
-  data: CreateLoanApplicationData
-): Promise<LoanApplication> {
-  return apiClient.post<LoanApplication>(CREDIT_APPLICATIONS_ENDPOINT, data);
-}
-
-export async function updateLoanApplication(
-  id: number,
-  data: UpdateLoanApplicationData
-): Promise<LoanApplication> {
-  return apiClient.patch<LoanApplication>(`${CREDIT_APPLICATIONS_ENDPOINT}${id}/`, data);
-}
-
-export async function deleteLoanApplication(id: number): Promise<void> {
-  await apiClient.delete(`${CREDIT_APPLICATIONS_ENDPOINT}${id}/`);
-}
-
-export async function submitLoanApplication(id: number): Promise<LoanApplication> {
-  return apiClient.post<LoanApplication>(`${CREDIT_APPLICATIONS_ENDPOINT}${id}/submit/`, {});
-}
-
-export async function changeLoanApplicationStatus(
-  id: number,
-  data: ChangeLoanApplicationStatusData
-): Promise<LoanApplication> {
-  return apiClient.post<LoanApplication>(`${CREDIT_APPLICATIONS_ENDPOINT}${id}/change-status/`, data);
-}
-
-export async function getLoanApplicationTimeline(
-  applicationId: number
-): Promise<LoanApplicationTimelineEvent[]> {
-  return apiClient.get<LoanApplicationTimelineEvent[]>(
-    `${CREDIT_APPLICATIONS_ENDPOINT}${applicationId}/timeline/`
-  );
-}
-
-export async function getLoanApplicationComments(
-  applicationId: number
-): Promise<LoanApplicationComment[]> {
-  return apiClient.get<LoanApplicationComment[]>(
-    `${CREDIT_APPLICATIONS_ENDPOINT}${applicationId}/comments/`
-  );
-}
-
-export async function addLoanApplicationComment(
-  applicationId: number,
-  comment: string,
-  isInternal = true
-): Promise<LoanApplicationComment> {
-  return apiClient.post<LoanApplicationComment>(
-    `${CREDIT_APPLICATIONS_ENDPOINT}${applicationId}/comments/`,
-    {
-      comment,
-      is_internal: isInternal,
+// Interceptor para manejo de respuestas y errores
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expirado o inválido
+      localStorage.removeItem('access_token');
+      window.location.href = '/login';
     }
-  );
-}
-
-export async function uploadLoanApplicationDocument(
-  applicationId: number,
-  file: File,
-  documentType: string,
-  description?: string
-): Promise<LoanApplicationDocument> {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('document_type', documentType);
-  if (description) {
-    formData.append('description', description);
+    return Promise.reject(error);
   }
+);
 
-  return apiClient.post<LoanApplicationDocument>(
-    `${CREDIT_APPLICATIONS_ENDPOINT}${applicationId}/documents/`,
-    formData,
-    {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+const BASE_URL = '/loans';
+
+// ============================================================================
+// SOLICITUDES DE CRÉDITO (Credit Applications)
+// ============================================================================
+
+export const loansApi = {
+  // Listar solicitudes
+  listApplications: async (filters?: LoanApplicationFilters) => {
+    const response = await apiClient.get<PaginatedResponse<LoanApplication>>(
+      `${BASE_URL}/credit-applications/`,
+      { params: filters }
+    );
+    return response.data;
+  },
+
+  // Crear solicitud (borrador)
+  createApplication: async (data: CreateLoanApplicationDto) => {
+    const response = await apiClient.post<LoanApplication>(
+      `${BASE_URL}/credit-applications/`,
+      data
+    );
+    return response.data;
+  },
+
+  // Obtener detalle de solicitud
+  getApplication: async (id: number) => {
+    const response = await apiClient.get<LoanApplication>(
+      `${BASE_URL}/credit-applications/${id}/`
+    );
+    return response.data;
+  },
+
+  // Actualizar solicitud (solo borradores)
+  updateApplication: async (id: number, data: UpdateLoanApplicationDto) => {
+    const response = await apiClient.patch<LoanApplication>(
+      `${BASE_URL}/credit-applications/${id}/`,
+      data
+    );
+    return response.data;
+  },
+
+  // Enviar solicitud
+  submitApplication: async (id: number, data?: SubmitLoanApplicationDto) => {
+    const response = await apiClient.post<LoanApplication>(
+      `${BASE_URL}/credit-applications/${id}/submit/`,
+      data || {}
+    );
+    return response.data;
+  },
+
+  // Cambiar estado de solicitud
+  changeStatus: async (id: number, data: ChangeStatusDto) => {
+    const response = await apiClient.post<LoanApplication>(
+      `${BASE_URL}/credit-applications/${id}/change-status/`,
+      data
+    );
+    return response.data;
+  },
+
+  // Revisar solicitud (actualizar evaluación)
+  reviewApplication: async (id: number, data: ReviewLoanApplicationDto) => {
+    const response = await apiClient.post<LoanApplication>(
+      `${BASE_URL}/credit-applications/${id}/review/`,
+      data
+    );
+    return response.data;
+  },
+
+  // Aprobar solicitud
+  approveApplication: async (id: number, data: ApproveLoanApplicationDto) => {
+    const response = await apiClient.post<LoanApplication>(
+      `${BASE_URL}/credit-applications/${id}/approve/`,
+      data
+    );
+    return response.data;
+  },
+
+  // Rechazar solicitud
+  rejectApplication: async (id: number, data: RejectLoanApplicationDto) => {
+    const response = await apiClient.post<LoanApplication>(
+      `${BASE_URL}/credit-applications/${id}/reject/`,
+      data
+    );
+    return response.data;
+  },
+
+  // Obtener timeline de solicitud
+  getTimeline: async (id: number) => {
+    const response = await apiClient.get<TimelineEvent[]>(
+      `${BASE_URL}/credit-applications/${id}/timeline/`
+    );
+    return response.data;
+  },
+
+  // Sincronizar workflow
+  syncWorkflow: async (id: number) => {
+    const response = await apiClient.post<LoanApplication>(
+      `${BASE_URL}/credit-applications/${id}/sync-workflow/`
+    );
+    return response.data;
+  },
+
+  // ============================================================================
+  // DOCUMENTOS (Documents)
+  // ============================================================================
+
+  // Listar documentos de una solicitud (para clientes)
+  listMyDocuments: async (applicationId?: number) => {
+    const response = await apiClient.get<LoanApplicationDocumentRequirement[]>(
+      `${BASE_URL}/my-documents/`,
+      { params: { loan_application: applicationId } }
+    );
+    return response.data;
+  },
+
+  // Cargar documento
+  uploadDocument: async (requirementId: number, data: UploadDocumentDto) => {
+    const formData = new FormData();
+    formData.append('file', data.file);
+    if (data.notes) {
+      formData.append('notes', data.notes);
     }
-  );
-}
 
-export function calculateMonthlyPayment(
-  amount: number,
-  termMonths: number,
-  interestRate: number
-): number {
-  const monthlyRate = interestRate / 100 / 12;
+    const response = await apiClient.post<LoanApplicationDocumentRequirement>(
+      `${BASE_URL}/my-documents/${requirementId}/upload/`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  },
 
-  if (termMonths <= 0) {
-    return 0;
-  }
+  // Listar documentos (para staff)
+  listStaffDocuments: async (applicationId?: number) => {
+    const response = await apiClient.get<LoanApplicationDocumentRequirement[]>(
+      `${BASE_URL}/staff/documents/`,
+      { params: { loan_application: applicationId } }
+    );
+    return response.data;
+  },
 
-  if (monthlyRate === 0) {
-    return Math.round((amount / termMonths) * 100) / 100;
-  }
+  // Revisar documento (para staff)
+  reviewDocument: async (requirementId: number, data: ReviewDocumentDto) => {
+    const response = await apiClient.post<LoanApplicationDocumentRequirement>(
+      `${BASE_URL}/staff/documents/${requirementId}/review/`,
+      data
+    );
+    return response.data;
+  },
 
-  const payment =
-    (amount * (monthlyRate * Math.pow(1 + monthlyRate, termMonths))) /
-    (Math.pow(1 + monthlyRate, termMonths) - 1);
+  // ============================================================================
+  // MIS SOLICITUDES (Cliente)
+  // ============================================================================
 
-  return Math.round(payment * 100) / 100;
-}
+  // Listar mis solicitudes
+  listMyApplications: async (filters?: LoanApplicationFilters) => {
+    const response = await apiClient.get<PaginatedResponse<LoanApplication>>(
+      `${BASE_URL}/my-applications/`,
+      { params: filters }
+    );
+    return response.data;
+  },
 
+  // Obtener detalle de mi solicitud
+  getMyApplication: async (id: number) => {
+    const response = await apiClient.get<LoanApplication>(
+      `${BASE_URL}/my-applications/${id}/`
+    );
+    return response.data;
+  },
+
+  // Obtener timeline de mi solicitud
+  getMyTimeline: async (id: number) => {
+    const response = await apiClient.get<TimelineEvent[]>(
+      `${BASE_URL}/my-applications/${id}/timeline/`
+    );
+    return response.data;
+  },
+
+  // Obtener acciones pendientes
+  getPendingActions: async (id: number) => {
+    const response = await apiClient.get<any[]>(
+      `${BASE_URL}/my-applications/${id}/pending-actions/`
+    );
+    return response.data;
+  },
+
+  // ============================================================================
+  // REGLAS Y PARÁMETROS (Rules & Parameters)
+  // ============================================================================
+
+  // Listar conjuntos de reglas
+  listRuleSets: async () => {
+    const response = await apiClient.get<TenantRuleSet[]>(`${BASE_URL}/rule-sets/`);
+    return response.data;
+  },
+
+  // Obtener conjunto de reglas activo
+  getActiveRuleSet: async () => {
+    const response = await apiClient.get<TenantRuleSet>(`${BASE_URL}/rule-sets/active/`);
+    return response.data;
+  },
+
+  // Obtener detalle de conjunto de reglas
+  getRuleSet: async (id: number) => {
+    const response = await apiClient.get<TenantRuleSet>(`${BASE_URL}/rule-sets/${id}/`);
+    return response.data;
+  },
+
+  // Crear conjunto de reglas
+  createRuleSet: async (data: Partial<TenantRuleSet>) => {
+    const response = await apiClient.post<TenantRuleSet>(`${BASE_URL}/rule-sets/`, data);
+    return response.data;
+  },
+
+  // Activar conjunto de reglas
+  activateRuleSet: async (id: number) => {
+    const response = await apiClient.post<TenantRuleSet>(
+      `${BASE_URL}/rule-sets/${id}/activate/`
+    );
+    return response.data;
+  },
+
+  // Clonar conjunto de reglas
+  cloneRuleSet: async (id: number, newVersion: string) => {
+    const response = await apiClient.post<TenantRuleSet>(
+      `${BASE_URL}/rule-sets/${id}/clone/`,
+      { new_version: newVersion }
+    );
+    return response.data;
+  },
+
+  // Listar reglas de elegibilidad
+  listEligibilityRules: async (ruleSetId?: number) => {
+    const response = await apiClient.get<EligibilityRule[]>(
+      `${BASE_URL}/eligibility-rules/`,
+      { params: { rule_set: ruleSetId } }
+    );
+    return response.data;
+  },
+
+  // Listar parámetros de productos
+  listProductParameters: async (ruleSetId?: number, productId?: number) => {
+    const response = await apiClient.get<CreditProductParameter[]>(
+      `${BASE_URL}/product-parameters/`,
+      { params: { rule_set: ruleSetId, product: productId } }
+    );
+    return response.data;
+  },
+
+  // Obtener parámetros de un producto específico
+  getProductParameter: async (id: number) => {
+    const response = await apiClient.get<CreditProductParameter>(
+      `${BASE_URL}/product-parameters/${id}/`
+    );
+    return response.data;
+  },
+
+  // Obtener resumen de parámetros con fallbacks
+  getProductParameterSummary: async (id: number) => {
+    const response = await apiClient.get<any>(
+      `${BASE_URL}/product-parameters/${id}/summary/`
+    );
+    return response.data;
+  },
+
+  // ============================================================================
+  // CATÁLOGOS (Catalogs)
+  // ============================================================================
+
+  // Tipos de documento
+  listDocumentTypes: async (activeOnly = true) => {
+    const endpoint = activeOnly
+      ? `${BASE_URL}/catalogs/document-types/active/`
+      : `${BASE_URL}/catalogs/document-types/`;
+    const response = await apiClient.get<DocumentType[]>(endpoint);
+    return response.data;
+  },
+
+  // Tipos de producto
+  listProductTypes: async (activeOnly = true) => {
+    const endpoint = activeOnly
+      ? `${BASE_URL}/catalogs/product-types/active/`
+      : `${BASE_URL}/catalogs/product-types/`;
+    const response = await apiClient.get<any[]>(endpoint);
+    return response.data;
+  },
+
+  // Frecuencias de pago
+  listPaymentFrequencies: async (activeOnly = true) => {
+    const endpoint = activeOnly
+      ? `${BASE_URL}/catalogs/payment-frequencies/active/`
+      : `${BASE_URL}/catalogs/payment-frequencies/`;
+    const response = await apiClient.get<any[]>(endpoint);
+    return response.data;
+  },
+
+  // Sistemas de amortización
+  listAmortizationSystems: async (activeOnly = true) => {
+    const endpoint = activeOnly
+      ? `${BASE_URL}/catalogs/amortization-systems/active/`
+      : `${BASE_URL}/catalogs/amortization-systems/`;
+    const response = await apiClient.get<any[]>(endpoint);
+    return response.data;
+  },
+
+  // Monedas
+  listCurrencies: async (activeOnly = true) => {
+    const endpoint = activeOnly
+      ? `${BASE_URL}/catalogs/currencies/active/`
+      : `${BASE_URL}/catalogs/currencies/`;
+    const response = await apiClient.get<any[]>(endpoint);
+    return response.data;
+  },
+};
+
+export default loansApi;
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Formatea el número de solicitud para mostrar
+ */
 export function formatApplicationNumber(applicationNumber: string): string {
-  const parts = applicationNumber.split('-');
-
-  if (parts.length >= 4) {
-    return `#${parts[2]}-${parts[3]}`;
-  }
-
-  return applicationNumber;
+  return applicationNumber || 'N/D';
 }
 
+/**
+ * Obtiene el color para el estado de la solicitud
+ */
 export function getStatusColor(status: string): string {
-  const colors: Record<string, string> = {
+  const statusColors: Record<string, string> = {
     DRAFT: 'slate',
     SUBMITTED: 'blue',
     IN_REVIEW: 'amber',
     OBSERVED: 'orange',
+    UNDER_REVIEW: 'amber',
     APPROVED: 'emerald',
-    REJECTED: 'rose',
+    REJECTED: 'red',
     DISBURSED: 'teal',
-    CANCELLED: 'gray',
+    CANCELLED: 'slate',
   };
-
-  return colors[status] || 'slate';
+  return statusColors[status] || 'slate';
 }
 
+/**
+ * Obtiene el color para el estado de verificación de identidad
+ */
 export function getIdentityStatusColor(status?: string | null): string {
-  const colors: Record<string, string> = {
-    PENDING: 'slate',
+  if (!status) return 'slate';
+  const statusColors: Record<string, string> = {
+    NOT_VERIFIED: 'slate',
+    PENDING: 'amber',
     IN_PROGRESS: 'blue',
     APPROVED: 'emerald',
-    DECLINED: 'rose',
-    MANUAL_REVIEW: 'amber',
-    EXPIRED: 'orange',
-    ERROR: 'red',
+    DECLINED: 'red',
+    MANUAL_REVIEW: 'orange',
   };
-
-  return colors[status || ''] || 'slate';
+  return statusColors[status] || 'slate';
 }
 
+/**
+ * Obtiene el color para el estado de documentos
+ */
 export function getDocumentsStatusColor(status?: string | null): string {
-  const colors: Record<string, string> = {
-    PENDING: 'slate',
-    INCOMPLETE: 'amber',
-    UNDER_REVIEW: 'blue',
-    APPROVED: 'emerald',
-    REJECTED: 'rose',
-    COMPLETE: 'teal',
+  if (!status) return 'slate';
+  const statusColors: Record<string, string> = {
+    NOT_REQUIRED: 'slate',
+    PENDING: 'amber',
+    COMPLETE: 'emerald',
+    OBSERVED: 'orange',
   };
-
-  return colors[status || ''] || 'slate';
+  return statusColors[status] || 'slate';
 }
 
 export function getAvailableActions(application: Pick<LoanApplication, 'status'>) {
@@ -519,36 +467,44 @@ export async function reviewLoanApplication(
   id: number,
   data: { credit_score?: number; risk_level?: string; debt_to_income_ratio?: string; notes?: string }
 ): Promise<LoanApplication> {
-  return changeLoanApplicationStatus(id, buildStatusPayload('IN_REVIEW', { reason: data.notes }));
+  const response = await apiClient.post<LoanApplication>(
+    `${BASE_URL}/credit-applications/${id}/review/`,
+    data
+  );
+  return response.data;
 }
 
 export async function approveLoanApplication(
   id: number,
   data: ApproveLoanApplicationData
 ): Promise<LoanApplication> {
-  return changeLoanApplicationStatus(
-    id,
-    buildStatusPayload('APPROVED', {
-      reason: data.notes,
-      approved_amount: data.approved_amount,
-      approved_term_months: data.approved_term_months,
-      approved_interest_rate: data.approved_interest_rate,
-    })
+  const response = await apiClient.post<LoanApplication>(
+    `${BASE_URL}/credit-applications/${id}/approve/`,
+    data
   );
+  return response.data;
 }
 
 export async function rejectLoanApplication(
   id: number,
   data: { rejection_reason: string }
 ): Promise<LoanApplication> {
-  return changeLoanApplicationStatus(id, buildStatusPayload('REJECTED', { reason: data.rejection_reason }));
+  const response = await apiClient.post<LoanApplication>(
+    `${BASE_URL}/credit-applications/${id}/reject/`,
+    { rejection_reason: data.rejection_reason }
+  );
+  return response.data;
 }
 
 export async function disburseLoanApplication(
   id: number,
   data: { notes?: string }
 ): Promise<LoanApplication> {
-  return changeLoanApplicationStatus(id, buildStatusPayload('DISBURSED', { reason: data.notes }));
+  const response = await apiClient.post<LoanApplication>(
+    `${BASE_URL}/credit-applications/${id}/disburse/`,
+    data
+  );
+  return response.data;
 }
 
 export type AutoDecision = 'APPROVE' | 'REJECT' | 'MANUAL_REVIEW' | 'ESCALATE' | null;
@@ -617,18 +573,20 @@ export interface CreditEvaluationDetail {
 export async function calculateLoanApplicationScore(
   id: number
 ): Promise<CreditEvaluationResult> {
-  return apiClient.post<CreditEvaluationResult>(
-    `${CREDIT_APPLICATIONS_ENDPOINT}${id}/calculate-score/`,
+  const response = await apiClient.post<CreditEvaluationResult>(
+    `${BASE_URL}/credit-applications/${id}/calculate-score/`,
     {}
   );
+  return response.data;
 }
 
 export async function getLoanApplicationEvaluation(
   id: number
 ): Promise<CreditEvaluationDetail> {
-  return apiClient.get<CreditEvaluationDetail>(
-    `${CREDIT_APPLICATIONS_ENDPOINT}${id}/evaluation/`
+  const response = await apiClient.get<CreditEvaluationDetail>(
+    `${BASE_URL}/credit-applications/${id}/evaluation/`
   );
+  return response.data;
 }
 
 export async function calculateLoanScore(id: number): Promise<{
@@ -646,7 +604,7 @@ export async function calculateLoanScore(id: number): Promise<{
         : undefined,
     };
   } catch {
-    const application = await getLoanApplication(id);
+    const application = await loansApi.getApplication(id);
     return {
       credit_score: application.credit_score ?? undefined,
       risk_level: application.risk_level ?? undefined,
