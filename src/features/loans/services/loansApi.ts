@@ -442,3 +442,175 @@ export function getDocumentsStatusColor(status?: string | null): string {
   return statusColors[status] || 'slate';
 }
 
+export function getAvailableActions(application: Pick<LoanApplication, 'status'>) {
+  const actions: Array<{ key: string; label: string; color: string }> = [];
+
+  if (application.status === 'DRAFT' || application.status === 'OBSERVED') {
+    actions.push({ key: 'submit', label: 'Enviar', color: 'emerald' });
+  }
+
+  if (application.status === 'SUBMITTED' || application.status === 'IN_REVIEW') {
+    actions.push({ key: 'review', label: 'Poner en revisión', color: 'amber' });
+    actions.push({ key: 'observe', label: 'Observar', color: 'orange' });
+    actions.push({ key: 'approve', label: 'Aprobar', color: 'emerald' });
+    actions.push({ key: 'reject', label: 'Rechazar', color: 'rose' });
+  }
+
+  if (application.status === 'APPROVED') {
+    actions.push({ key: 'disburse', label: 'Desembolsar', color: 'teal' });
+  }
+
+  return actions;
+}
+
+export async function reviewLoanApplication(
+  id: number,
+  data: { credit_score?: number; risk_level?: string; debt_to_income_ratio?: string; notes?: string }
+): Promise<LoanApplication> {
+  const response = await apiClient.post<LoanApplication>(
+    `${BASE_URL}/credit-applications/${id}/review/`,
+    data
+  );
+  return response.data;
+}
+
+export async function approveLoanApplication(
+  id: number,
+  data: ApproveLoanApplicationData
+): Promise<LoanApplication> {
+  const response = await apiClient.post<LoanApplication>(
+    `${BASE_URL}/credit-applications/${id}/approve/`,
+    data
+  );
+  return response.data;
+}
+
+export async function rejectLoanApplication(
+  id: number,
+  data: { rejection_reason: string }
+): Promise<LoanApplication> {
+  const response = await apiClient.post<LoanApplication>(
+    `${BASE_URL}/credit-applications/${id}/reject/`,
+    { rejection_reason: data.rejection_reason }
+  );
+  return response.data;
+}
+
+export async function disburseLoanApplication(
+  id: number,
+  data: { notes?: string }
+): Promise<LoanApplication> {
+  const response = await apiClient.post<LoanApplication>(
+    `${BASE_URL}/credit-applications/${id}/disburse/`,
+    data
+  );
+  return response.data;
+}
+
+export type AutoDecision = 'APPROVE' | 'REJECT' | 'MANUAL_REVIEW' | 'ESCALATE' | null;
+
+export interface SubScores {
+  payment_capacity: number | null;
+  employment_stability: number | null;
+  credit_history: number | null;
+  debt_burden: number | null;
+  demographic: number | null;
+}
+
+export interface BureauQuerySummary {
+  id?: number;
+  provider: string | null;
+  status: string | null;
+  score_external: number | null;
+  debt_total: string | null;
+  has_defaults: boolean | null;
+  cic_category: string | null;
+  queried_at?: string | null;
+  response_time_ms?: number | null;
+}
+
+export interface CreditEvaluationResult {
+  evaluation_id: number;
+  score_ia: number | null;
+  score_bureau: number | null;
+  score_weighted: number | null;
+  risk_level: string | null;
+  risk_level_display: string | null;
+  debt_to_income_ratio: string | null;
+  auto_decision: AutoDecision;
+  auto_decision_reason: string;
+  evaluated_at: string | null;
+  application: LoanApplication;
+  sub_scores: SubScores | null;
+  bureau_query: BureauQuerySummary | null;
+}
+
+export interface CreditEvaluationDetail {
+  id: number;
+  status: string;
+  score_ia: number | null;
+  score_bureau: number | null;
+  score_weighted: number | null;
+  risk_level: string | null;
+  risk_level_display: string | null;
+  debt_to_income_ratio: string | null;
+  auto_decision: AutoDecision;
+  auto_decision_reason: string;
+  eligibility_check_passed: boolean | null;
+  bureau_check_passed: boolean | null;
+  dti_calculated: string | null;
+  recommended_amount: string | null;
+  max_affordable_payment: string | null;
+  sub_scores: SubScores | null;
+  model_version: string;
+  features_used: Record<string, number>;
+  evaluated_at: string | null;
+  evaluation_time_ms: number | null;
+  error_message: string | null;
+  bureau_query: BureauQuerySummary | null;
+}
+
+export async function calculateLoanApplicationScore(
+  id: number
+): Promise<CreditEvaluationResult> {
+  const response = await apiClient.post<CreditEvaluationResult>(
+    `${BASE_URL}/credit-applications/${id}/calculate-score/`,
+    {}
+  );
+  return response.data;
+}
+
+export async function getLoanApplicationEvaluation(
+  id: number
+): Promise<CreditEvaluationDetail> {
+  const response = await apiClient.get<CreditEvaluationDetail>(
+    `${BASE_URL}/credit-applications/${id}/evaluation/`
+  );
+  return response.data;
+}
+
+export async function calculateLoanScore(id: number): Promise<{
+  credit_score?: number;
+  risk_level?: string;
+  debt_to_income_ratio?: number;
+}> {
+  try {
+    const evaluation = await calculateLoanApplicationScore(id);
+    return {
+      credit_score: evaluation.score_weighted ?? undefined,
+      risk_level: evaluation.risk_level ?? undefined,
+      debt_to_income_ratio: evaluation.debt_to_income_ratio
+        ? Number(evaluation.debt_to_income_ratio)
+        : undefined,
+    };
+  } catch {
+    const application = await loansApi.getApplication(id);
+    return {
+      credit_score: application.credit_score ?? undefined,
+      risk_level: application.risk_level ?? undefined,
+      debt_to_income_ratio: application.debt_to_income_ratio
+        ? Number(application.debt_to_income_ratio)
+        : undefined,
+    };
+  }
+}

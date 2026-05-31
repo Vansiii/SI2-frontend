@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { Fragment, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, MessageSquare, Send, ShieldAlert, FileText } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, Brain, CheckCircle2, MessageSquare, Send, ShieldAlert, FileText } from 'lucide-react';
 import {
   addLoanApplicationComment,
   changeLoanApplicationStatus,
@@ -64,6 +64,41 @@ export default function LoanApplicationDetailPage() {
   const timeline = application?.timeline || [];
   const comments = application?.comments || [];
   const documents = application?.documents || [];
+
+  const workflowActions = useMemo(() => {
+    if (!application) return [];
+    
+    const stage = application.current_workflow_stage;
+    if (stage) {
+      const list: Array<{ value: string; label: string; isSuccess: boolean }> = [];
+      if (stage.next_stage_on_success) {
+        list.push({
+          value: stage.next_stage_on_success,
+          label: `Avanzar a: ${stage.next_stage_on_success}`,
+          isSuccess: true,
+        });
+      }
+      if (stage.next_stage_on_failure) {
+        list.push({
+          value: stage.next_stage_on_failure,
+          label: `Desviar a: ${stage.next_stage_on_failure}`,
+          isSuccess: false,
+        });
+      }
+      return list;
+    }
+    
+    // Fallback list of options if no custom workflow stage is found
+    return [
+      { value: 'SUBMITTED', label: 'Regresar a enviada', isSuccess: true },
+      { value: 'IN_REVIEW', label: 'En revisión', isSuccess: true },
+      { value: 'OBSERVED', label: 'Observar', isSuccess: false },
+      { value: 'APPROVED', label: 'Aprobar', isSuccess: true },
+      { value: 'REJECTED', label: 'Rechazar', isSuccess: false },
+      { value: 'DISBURSED', label: 'Desembolsar', isSuccess: true },
+      { value: 'CANCELLED', label: 'Cancelar', isSuccess: false },
+    ];
+  }, [application]);
 
   useEffect(() => {
     if (Number.isFinite(applicationId)) {
@@ -232,6 +267,48 @@ export default function LoanApplicationDetailPage() {
 
         <ApplicationHeader application={application} />
 
+        {/* Barra de Progreso del Workflow */}
+        {application.product_workflow_stages && application.product_workflow_stages.length > 0 && (
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+            <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-4 font-bold">Progreso del Flujo de Aprobación</h3>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-2">
+              {application.product_workflow_stages
+                .sort((a: any, b: any) => a.stage_order - b.stage_order)
+                .map((stage: any, index: number, arr: any[]) => {
+                  const isCurrent = stage.stage_code === application.status;
+                  const isPast = stage.stage_order < (application.current_workflow_stage?.stage_order ?? 999);
+                  
+                  return (
+                    <Fragment key={stage.id}>
+                      <div className="flex items-center gap-3 flex-1 justify-center md:justify-start">
+                        <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                          isCurrent 
+                            ? 'bg-blue-600 text-white ring-4 ring-blue-100 shadow-md shadow-blue-200' 
+                            : isPast 
+                              ? 'bg-emerald-100 text-emerald-700' 
+                              : 'bg-slate-100 text-slate-400'
+                        }`}>
+                          {stage.stage_order}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className={`text-xs font-bold ${isCurrent ? 'text-blue-600' : isPast ? 'text-emerald-700 font-medium' : 'text-slate-400 font-medium'}`}>
+                            {stage.stage_name}
+                          </span>
+                          <span className="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">
+                            {stage.stage_code}
+                          </span>
+                        </div>
+                      </div>
+                      {index < arr.length - 1 && (
+                        <div className="hidden md:block h-0.5 bg-slate-100 w-8 mx-2" />
+                      )}
+                    </Fragment>
+                  );
+                })}
+            </div>
+          </div>
+        )}
+
         {error ? <div className="rounded-3xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">{error}</div> : null}
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(360px,0.8fr)]">
@@ -318,6 +395,13 @@ export default function LoanApplicationDetailPage() {
                           </div>
                         )}
                       </dl>
+                      <Link
+                        to={`/loans/${application.id}/evaluation`}
+                        className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-blue-600 hover:text-blue-800"
+                      >
+                        <Brain className="h-3 w-3" />
+                        Ver evaluación completa
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -502,13 +586,11 @@ export default function LoanApplicationDetailPage() {
                       className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:bg-white"
                     >
                       <option value="">Seleccione</option>
-                      <option value="SUBMITTED">Regresar a enviada</option>
-                      <option value="IN_REVIEW">En revisión</option>
-                      <option value="OBSERVED">Observar</option>
-                      <option value="APPROVED">Aprobar</option>
-                      <option value="REJECTED">Rechazar</option>
-                      <option value="DISBURSED">Desembolsar</option>
-                      <option value="CANCELLED">Cancelar</option>
+                      {workflowActions.map((act) => (
+                        <option key={act.value} value={act.value}>
+                          {act.label}
+                        </option>
+                      ))}
                     </select>
                     {errors.new_status ? <span className="mt-2 block text-xs text-rose-600">{errors.new_status.message}</span> : null}
                   </div>

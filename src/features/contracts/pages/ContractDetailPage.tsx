@@ -1,16 +1,13 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
   FileText, 
   Download, 
-  Eye, 
   CheckCircle, 
   Clock, 
-  AlertCircle,
   Calendar,
   DollarSign,
-  User,
   FileSignature
 } from 'lucide-react';
 import { fetchContract, downloadContractPDF, fetchSignatureStatus, fetchPaymentSummary } from '../services/contractsApi';
@@ -24,7 +21,6 @@ type TabType = 'info' | 'signatures' | 'amortization' | 'documents';
 
 export function ContractDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [contract, setContract] = useState<Contract | null>(null);
   const [signatureStatus, setSignatureStatus] = useState<SignatureStatus | null>(null);
   const [paymentSummary, setPaymentSummary] = useState<PaymentSummary | null>(null);

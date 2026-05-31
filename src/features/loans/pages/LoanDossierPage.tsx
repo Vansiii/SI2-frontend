@@ -6,9 +6,10 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { 
   ArrowLeft, 
+  Brain,
   Download, 
   FileText, 
   Fingerprint, 
@@ -225,6 +226,13 @@ export function LoanDossierPage() {
                   </p>
                 </div>
               </div>
+              <Link
+                to={`/loans/${application.id}/evaluation`}
+                className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
+              >
+                <Brain className="h-4 w-4" />
+                Ver evaluación IA
+              </Link>
             </div>
           </div>
 
