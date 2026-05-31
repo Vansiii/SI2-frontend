@@ -172,6 +172,94 @@ class BackupsApi {
       minute: '2-digit',
     });
   }
+
+  // ============================================================
+  // Automatic Backups (Scheduled)
+  // ============================================================
+
+  /**
+   * Obtiene todas las configuraciones de backups programados
+   */
+  async getSchedules(): Promise<any[]> {
+    return apiClient.get<any[]>('/saas/schedules/');
+  }
+
+  /**
+   * Obtiene una configuración específica
+   */
+  async getSchedule(id: number): Promise<any> {
+    return apiClient.get<any>(`/saas/schedules/${id}/`);
+  }
+
+  /**
+   * Crea una nueva configuración de backup programado
+   */
+  async createSchedule(data: any): Promise<any> {
+    return apiClient.post<any>('/saas/schedules/', data);
+  }
+
+  /**
+   * Actualiza una configuración existente
+   */
+  async updateSchedule(id: number, data: any): Promise<any> {
+    return apiClient.patch<any>(`/saas/schedules/${id}/`, data);
+  }
+
+  /**
+   * Elimina una configuración
+   */
+  async deleteSchedule(id: number): Promise<void> {
+    return apiClient.delete<void>(`/saas/schedules/${id}/`);
+  }
+
+  /**
+   * Habilita un schedule
+   */
+  async enableSchedule(id: number): Promise<any> {
+    return apiClient.post<any>(`/saas/schedules/${id}/enable/`);
+  }
+
+  /**
+   * Deshabilita un schedule
+   */
+  async disableSchedule(id: number): Promise<any> {
+    return apiClient.post<any>(`/saas/schedules/${id}/disable/`);
+  }
+
+  /**
+   * Obtiene el estado detallado de un schedule
+   */
+  async getScheduleStatus(id: number): Promise<any> {
+    return apiClient.get<any>(`/saas/schedules/${id}/status/`);
+  }
+
+  /**
+   * Ejecuta un backup inmediatamente (fuera del schedule)
+   */
+  async runNow(id: number): Promise<any> {
+    return apiClient.post<any>(`/saas/schedules/${id}/run-now/`);
+  }
+
+  /**
+   * Obtiene el estado del scheduler automático
+   */
+  async getSchedulerStatus(): Promise<any> {
+    return apiClient.get<any>('/saas/schedules/scheduler-status/');
+  }
+
+  /**
+   * Obtiene todos los logs de ejecuciones programadas
+   */
+  async getLogs(params?: { config_id?: number; status?: string }): Promise<any[]> {
+    return apiClient.get<any[]>('/saas/scheduled-logs/', { params });
+  }
+
+  /**
+   * Obtiene un log específico
+   */
+  async getLog(id: number): Promise<any> {
+    return apiClient.get<any>(`/saas/scheduled-logs/${id}/`);
+  }
 }
 
 export const backupsApi = new BackupsApi();

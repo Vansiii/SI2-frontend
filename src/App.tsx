@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { PermissionGuard } from './components/guards/PermissionGuard';
 
+
 const SaasRegistrationPage = lazy(() =>
   import('./features/auth/pages/SaasRegistrationPage').then((module) => ({
     default: module.SaasRegistrationPage,
