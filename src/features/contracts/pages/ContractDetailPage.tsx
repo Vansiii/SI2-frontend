@@ -17,13 +17,15 @@ import { ContractSignatureModal } from '../components/ContractSignatureModal';
 import { AmortizationTable } from '../components/AmortizationTable';
 import { LoadingState } from '../../../components/ui/LoadingState';
 
-type TabType = 'info' | 'signatures' | 'amortization' | 'documents';
+type TabType = 'info' | 'preview' | 'signatures' | 'amortization' | 'documents';
 
 export function ContractDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [contract, setContract] = useState<Contract | null>(null);
   const [signatureStatus, setSignatureStatus] = useState<SignatureStatus | null>(null);
   const [paymentSummary, setPaymentSummary] = useState<PaymentSummary | null>(null);
+  const [htmlPreview, setHtmlPreview] = useState<string>('');
+  const [loadingPreview, setLoadingPreview] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('info');
@@ -57,9 +59,32 @@ export function ContractDetailPage() {
     }
   };
 
+  const loadContractPreview = async () => {
+    if (!id) return;
+    try {
+      setLoadingPreview(true);
+      const html = await fetchContract(parseInt(id, 10)).then(async (c) => {
+        // Importar contractsApi para usar el método preview
+        const { contractsApi } = await import('../services/contractsApi');
+        return contractsApi.preview(parseInt(id, 10));
+      });
+      setHtmlPreview(html);
+    } catch (err: unknown) {
+      console.error('Error al cargar vista previa:', err);
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
+
   useEffect(() => {
     loadContract();
   }, [id]);
+
+  useEffect(() => {
+    if (activeTab === 'preview' && !htmlPreview) {
+      loadContractPreview();
+    }
+  }, [activeTab]);
 
   const handleDownloadPDF = async () => {
     if (!id) return;
@@ -119,6 +144,29 @@ export function ContractDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           <ContractStatusBadge status={contract.status} />
+          {contract.status === 'DRAFT' && (
+            <button
+              onClick={async () => {
+                if (!id) return;
+                try {
+                  const { contractsApi } = await import('../services/contractsApi');
+                  await contractsApi.publish(parseInt(id, 10));
+                  alert('Contrato publicado exitosamente. Ahora el cliente puede firmarlo.');
+                  loadContract(); // Recargar datos
+                } catch (err: unknown) {
+                  if (err instanceof Error) {
+                    alert(err.message);
+                  } else {
+                    alert('Error al publicar el contrato');
+                  }
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2.5 text-white bg-green-600 hover:bg-green-700 rounded-xl transition-all font-medium text-sm"
+            >
+              <CheckCircle className="h-4 w-4" />
+              Publicar Contrato
+            </button>
+          )}
           {contract.pdf_url && (
             <button
               onClick={handleDownloadPDF}
@@ -145,6 +193,16 @@ export function ContractDetailPage() {
               }`}
             >
               Información General
+            </button>
+            <button
+              onClick={() => setActiveTab('preview')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                activeTab === 'preview'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Vista Previa
             </button>
             <button
               onClick={() => setActiveTab('signatures')}
@@ -280,6 +338,92 @@ export function ContractDetailPage() {
                       </div>
                     </div>
                   </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Tab: Vista Previa */}
+          {activeTab === 'preview' && (
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-blue-600" />
+                Vista Previa del Contrato
+              </h3>
+              {loadingPreview ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-3 text-slate-600">Cargando vista previa...</span>
+                </div>
+              ) : htmlPreview ? (
+                <div className="bg-white rounded-lg shadow-lg border border-slate-300 overflow-hidden">
+                  <iframe
+                    srcDoc={`
+                      <!DOCTYPE html>
+                      <html>
+                        <head>
+                          <meta charset="UTF-8">
+                          <style>
+                            body {
+                              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                              line-height: 1.6;
+                              color: #333;
+                              padding: 2cm;
+                              margin: 0;
+                              background: white;
+                            }
+                            h1, h2, h3, h4, h5, h6 {
+                              color: #1e293b;
+                              margin-top: 1.5em;
+                              margin-bottom: 0.5em;
+                            }
+                            h1 { font-size: 2em; border-bottom: 2px solid #3b82f6; padding-bottom: 0.3em; }
+                            h2 { font-size: 1.5em; }
+                            h3 { font-size: 1.25em; }
+                            p { margin: 1em 0; text-align: justify; }
+                            ul, ol { margin: 1em 0; padding-left: 2em; }
+                            li { margin: 0.5em 0; }
+                            table { 
+                              width: 100%; 
+                              border-collapse: collapse; 
+                              margin: 1em 0;
+                            }
+                            th, td { 
+                              border: 1px solid #cbd5e1; 
+                              padding: 0.75em; 
+                              text-align: left; 
+                            }
+                            th { 
+                              background-color: #f1f5f9; 
+                              font-weight: 600;
+                              color: #1e293b;
+                            }
+                            .signature-section {
+                              margin-top: 3em;
+                              page-break-inside: avoid;
+                            }
+                            .signature-line {
+                              border-top: 1px solid #000;
+                              margin-top: 3em;
+                              padding-top: 0.5em;
+                              text-align: center;
+                            }
+                          </style>
+                        </head>
+                        <body>
+                          ${htmlPreview}
+                        </body>
+                      </html>
+                    `}
+                    title="Vista previa del contrato"
+                    className="w-full border-0"
+                    sandbox="allow-same-origin"
+                    style={{ height: '800px', display: 'block' }}
+                  />
+                </div>
+              ) : (
+                <div className="text-center py-12 text-slate-500">
+                  No se pudo cargar la vista previa
                 </div>
               )}
             </div>

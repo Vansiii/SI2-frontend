@@ -1,72 +1,87 @@
 /**
- * Botón para generar contrato desde solicitud aprobada
+ * Botón para generar contrato desde solicitud de préstamo aprobada
  */
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, Loader2 } from 'lucide-react';
-import { useGenerateContract } from '../hooks/useContract';
-import type { ContractCreateRequest } from '../types';
+import { contractsApi } from '../services/contractsApi';
+import { toast } from 'react-hot-toast';
 
-interface Props {
+interface GenerateContractButtonProps {
   loanApplicationId: number;
   loanApplicationNumber: string;
-  disabled?: boolean;
   className?: string;
+  onSuccess?: () => void;
 }
 
-export const GenerateContractButton: React.FC<Props> = ({
+export const GenerateContractButton: React.FC<GenerateContractButtonProps> = ({
   loanApplicationId,
+<<<<<<< HEAD
   loanApplicationNumber: _loanApplicationNumber,
   disabled = false,
+=======
+  loanApplicationNumber,
+>>>>>>> 4f5d03d (fixer)
   className = '',
+  onSuccess,
 }) => {
   const navigate = useNavigate();
-  const { generateContract, loading, error } = useGenerateContract();
-  const [showError, setShowError] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerate = async () => {
-    setShowError(false);
+    try {
+      setIsGenerating(true);
+      
+      const contract = await contractsApi.generateFromApplication({
+        loan_application_id: loanApplicationId,
+      });
 
-    const data: ContractCreateRequest = {
-      loan_application_id: loanApplicationId,
-    };
-
-    const contract = await generateContract(data);
-
-    if (contract) {
-      // Redirigir al detalle del contrato generado
+      toast.success('Contrato generado exitosamente');
+      
+      if (onSuccess) {
+        onSuccess();
+      }
+      
+      // Redirigir a la página de detalle del contrato
       navigate(`/contracts/${contract.id}`);
-    } else {
-      setShowError(true);
+    } catch (error: any) {
+      console.error('Error al generar contrato:', error);
+      toast.error(
+        error.response?.data?.error || 
+        error.response?.data?.message || 
+        'Error al generar el contrato'
+      );
+    } finally {
+      setIsGenerating(false);
     }
   };
 
   return (
-    <div>
-      <button
-        onClick={handleGenerate}
-        disabled={disabled || loading}
-        className={`inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
-      >
-        {loading ? (
-          <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Generando...
-          </>
-        ) : (
-          <>
-            <FileText className="w-4 h-4 mr-2" />
-            Generar Contrato
-          </>
-        )}
-      </button>
-
-      {showError && error && (
-        <div className="mt-2 text-sm text-red-600">
-          {error}
-        </div>
+    <button
+      onClick={handleGenerate}
+      disabled={isGenerating}
+      className={`
+        inline-flex items-center gap-2 px-4 py-2 
+        bg-blue-600 text-white rounded-lg
+        hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed
+        transition-colors font-medium
+        ${className}
+      `}
+    >
+      {isGenerating ? (
+        <>
+          <Loader2 className="w-5 h-5 animate-spin" />
+          Generando contrato...
+        </>
+      ) : (
+        <>
+          <FileText className="w-5 h-5" />
+          Generar Contrato
+        </>
       )}
-    </div>
+    </button>
   );
 };
+
+export default GenerateContractButton;

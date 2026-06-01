@@ -23,14 +23,14 @@ export const contractsApi = {
     status?: string;
     search?: string;
     page?: number;
-  }): Promise<{ results: Contract[]; count: number }> => {
+  }): Promise<Contract[]> => {
     const queryParams = new URLSearchParams();
     if (params?.status) queryParams.append('status', params.status);
     if (params?.search) queryParams.append('search', params.search);
     if (params?.page) queryParams.append('page', params.page.toString());
     
     const url = `/contracts/${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-    return apiClient.get<{ results: Contract[]; count: number }>(url);
+    return apiClient.get<Contract[]>(url);
   },
 
   /**
@@ -213,8 +213,7 @@ export const fetchContracts = async (params?: {
   search?: string;
   page?: number;
 }): Promise<Contract[]> => {
-  const response = await contractsApi.list(params);
-  return response.results;
+  return contractsApi.list(params);
 };
 
 export const fetchContract = async (id: number): Promise<Contract> => {

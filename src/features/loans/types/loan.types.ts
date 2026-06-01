@@ -133,6 +133,7 @@ export interface LoanApplication {
   // Relaciones anidadas (opcional)
   documents?: LoanApplicationDocumentRequirement[];
   timeline?: TimelineEvent[];
+  contract?: ContractSummary;
 }
 
 export interface LoanApplicationDocumentRequirement {
@@ -225,6 +226,21 @@ export interface LoanApplicationDocument {
   verified_at?: string;
   created_at: string;
   updated_at: string;
+}
+
+// Resumen de contrato para mostrar en solicitud de préstamo
+export interface ContractSummary {
+  id: number;
+  contract_number: string;
+  status: string;
+  status_display: string;
+  principal_amount: string;
+  interest_rate: string;
+  term_months: number;
+  monthly_payment: string;
+  contract_date: string;
+  is_signed_by_borrower: boolean;
+  all_signatures_complete: boolean;
 }
 
 // Extensión de LoanApplication con campos adicionales para display
