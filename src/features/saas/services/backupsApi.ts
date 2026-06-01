@@ -251,7 +251,11 @@ class BackupsApi {
    * Obtiene todos los logs de ejecuciones programadas
    */
   async getLogs(params?: { config_id?: number; status?: string }): Promise<any[]> {
-    return apiClient.get<any[]>('/saas/scheduled-logs/', { params });
+    const query = new URLSearchParams();
+    if (params?.config_id) query.append('config_id', String(params.config_id));
+    if (params?.status) query.append('status', params.status);
+    const qs = query.toString();
+    return apiClient.get<any[]>(`/saas/scheduled-logs/${qs ? `?${qs}` : ''}`);
   }
 
   /**

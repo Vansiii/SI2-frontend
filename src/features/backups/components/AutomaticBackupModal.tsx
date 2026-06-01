@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { X, Calendar, Clock, Save, Loader, AlertCircle, CheckCircle } from 'lucide-react';
 import { backupsApi } from '../../saas/services/backupsApi';
-import type { BackupScheduleConfig, BackupScheduleConfigCreate } from '../types/backup.types';
+import type { BackupScheduleConfig } from '../types/backup.types';
 
 interface AutomaticBackupModalProps {
   open: boolean;

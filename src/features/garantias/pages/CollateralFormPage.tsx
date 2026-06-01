@@ -8,8 +8,8 @@ import {
   updateCollateral,
 } from '../services/garantiasApi';
 import type { CollateralCreatePayload, CollateralUpdatePayload } from '../types';
-import { loansApi } from '../../loans/services/loansApi';
-import type { LoanApplication } from '../../loans/types/loan.types';
+import loansApi from '../../loans/services/loansApi';
+import type { LoanApplication } from '../../loans/services/loansApi';
 
 const emptyForm: CollateralCreatePayload = {
   loan_application: 0,

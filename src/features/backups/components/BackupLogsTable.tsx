@@ -28,7 +28,7 @@ interface BackupLogsTableProps {
   isLoading?: boolean;
 }
 
-export const BackupLogsTable: React.FC<BackupLogsTableProps> = ({ logs, isLoading = false }) => {
+export const BackupLogsTable: React.FC<BackupLogsTableProps> = ({ logs }) => {
   if (logs.length === 0) {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
@@ -67,7 +67,7 @@ export const BackupLogsTable: React.FC<BackupLogsTableProps> = ({ logs, isLoadin
                       </span>
                     </Box>
                   }
-                  color={getStatusColor(log.status)}
+                  color={getStatusColor(log.status) as any}
                   size="small"
                 />
               </TableCell>

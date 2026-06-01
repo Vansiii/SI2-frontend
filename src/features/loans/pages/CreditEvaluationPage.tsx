@@ -26,10 +26,12 @@ import {
   calculateLoanApplicationScore,
   getLoanApplicationEvaluation,
   getLoanApplication,
+  changeLoanApplicationStatus,
   type LoanApplication,
   type CreditEvaluationDetail,
   type CreditEvaluationResult,
   type AutoDecision,
+  type ChangeLoanApplicationStatusData,
 } from '../services/loansApi';
 import {
   CreditApplicationStatusBadge,
@@ -49,6 +51,21 @@ export default function CreditEvaluationPage() {
   const [loading, setLoading] = useState(true);
   const [calculating, setCalculating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [decisionMode, setDecisionMode] = useState<'approve' | 'reject' | 'observe' | null>(null);
+  const [decisionSubmitting, setDecisionSubmitting] = useState(false);
+  const [decisionDone, setDecisionDone] = useState(false);
+  const [decisionError, setDecisionError] = useState<string | null>(null);
+
+  const [approveAmount, setApproveAmount] = useState('');
+  const [approveTerm, setApproveTerm] = useState('');
+  const [approveRate, setApproveRate] = useState('');
+  const [approveNotes, setApproveNotes] = useState('');
+
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectNotes, setRejectNotes] = useState('');
+
+  const [observeReason, setObserveReason] = useState('');
 
   useEffect(() => {
     if (applicationId) {
@@ -81,10 +98,61 @@ export default function CreditEvaluationPage() {
       setEvaluation(result);
       const app = await getLoanApplication(applicationId);
       setApplication(app);
+      setDecisionDone(false);
+      setDecisionMode(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al calcular score');
     } finally {
       setCalculating(false);
+    }
+  }
+
+  async function handleDecision(action: 'approve' | 'reject' | 'observe') {
+    setDecisionSubmitting(true);
+    setDecisionError(null);
+    try {
+      let data: ChangeLoanApplicationStatusData;
+      if (action === 'approve') {
+        data = {
+          new_status: 'APPROVED',
+          reason: approveNotes || 'Aprobado por analista tras evaluación con IA',
+          approved_amount: approveAmount || undefined,
+          approved_term_months: approveTerm ? Number(approveTerm) : undefined,
+          approved_interest_rate: approveRate || undefined,
+        };
+      } else if (action === 'reject') {
+        if (!rejectReason.trim()) {
+          setDecisionError('Debe especificar un motivo de rechazo.');
+          setDecisionSubmitting(false);
+          return;
+        }
+        data = {
+          new_status: 'REJECTED',
+          reason: rejectReason,
+        };
+      } else {
+        if (!observeReason.trim()) {
+          setDecisionError('Debe especificar el motivo de la observación.');
+          setDecisionSubmitting(false);
+          return;
+        }
+        data = {
+          new_status: 'OBSERVED',
+          reason: observeReason,
+        };
+      }
+
+      await changeLoanApplicationStatus(applicationId, data);
+      const app = await getLoanApplication(applicationId);
+      setApplication(app);
+      setDecisionDone(true);
+      setDecisionMode(null);
+    } catch (err) {
+      setDecisionError(
+        err instanceof Error ? err.message : 'Error al procesar la decisión'
+      );
+    } finally {
+      setDecisionSubmitting(false);
     }
   }
 
@@ -258,6 +326,281 @@ export default function CreditEvaluationPage() {
                 </div>
               </div>
             </div>
+
+            {/* Decisión del Analista */}
+            {evalData?.auto_decision &&
+              ['MANUAL_REVIEW', 'ESCALATE'].includes(evalData.auto_decision) &&
+              application &&
+              !['APPROVED', 'REJECTED', 'DISBURSED', 'CANCELLED'].includes(
+                application.status
+              ) && (
+                <div className="rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-8 shadow-sm">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 ring-1 ring-amber-200">
+                      <AlertTriangle className="h-6 w-6 text-amber-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-slate-900">
+                        Decisión del Analista
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-500">
+                        La evaluación con IA requiere tu revisión. Revisa los
+                        resultados y toma una decisión para continuar con el
+                        proceso.
+                      </p>
+
+                      {decisionDone && (
+                        <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+                          <CheckCircle2 className="mr-2 inline h-4 w-4" />
+                          Decisión registrada correctamente. La solicitud ahora
+                          está en estado{' '}
+                          <strong>{application.status_display || application.status}</strong>.
+                        </div>
+                      )}
+
+                      {decisionError && (
+                        <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+                          {decisionError}
+                        </div>
+                      )}
+
+                      {!decisionDone && (
+                        <>
+                          <div className="mt-6 flex flex-wrap gap-3">
+                            <button
+                              onClick={() => {
+                                setDecisionMode('approve');
+                                setDecisionError(null);
+                                const rec =
+                                  evalData &&
+                                  'recommended_amount' in evalData
+                                    ? String(
+                                        (evalData as CreditEvaluationDetail)
+                                          .recommended_amount ?? ''
+                                      )
+                                    : '';
+                                setApproveAmount(rec);
+                                setApproveTerm('');
+                                setApproveRate('');
+                                setApproveNotes('');
+                              }}
+                              disabled={decisionSubmitting}
+                              className={`inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-white shadow-sm transition disabled:opacity-50 ${
+                                decisionMode === 'approve'
+                                  ? 'bg-emerald-700 ring-2 ring-emerald-300'
+                                  : 'bg-emerald-600 hover:bg-emerald-700'
+                              }`}
+                            >
+                              <CheckCircle2 className="h-4 w-4" />
+                              Aprobar Solicitud
+                            </button>
+                            <button
+                              onClick={() => {
+                                setDecisionMode('reject');
+                                setDecisionError(null);
+                                setRejectReason('');
+                                setRejectNotes('');
+                              }}
+                              disabled={decisionSubmitting}
+                              className={`inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-white shadow-sm transition disabled:opacity-50 ${
+                                decisionMode === 'reject'
+                                  ? 'bg-rose-700 ring-2 ring-rose-300'
+                                  : 'bg-rose-600 hover:bg-rose-700'
+                              }`}
+                            >
+                              <XCircle className="h-4 w-4" />
+                              Rechazar Solicitud
+                            </button>
+                            <button
+                              onClick={() => {
+                                setDecisionMode('observe');
+                                setDecisionError(null);
+                                setObserveReason('');
+                              }}
+                              disabled={decisionSubmitting}
+                              className={`inline-flex items-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold shadow-sm transition disabled:opacity-50 ${
+                                decisionMode === 'observe'
+                                  ? 'border-orange-400 bg-orange-50 text-orange-700 ring-2 ring-orange-200'
+                                  : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                              }`}
+                            >
+                              <AlertTriangle className="h-4 w-4" />
+                              Solicitar Más Información
+                            </button>
+                          </div>
+
+                          {/* Formulario Aprobar */}
+                          {decisionMode === 'approve' && (
+                            <div className="mt-5 space-y-4 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5">
+                              <div className="grid gap-4 sm:grid-cols-2">
+                                <div>
+                                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                                    Monto Aprobado *
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={approveAmount}
+                                    onChange={(e) => setApproveAmount(e.target.value)}
+                                    placeholder="5000.00"
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                                    Plazo (meses)
+                                  </label>
+                                  <input
+                                    type="number"
+                                    value={approveTerm}
+                                    onChange={(e) => setApproveTerm(e.target.value)}
+                                    placeholder="12"
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                                    Tasa de Interés (%)
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={approveRate}
+                                    onChange={(e) => setApproveRate(e.target.value)}
+                                    placeholder="15.5"
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                                    Notas
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={approveNotes}
+                                    onChange={(e) => setApproveNotes(e.target.value)}
+                                    placeholder="Motivo de aprobación"
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <button
+                                  onClick={() => handleDecision('approve')}
+                                  disabled={decisionSubmitting || !approveAmount.trim()}
+                                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-50"
+                                >
+                                  {decisionSubmitting ? (
+                                    <RefreshCw className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <CheckCircle2 className="h-4 w-4" />
+                                  )}
+                                  Confirmar Aprobación
+                                </button>
+                                <button
+                                  onClick={() => setDecisionMode(null)}
+                                  disabled={decisionSubmitting}
+                                  className="rounded-xl px-4 py-2.5 text-sm font-medium text-slate-500 transition hover:text-slate-700"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Formulario Rechazar */}
+                          {decisionMode === 'reject' && (
+                            <div className="mt-5 space-y-4 rounded-2xl border border-rose-200 bg-rose-50/50 p-5">
+                              <div>
+                                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                                  Motivo del Rechazo *
+                                </label>
+                                <textarea
+                                  value={rejectReason}
+                                  onChange={(e) => setRejectReason(e.target.value)}
+                                  placeholder="Describa el motivo del rechazo..."
+                                  rows={3}
+                                  className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm transition focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-200"
+                                />
+                              </div>
+                              <div>
+                                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                                  Notas (opcional)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={rejectNotes}
+                                  onChange={(e) => setRejectNotes(e.target.value)}
+                                  placeholder="Notas adicionales"
+                                  className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm transition focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-200"
+                                />
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <button
+                                  onClick={() => handleDecision('reject')}
+                                  disabled={decisionSubmitting || !rejectReason.trim()}
+                                  className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-rose-700 disabled:opacity-50"
+                                >
+                                  {decisionSubmitting ? (
+                                    <RefreshCw className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <XCircle className="h-4 w-4" />
+                                  )}
+                                  Confirmar Rechazo
+                                </button>
+                                <button
+                                  onClick={() => setDecisionMode(null)}
+                                  disabled={decisionSubmitting}
+                                  className="rounded-xl px-4 py-2.5 text-sm font-medium text-slate-500 transition hover:text-slate-700"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Formulario Observar */}
+                          {decisionMode === 'observe' && (
+                            <div className="mt-5 space-y-4 rounded-2xl border border-orange-200 bg-orange-50/50 p-5">
+                              <div>
+                                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                                  Motivo de la Observación *
+                                </label>
+                                <textarea
+                                  value={observeReason}
+                                  onChange={(e) => setObserveReason(e.target.value)}
+                                  placeholder="¿Qué información adicional se requiere?"
+                                  rows={3}
+                                  className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm transition focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+                                />
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <button
+                                  onClick={() => handleDecision('observe')}
+                                  disabled={decisionSubmitting || !observeReason.trim()}
+                                  className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-orange-700 disabled:opacity-50"
+                                >
+                                  {decisionSubmitting ? (
+                                    <RefreshCw className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <AlertTriangle className="h-4 w-4" />
+                                  )}
+                                  Confirmar Observación
+                                </button>
+                                <button
+                                  onClick={() => setDecisionMode(null)}
+                                  disabled={decisionSubmitting}
+                                  className="rounded-xl px-4 py-2.5 text-sm font-medium text-slate-500 transition hover:text-slate-700"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
             {/* Sub-scores */}
             {evalData?.sub_scores && (

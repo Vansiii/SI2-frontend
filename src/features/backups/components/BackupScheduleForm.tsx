@@ -1,7 +1,7 @@
 /**
  * Formulario para crear/editar configuración de backups programados
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Button,
@@ -138,7 +138,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
     <form onSubmit={handleSubmit}>
       <Grid container spacing={3}>
         {/* Estado: Habilitar/Deshabilitar */}
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Card>
             <CardContent>
               <FormControlLabel
@@ -165,7 +165,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
         </Grid>
 
         {/* Frecuencia */}
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -173,7 +173,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
               </Typography>
 
               <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <FormControl fullWidth>
                     <InputLabel>Frecuencia</InputLabel>
                     <Select
@@ -190,7 +190,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
                   </FormControl>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Box>
                     <Typography variant="body2" gutterBottom>
                       Hora de Ejecución
@@ -234,7 +234,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
                 </Grid>
 
                 {frequency === 'weekly' && (
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <FormControl fullWidth>
                       <InputLabel>Día de la Semana</InputLabel>
                       <Select
@@ -253,7 +253,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
                 )}
 
                 {frequency === 'monthly' && (
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <TextField
                       fullWidth
                       type="number"
@@ -276,7 +276,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
                 )}
 
                 {frequency === 'custom' && (
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <TextField
                       fullWidth
                       label="Expresión Cron"
@@ -288,7 +288,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
                   </Grid>
                 )}
 
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Alert severity="info">
                     Hora de ejecución: {formatTime(hour, minute)}
                   </Alert>
@@ -299,7 +299,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
         </Grid>
 
         {/* Tipo de Backup */}
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -307,7 +307,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
               </Typography>
 
               <Grid container spacing={2}>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <FormControl fullWidth>
                     <InputLabel>Tipo</InputLabel>
                     <Select
@@ -324,7 +324,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
                   </FormControl>
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -336,7 +336,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -353,7 +353,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
         </Grid>
 
         {/* Retención */}
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -361,7 +361,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
               </Typography>
 
               <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     type="number"
@@ -380,7 +380,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     type="number"
@@ -404,7 +404,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
         </Grid>
 
         {/* Notificaciones */}
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -412,7 +412,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
               </Typography>
 
               <Grid container spacing={2}>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -424,7 +424,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -436,7 +436,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <FormLabel>Emails de Notificación</FormLabel>
                   <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                     <TextField
@@ -479,7 +479,7 @@ export const BackupScheduleForm: React.FC<BackupScheduleFormProps> = ({
         </Grid>
 
         {/* Botones */}
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
             {onCancel && (
               <Button variant="outlined" onClick={onCancel} disabled={isLoading}>
