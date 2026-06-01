@@ -58,8 +58,8 @@ export const useContractList = (filters?: {
 
     try {
       const data = await contractsApi.list(filters);
-      setContracts(data.results);
-      setCount(data.count);
+      setContracts(data);
+      setCount(data.length);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al cargar los contratos';
       setError(message);

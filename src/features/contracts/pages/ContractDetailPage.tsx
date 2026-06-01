@@ -63,7 +63,7 @@ export function ContractDetailPage() {
     if (!id) return;
     try {
       setLoadingPreview(true);
-      const html = await fetchContract(parseInt(id, 10)).then(async (c) => {
+      const html = await fetchContract(parseInt(id, 10)).then(async () => {
         // Importar contractsApi para usar el método preview
         const { contractsApi } = await import('../services/contractsApi');
         return contractsApi.preview(parseInt(id, 10));

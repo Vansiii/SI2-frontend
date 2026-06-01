@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, Loader2 } from 'lucide-react';
 import { contractsApi } from '../services/contractsApi';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 interface GenerateContractButtonProps {
   loanApplicationId: number;
@@ -17,7 +17,7 @@ interface GenerateContractButtonProps {
 
 export const GenerateContractButton: React.FC<GenerateContractButtonProps> = ({
   loanApplicationId,
-  loanApplicationNumber,
+  loanApplicationNumber: _loanApplicationNumber,
   className = '',
   onSuccess,
 }) => {
