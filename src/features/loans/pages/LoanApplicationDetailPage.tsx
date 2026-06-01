@@ -50,7 +50,6 @@ export default function LoanApplicationDetailPage() {
   const [commentText, setCommentText] = useState('');
   const [isInternalComment, setIsInternalComment] = useState(true);
   const [generatingContract, setGeneratingContract] = useState(false);
-  const [contractGenerated, setContractGenerated] = useState(false);
 
   const {
     register,
@@ -126,11 +125,6 @@ export default function LoanApplicationDetailPage() {
     [application]
   );
 
-  const canGenerateContract = useMemo(
-    () => application?.status === 'APPROVED' && !contractGenerated,
-    [application, contractGenerated]
-  );
-
   async function handleGenerateContract() {
     if (!application) {
       return;
@@ -144,8 +138,10 @@ export default function LoanApplicationDetailPage() {
         loan_application_id: application.id,
       });
       
-      setContractGenerated(true);
       alert(`¡Contrato generado exitosamente!\n\nNúmero: ${contract.contract_number}\nEstado: ${contract.status_display}`);
+      
+      // Recargar la aplicación para mostrar el contrato
+      await loadApplication();
       
       // Navegar al detalle del contrato
       navigate(`/contracts/${contract.id}`);
@@ -432,103 +428,128 @@ export default function LoanApplicationDetailPage() {
             </SectionCard>
 
             {/* Sección de Contrato */}
-            {application.contract && (
+            {application.status === 'APPROVED' && (
               <SectionCard
                 title="Contrato de Crédito"
-                subtitle="Contrato generado para esta solicitud aprobada."
+                subtitle={application.contract ? "Contrato generado para esta solicitud aprobada." : "Genere el contrato para esta solicitud aprobada."}
                 action={<FileText className="h-4 w-4 text-slate-400" />}
               >
-                <div className="rounded-2xl border border-slate-200 bg-white p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h4 className="text-lg font-semibold text-slate-900">{application.contract.contract_number}</h4>
-                      <p className="text-sm text-slate-500 mt-1">
-                        Generado el {formatDateTime(application.contract.created_at)}
-                      </p>
+                {!application.contract ? (
+                  /* Si no tiene contrato, mostrar botón para generar */
+                  <div className="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-8 text-center">
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+                      <FileText className="h-8 w-8 text-blue-600" />
                     </div>
-                    <CreditApplicationStatusBadge 
-                      status={application.contract.status as any} 
-                      label={application.contract.status_display} 
-                    />
+                    <h4 className="mb-2 text-lg font-semibold text-slate-900">
+                      Solicitud Aprobada
+                    </h4>
+                    <p className="mb-6 text-sm text-slate-600">
+                      La solicitud ha sido aprobada. Puede generar el contrato de crédito para continuar con el proceso.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleGenerateContract}
+                      disabled={generatingContract}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <FileText className="h-5 w-5" />
+                      {generatingContract ? 'Generando contrato...' : 'Generar Contrato'}
+                    </button>
                   </div>
+                ) : (
+                  /* Si tiene contrato, mostrar información */
+                  <div className="rounded-2xl border border-slate-200 bg-white p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h4 className="text-lg font-semibold text-slate-900">{application.contract.contract_number}</h4>
+                        <p className="text-sm text-slate-500 mt-1">
+                          Generado el {formatDateTime(application.contract.created_at)}
+                        </p>
+                      </div>
+                      <CreditApplicationStatusBadge 
+                        status={application.contract.status as any} 
+                        label={application.contract.status_display} 
+                      />
+                    </div>
 
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <dt className="text-xs text-slate-500">Monto</dt>
-                      <dd className="text-sm font-semibold text-slate-900">
-                        Bs. {parseFloat(application.contract.principal_amount).toLocaleString('es-BO', { minimumFractionDigits: 2 })}
-                      </dd>
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <dt className="text-xs text-slate-500">Monto</dt>
+                        <dd className="text-sm font-semibold text-slate-900">
+                          Bs. {parseFloat(application.contract.principal_amount).toLocaleString('es-BO', { minimumFractionDigits: 2 })}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-slate-500">Plazo</dt>
+                        <dd className="text-sm font-semibold text-slate-900">{application.contract.term_months} meses</dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-slate-500">Tasa</dt>
+                        <dd className="text-sm font-semibold text-slate-900">{application.contract.interest_rate}% anual</dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-slate-500">Cuota Mensual</dt>
+                        <dd className="text-sm font-semibold text-slate-900">
+                          Bs. {parseFloat(application.contract.monthly_payment).toLocaleString('es-BO', { minimumFractionDigits: 2 })}
+                        </dd>
+                      </div>
                     </div>
-                    <div>
-                      <dt className="text-xs text-slate-500">Plazo</dt>
-                      <dd className="text-sm font-semibold text-slate-900">{application.contract.term_months} meses</dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-slate-500">Tasa</dt>
-                      <dd className="text-sm font-semibold text-slate-900">{application.contract.interest_rate}% anual</dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-slate-500">Cuota Mensual</dt>
-                      <dd className="text-sm font-semibold text-slate-900">
-                        Bs. {parseFloat(application.contract.monthly_payment).toLocaleString('es-BO', { minimumFractionDigits: 2 })}
-                      </dd>
-                    </div>
-                  </div>
 
-                  {/* Estado de firmas */}
-                  <div className="mb-4 p-3 bg-slate-50 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-slate-700">Estado de Firmas</span>
-                      {application.contract.all_signatures_complete ? (
-                        <span className="inline-flex items-center text-xs text-green-700">
-                          <CheckCircle2 className="w-4 h-4 mr-1" />
-                          Completas
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center text-xs text-yellow-700">
-                          <ShieldAlert className="w-4 h-4 mr-1" />
-                          {application.contract.pending_signatures.length} pendiente(s)
-                        </span>
+                    {/* Estado de firmas */}
+                    <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-slate-700">Estado de Firmas</span>
+                        {application.contract.all_signatures_complete ? (
+                          <span className="inline-flex items-center text-xs text-green-700">
+                            <CheckCircle2 className="w-4 h-4 mr-1" />
+                            Completas
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center text-xs text-yellow-700">
+                            <ShieldAlert className="w-4 h-4 mr-1" />
+                            {application.contract.pending_signatures.length} pendiente(s)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Botones de acción */}
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/contracts/${application.contract!.id}`)}
+                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                      >
+                        <FileText className="h-4 w-4" />
+                        Ver Detalle
+                      </button>
+                      {application.contract.pdf_url && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              const blob = await contractsApi.downloadPDF(application.contract!.id);
+                              const url = window.URL.createObjectURL(blob);
+                              const link = document.createElement('a');
+                              link.href = url;
+                              link.download = `contrato-${application.contract!.contract_number}.pdf`;
+                              document.body.appendChild(link);
+                              link.click();
+                              link.remove();
+                              window.URL.revokeObjectURL(url);
+                            } catch (err) {
+                              alert('Error al descargar el PDF');
+                            }
+                          }}
+                          className="flex-1 inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                        >
+                          <ArrowLeft className="h-4 w-4 rotate-90" />
+                          Descargar PDF
+                        </button>
                       )}
                     </div>
                   </div>
-
-                  {/* Botones de acción */}
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/contracts/${application.contract!.id}`)}
-                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                    >
-                      <FileText className="h-4 w-4" />
-                      Ver Detalle
-                    </button>
-                    {application.contract.pdf_url && (
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          try {
-                            const blob = await contractsApi.downloadPDF(application.contract!.id);
-                            const url = window.URL.createObjectURL(blob);
-                            const link = document.createElement('a');
-                            link.href = url;
-                            link.download = `contrato-${application.contract!.contract_number}.pdf`;
-                            document.body.appendChild(link);
-                            link.click();
-                            link.remove();
-                            window.URL.revokeObjectURL(url);
-                          } catch (err) {
-                            alert('Error al descargar el PDF');
-                          }
-                        }}
-                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                      >
-                        <ArrowLeft className="h-4 w-4 rotate-90" />
-                        Descargar PDF
-                      </button>
-                    )}
-                  </div>
-                </div>
+                )}
               </SectionCard>
             )}
           </div>
@@ -551,31 +572,6 @@ export default function LoanApplicationDetailPage() {
                     <Send className="h-4 w-4" />
                     {saving ? 'Enviando...' : 'Enviar solicitud'}
                   </button>
-                ) : null}
-
-                {canGenerateContract ? (
-                  <button
-                    type="button"
-                    onClick={handleGenerateContract}
-                    disabled={generatingContract}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:from-emerald-700 hover:to-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <FileText className="h-4 w-4" />
-                    {generatingContract ? 'Generando contrato...' : '🔥 Generar Contrato'}
-                  </button>
-                ) : null}
-
-                {application.status === 'APPROVED' && contractGenerated ? (
-                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center">
-                    <p className="text-sm font-semibold text-emerald-700">✅ Contrato ya generado</p>
-                    <button
-                      type="button"
-                      onClick={() => navigate('/contracts')}
-                      className="mt-2 text-xs text-emerald-600 hover:text-emerald-800 underline"
-                    >
-                      Ver contratos
-                    </button>
-                  </div>
                 ) : null}
 
                 <form onSubmit={handleSubmit(handleAction)} className="space-y-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">

@@ -92,7 +92,25 @@ export const ContractSignatureModal: React.FC<Props> = ({
       onSuccess();
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al firmar el contrato');
+      console.error('Error al firmar contrato:', err);
+      const errorMessage = err.response?.data?.error 
+        || err.response?.data?.details 
+        || err.message 
+        || 'Error al firmar el contrato';
+      
+      // Si hay detalles de validación, mostrarlos
+      if (err.response?.data?.details) {
+        const details = err.response.data.details;
+        const detailMessages = Object.entries(details)
+          .map(([field, errors]: [string, any]) => {
+            const errorList = Array.isArray(errors) ? errors : [errors];
+            return `${field}: ${errorList.join(', ')}`;
+          })
+          .join('\n');
+        setError(`${errorMessage}\n\nDetalles:\n${detailMessages}`);
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }

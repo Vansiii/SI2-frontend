@@ -360,6 +360,60 @@ export function LoanDossierPage() {
                   </div>
                 </div>
               )}
+
+              {/* Sección de Contrato - Solo si está APROBADO */}
+              {application.status === 'APPROVED' && (
+                <div className="rounded-3xl border-2 border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <FileText className="h-5 w-5 text-blue-600" />
+                    <h3 className="font-bold text-blue-900">Contrato de Crédito</h3>
+                  </div>
+                  
+                  {!application.contract ? (
+                    <div className="text-center py-6">
+                      <p className="text-sm text-blue-700 mb-4">
+                        La solicitud ha sido aprobada. Puede generar el contrato de crédito.
+                      </p>
+                      <button
+                        onClick={async () => {
+                          try {
+                            const { contractsApi } = await import('../../contracts/services/contractsApi');
+                            const contract = await contractsApi.generateFromApplication({
+                              loan_application_id: application.id,
+                            });
+                            alert(`¡Contrato generado exitosamente!\n\nNúmero: ${contract.contract_number}`);
+                            navigate(`/contracts/${contract.id}`);
+                          } catch (err) {
+                            alert('Error al generar el contrato');
+                            console.error(err);
+                          }
+                        }}
+                        className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700"
+                      >
+                        <FileText className="h-4 w-4" />
+                        Generar Contrato
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-white/60">
+                        <span className="text-xs font-medium text-blue-700">Número de Contrato</span>
+                        <span className="font-bold text-blue-900">{application.contract.contract_number}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-white/60">
+                        <span className="text-xs font-medium text-blue-700">Estado</span>
+                        <span className="font-bold text-blue-900">{application.contract.status_display}</span>
+                      </div>
+                      <button
+                        onClick={() => navigate(`/contracts/${application.contract!.id}`)}
+                        className="w-full py-3 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition"
+                      >
+                        Ver Detalle del Contrato
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

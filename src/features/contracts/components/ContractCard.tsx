@@ -61,7 +61,7 @@ export const ContractCard: React.FC<Props> = ({ contract }) => {
             <>
               <Clock className="w-4 h-4 mr-2 text-yellow-500" />
               <span className="text-yellow-600 font-medium">
-                {contract.pending_signatures.length} firma(s) pendiente(s)
+                {(contract.pending_signatures || []).length} firma(s) pendiente(s)
               </span>
             </>
           )}
