@@ -41,31 +41,7 @@ export const IntegrationsPage: React.FC = () => {
     setShowForm(true);
   };
 
-  const handleEdit = async (id: number) => {
-    try {
-      const integration = await integrationsApi.getIntegration(id);
-      setEditingIntegration(integration);
-      setShowForm(true);
-    } catch (error) {
-      toast.error('Error al cargar integración');
-      console.error(error);
-    }
-  };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('¿Está seguro de eliminar esta integración?')) {
-      return;
-    }
-
-    try {
-      await integrationsApi.deleteIntegration(id);
-      toast.success('Integración eliminada exitosamente');
-      loadIntegrations();
-    } catch (error) {
-      toast.error('Error al eliminar integración');
-      console.error(error);
-    }
-  };
 
   const handleView = (id: number) => {
     navigate(`/integrations/${id}`);
