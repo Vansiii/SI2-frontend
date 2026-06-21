@@ -18,6 +18,7 @@ interface GenerateContractButtonProps {
 export const GenerateContractButton: React.FC<GenerateContractButtonProps> = ({
   loanApplicationId,
   loanApplicationNumber: _loanApplicationNumber,
+  disabled = false,
   className = '',
   onSuccess,
 }) => {

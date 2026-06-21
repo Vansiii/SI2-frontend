@@ -22,6 +22,7 @@ import {
   BarChart3,
   FileSignature,
   Receipt,
+  Plug,
 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useAuth } from '../../features/auth/hooks/useAuth';
@@ -127,6 +128,11 @@ export function Sidebar({ isOpen: externalIsOpen, onToggle }: SidebarProps = {})
       icon: <BarChart3 className="h-5 w-5" />,
       label: 'Reportes',
       permission: 'reports.view_report_catalog',
+    },
+    {
+      to: '/integrations',
+      icon: <Plug className="h-5 w-5" />,
+      label: 'Integraciones Externas',
     },
     {
       to: '/users',
