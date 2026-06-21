@@ -373,6 +373,18 @@ const ContractTemplatePreviewPage = lazy(() =>
   }))
 );
 
+// Importar Integrations pages
+const IntegrationsPage = lazy(() =>
+  import('./features/integrations/pages/IntegrationsPage').then((module) => ({
+    default: module.IntegrationsPage,
+  }))
+);
+const IntegrationDetailPage = lazy(() =>
+  import('./features/integrations/pages/IntegrationDetailPage').then((module) => ({
+    default: module.IntegrationDetailPage,
+  }))
+);
+
 function RouteFallback() {
   return (
     <div className="min-h-screen flex items-center justify-center text-slate-500">
@@ -1243,6 +1255,24 @@ function App() {
                   <PermissionGuard permission="contract_templates.view">
                     <ContractTemplatePreviewPage />
                   </PermissionGuard>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Integraciones Externas */}
+            <Route
+              path="/integrations"
+              element={
+                <ProtectedRoute>
+                  <IntegrationsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/integrations/:id"
+              element={
+                <ProtectedRoute>
+                  <IntegrationDetailPage />
                 </ProtectedRoute>
               }
             />
