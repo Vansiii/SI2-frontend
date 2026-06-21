@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { LogOut, User, Menu, ChevronDown } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { LoadingState } from '../ui/LoadingState';
+import { NotificationBell } from '../../features/notifications/components/NotificationBell';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -97,6 +98,11 @@ export function Header({ onMenuClick }: HeaderProps) {
               </span>
             </div>
           </div>
+
+          {/* Notifications Bell */}
+          <NotificationBell
+            onViewAll={() => navigate('/notifications')}
+          />
 
           {/* Usuario */}
           <div className="relative" ref={dropdownRef}>
