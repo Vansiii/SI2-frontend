@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { PermissionGuard } from './components/guards/PermissionGuard';
+import { AdminNotificationsProvider } from './contexts/AdminNotificationsContext';
 
 
 const SaasRegistrationPage = lazy(() =>
@@ -263,6 +264,13 @@ const RolePermissionManagementPage = lazy(
   () => import('./features/roles/pages/RolePermissionManagementPage')
 );
 
+// Importar Notifications pages (CU-21)
+const NotificationsPage = lazy(() =>
+  import('./features/notifications/pages/NotificationsPage').then((module) => ({
+    default: module.NotificationsPage,
+  }))
+);
+
 const LandingPage = lazy(() =>
   import('./features/home/pages/LandingPage').then((module) => ({
     default: module.LandingPage,
@@ -376,9 +384,10 @@ function RouteFallback() {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Suspense fallback={<RouteFallback />}>
-          <Routes>
+      <AdminNotificationsProvider>
+        <Router>
+          <Suspense fallback={<RouteFallback />}>
+            <Routes>
             {/* Rutas públicas */}
             <Route path="/register" element={<SaasRegistrationPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -400,6 +409,16 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Notificaciones (CU-21) */}
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <NotificationsPage />
                 </ProtectedRoute>
               }
             />
@@ -1233,6 +1252,7 @@ function App() {
           </Routes>
         </Suspense>
       </Router>
+      </AdminNotificationsProvider>
     </AuthProvider>
   );
 }
